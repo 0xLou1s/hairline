@@ -256,7 +256,7 @@ a.topbar-link:hover { color: var(--color-ink); }
 .inspo-split-text { display: grid; gap: 16px; max-width: 640px; }
 .inspo-split .inspo-figure { margin-top: 0; max-width: 480px; }
 .inspo-rules { display: grid; gap: 16px; }
-.inspo-rules li { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 8px; padding-top: 16px; border-top: 1px solid var(--color-line); }
+.inspo-rules li { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px; padding-top: 16px; border-top: 1px solid var(--color-line); }
 .inspo-rules .inspo-n { line-height: 1.6; }
 .inspo-rule { font-size: 16px; font-weight: 500; line-height: 1.5; }
 .inspo-keep { display: grid; gap: 12px; padding-left: 1.2em; list-style: disc; font-size: 16px; line-height: 1.6; text-wrap: pretty; }

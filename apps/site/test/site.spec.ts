@@ -772,3 +772,8 @@ test("every small label on /inspo is set the same: one face, size, weight and co
   expect(types.length).toBeGreaterThan(10);
   expect(new Set(types).size).toBe(1);
 });
+
+test("the rules on /inspo say they are rules, so their numbers don't read as steps", async ({ page }) => {
+  await page.goto("/inspo");
+  await expect(page.locator(".inspo-rules .inspo-n")).toHaveText(["Rule 09", "Rule 10"]);
+});

@@ -189,7 +189,7 @@ export default function Inspo() {
           </Prompt>
           <ol className="inspo-rules">
             <li>
-              <span className="inspo-n">09</span>
+              <span className="inspo-n">Rule 09</span>
               <div>
                 <p className="inspo-rule">Round every corner, then draw less.</p>
                 <p className="inspo-p">
@@ -198,7 +198,7 @@ export default function Inspo() {
               </div>
             </li>
             <li>
-              <span className="inspo-n">10</span>
+              <span className="inspo-n">Rule 10</span>
               <div>
                 <p className="inspo-rule">No words inside the figure.</p>
                 <p className="inspo-p">
