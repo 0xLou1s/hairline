@@ -7,7 +7,7 @@ The validator reads text. This is what only eyes can check. Do it every time the
 Open `hairline-<name>.html` in a browser and take the four base pictures, then the four for items 9 and 10. Four parameters in the address help; join two with `&`:
 
 - `?w=240` narrows the page to 240px, the size of a thumbnail.
-- `?at=x,y` holds the pointer at a point of the 400 × 320 viewBox, for tools that cannot hover. x runs to the right and y down, from the viewBox's top-left corner. Take the point from your own figure: the screen point `P(x, y, z)` of the part you want answered, rounded.
+- `?at=x,y` holds the pointer at a point of the 400 × 320 viewBox, for tools that cannot hover. x runs to the right and y down, from the viewBox's top-left corner. Take the point from your own figure: the screen point `P(x, y, z)` of the part you want answered, rounded. `P` exists only inside the page; `look.mjs`, below, prints it for you.
 - `?intensity=` sets the slider, from 0 to 1, before the figure mounts.
 - `?theme=light` or `?theme=dark` sets the theme, as pressing its button does.
 
@@ -30,6 +30,36 @@ Wait 1.5 seconds after loading before each picture. Strokes fade over 260ms, twe
 
 It needs Node and an installed Chrome; without Chrome, run `npx playwright install chromium` once and drop `--channel chrome` from the command.
 
+## The console and the points
+
+That command cannot show the console, which item 12 needs. Make a folder of its own, run `npm i playwright` in it once, and paste this into `look.mjs` there:
+
+```js
+import { chromium } from "playwright";
+const [url, ...points] = process.argv.slice(2);
+const browser = await chromium.launch({ channel: "chrome" }).catch(() => chromium.launch());
+const page = await browser.newPage({ viewport: { width: 800, height: 900 } });
+const bad = [];
+page.on("console", (m) => { if (m.type() === "error" || m.type() === "warning") bad.push(`console ${m.type()}: ${m.text()}`); });
+page.on("pageerror", (e) => bad.push(`page error: ${e.message}`));
+// keeps the P the figure makes from its own camera, so a world point can be turned into an ?at= point
+await page.addInitScript(() => {
+  let hl;
+  Object.defineProperty(window, "HL", { get: () => hl, set: (v) => { hl = { ...v, proj: (C) => (window.P = v.proj(C)) }; } });
+});
+await page.goto(url);
+await page.waitForTimeout(1500);
+for (const p of points) console.log(`${p} -> at=${(await page.evaluate((q) => window.P(...q), p.split(",").map(Number))).map(Math.round)}`);
+console.log(`read-out: ${await page.textContent("#read")}`);
+for (const line of bad) console.log(line);
+await browser.close();
+process.exit(bad.length ? 1 : 0);
+```
+
+`node look.mjs "file:///<path>/hairline-<name>.html"`, run from that folder, opens the page at 800 × 900, waits 1.5 seconds, and prints the read-out and every console error, console warning and page error. It exits 1 if there was any. It uses your Chrome, or Playwright's Chromium if there is no Chrome (`npx playwright install chromium` once).
+
+For an `?at=` point, put world points `x,y,z` after the address. The script runs each through the `P` your figure made with its own camera. Take a point on the part's top in its rest pose. For the riffle example, the top edge of card 05 at rest: `node look.mjs "file:///<path>/hairline-riffle.html" 42,28,52` prints `42,28,52 -> at=220,120`. Then check the point: `node look.mjs "file:///<path>/hairline-riffle.html?at=220,120"` prints `read-out: 05`.
+
 ## What to see
 
 Answer each with yes or no. A no is fixed in the figure before anything is handed over.
@@ -45,7 +75,7 @@ Answer each with yes or no. A no is fixed in the figure before anything is hande
 9. **Nothing leaves the frame.** With the slider at each end (`?intensity=0`, `?intensity=1`) and the pointer at the figure's edges, every part stays inside the plate.
 10. **Both themes.** In `?theme=dark` and `?theme=light`, nothing vanishes and nothing is left the wrong colour.
 11. **No words** (rule 10). Nothing in the drawing is a letter, a digit, an arrow or an icon.
-12. **The page is clean.** No line under the stage reporting an error, and nothing on the console.
+12. **The page is clean.** No line under the stage reporting an error, and nothing on the console: `look.mjs` exits 0.
 
 If you are unsure whether the figure's weight is right, build an example the same way and put the two side by side: `node <skill folder>/build.mjs <skill folder>/examples/terrain.js`.
 

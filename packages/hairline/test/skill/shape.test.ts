@@ -1,4 +1,7 @@
-import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { spawnSync } from "node:child_process";
+import { existsSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { expect, it } from "vitest";
 
@@ -56,4 +59,15 @@ it("concepts.md's worked example is not one of the ideas the site offers to try"
 it("look.md runs build.mjs by its path in the skill folder, as SKILL.md says, so the command resolves from the working directory", () => {
   expect(text("look.md")).toContain("`node <skill folder>/build.mjs <skill folder>/examples/terrain.js`");
   expect(text("look.md")).not.toMatch(/`node build\.mjs /);
+});
+
+it("look.md's look.mjs is one script Node can parse, which reads the console and prints ?at= points", () => {
+  const blocks = [...text("look.md").matchAll(/^```js\n([\s\S]*?)^```$/gm)].map((m) => m[1]);
+  expect(blocks).toHaveLength(1);
+  for (const want of ['from "playwright"', '"pageerror"', '"warning"', "waitForTimeout(1500)", "window.P", "process.exit"]) expect(blocks[0], want).toContain(want);
+  const file = join(mkdtempSync(join(tmpdir(), "hl-look-")), "look.mjs");
+  writeFileSync(file, blocks[0]);
+  const run = spawnSync("node", ["--check", file], { encoding: "utf8" });
+  expect(run.stderr).toBe("");
+  expect(run.status).toBe(0);
 });
