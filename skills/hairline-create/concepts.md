@@ -45,7 +45,7 @@ For "a deploy pipeline":
 
 > **Locks.** A flight of canal locks stepping down, each a basin. The pointer picks a lock; its gates open and its water drops to the next, staggered from the pointer. The read-out names the stage: `lock 3`.
 >
-> **Dominoes.** A run of twenty dominoes on a plank, the first eight already down. The pointer's x scrubs how far the push has run: behind it they lie on each other, ahead they stand, and the one falling takes the bright edge. The read-out says how far: `12/20`.
+> **Marble run.** A wooden frame with three ramps zigzagging down it, one ramp a stage, and marbles always rolling down them and lifted back to the top. The run never stops; hovering slows it so a marble can be followed, and the one under the pointer is bright. The read-out names its stage: `ramp 2`.
 >
 > **Cabinet.** A server cabinet of twelve blades, a few half out where the last update stopped. The pointer's height sets where the update is; the blades near it slide out, the farther the less, and the one under it is bright. The read-out names the slot: `blade 7`.
 
