@@ -8,7 +8,8 @@ import { TABLE } from "../../../packages/hairline/src/intensity";
 import { FIGURES, INTENSITY, OPTIONS } from "@/lib/figures";
 import { llms, scale } from "@/lib/llms";
 import { tiny } from "@/lib/size";
-import { PASTE, install, snippet } from "@/lib/snippets";
+import { highlight } from "@/lib/highlight";
+import { CDN, CSS, PASTE, REACT, VANILLA, install, snippet } from "@/lib/snippets";
 
 /** The docs describe the package, and these check that nothing was written by hand around it. */
 
@@ -114,5 +115,28 @@ describe("/llms.txt", () => {
     // outside the code blocks, where `undefined` is a word TypeScript uses
     const prose = text.replace(/```[\s\S]*?```/g, "").replace(/`undefined`/g, "");
     expect(prose).not.toMatch(/undefined|NaN|\[object/);
+  });
+});
+
+/** Every snippet the docs highlight, with its language. */
+const SAMPLES: [code: string, lang: string][] = [[REACT, "tsx"], [VANILLA, "ts"], [CDN, "html"], [CSS, "css"]];
+
+describe("highlighting", () => {
+  it("colours tokens with the --code- variables only, and leaves the block one tab stop", async () => {
+    for (const [code, lang] of SAMPLES) {
+      const html = await highlight(code, lang);
+      expect(html).toContain("var(--code-");
+      // the CSS sample holds #ffffff as text, so only colours set in a style count
+      expect(html).not.toMatch(/(?:color|background-color):\s*#/i);
+      expect(html).not.toContain("tabindex");
+    }
+  });
+
+  it("writes only variables globals.css defines", async () => {
+    const css = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8");
+    const used = new Set<string>();
+    for (const [code, lang] of SAMPLES) for (const m of (await highlight(code, lang)).matchAll(/var\((--code-[a-z-]+)\)/g)) used.add(m[1]);
+    expect(used.size).toBeGreaterThan(3);
+    for (const name of used) expect(css).toContain(`${name}:`);
   });
 });

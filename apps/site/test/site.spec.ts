@@ -52,6 +52,17 @@ test("the docs prerender six empty boxes, then draw one figure per row with a cl
   expect(noise).toEqual([]);
 });
 
+test("the docs' code is in greys: every token's colour has equal red, green and blue", async ({ page }) => {
+  await page.goto("/docs");
+  const colours = await page.locator("main pre span").evaluateAll((spans) => spans.map((s) => getComputedStyle(s).color));
+  expect(colours.length).toBeGreaterThan(10);
+  const tinted = colours.filter((c) => {
+    const [r, g, b] = c.match(/\d+(\.\d+)?/g)!.map(Number);
+    return !(r === g && g === b);
+  });
+  expect(tinted).toEqual([]);
+});
+
 test("the inspector's figure picker picks the figure, and the snippet follows", async ({ page }) => {
   await page.goto("/");
   const inspector = page.locator("[data-inspector]");

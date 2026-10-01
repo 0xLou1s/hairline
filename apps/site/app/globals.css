@@ -18,6 +18,18 @@
   --lift-lg: 0 1px 2px #00000008, 0 2px 6px #00000008, 0 32px 64px -34px #00000038;
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-icon: cubic-bezier(0.2, 0, 0, 1);
+  /* Code in greys, each at least 4.5:1 on the code frame's #fafafa. shiki writes these names. */
+  --code-foreground: #0a0a0a;
+  --code-background: transparent;
+  --code-token-constant: #0a0a0a;
+  --code-token-function: #404040;
+  --code-token-parameter: #404040;
+  --code-token-string: #525252;
+  --code-token-string-expression: #525252;
+  --code-token-keyword: #6b6b6b;
+  --code-token-comment: #6b6b6b;
+  --code-token-punctuation: #6b6b6b;
+  --code-token-link: #6b6b6b;
 }
 
 html { color-scheme: light; scroll-behavior: smooth; }
@@ -119,9 +131,11 @@ em { font-style: italic; }
 
 /* The inspector's snippet, in greys: only the tag name carries weight. */
 .p-code { flex: 1; min-width: 0; margin: 0; overflow-x: auto; font: 400 13px/1.65 var(--font-mono); color: var(--color-ink); white-space: pre; }
-.t-kw { color: var(--color-muted); }
-.t-tag { font-weight: 500; }
-.t-attr { color: #525252; }
+.t-kw { color: var(--code-token-keyword); }
+.t-str { color: var(--code-token-string); }
+.t-tag { color: var(--code-token-constant); font-weight: 500; }
+.t-attr { color: var(--code-token-function); }
+.t-val { color: var(--code-foreground); }
 
 /* The inspector: the figure on the page itself, one dock under it for every control. */
 .s-inspector { display: grid; grid-template-columns: minmax(0, 1fr); justify-items: center; }
