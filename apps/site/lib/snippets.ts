@@ -85,11 +85,3 @@ export const VANILLA_SIGNATURE = `terrain(element: HTMLElement, options?: Hairli
   destroy(): void
 }
 `;
-
-/** The quickstart's second step. */
-export const PASTE: { label: string; lang: string; code: string }[] = [
-  { label: "React", lang: "tsx", code: REACT },
-  { label: "Vanilla", lang: "ts", code: VANILLA },
-  { label: "CDN", lang: "html", code: CDN },
-  { label: "CSS", lang: "css", code: CSS },
-];

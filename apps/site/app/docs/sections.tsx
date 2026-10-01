@@ -1,0 +1,150 @@
+import type { ReactNode } from "react";
+import { Exploded, Phosphor, Riffle, Slow, Terrain, Turntable } from "@lucasmarkes/hairline/react";
+import { CodeBlock } from "@/components/code-block";
+import { Install } from "@/components/install";
+import { Tabs, type Tab } from "@/components/tabs";
+import { SECTIONS } from "@/lib/docs";
+import { FIGURES, INTENSITY, OPTIONS, THEME, measure } from "@/lib/figures";
+import { PACKAGE } from "@/lib/snippets";
+
+const SMALL = { riffle: Riffle, terrain: Terrain, exploded: Exploded, phosphor: Phosphor, slow: Slow, turntable: Turntable };
+
+/** A section takes its title from SECTIONS, the list the sidebar reads, so the two always agree. */
+function Section({ id, children }: { id: string; children: ReactNode }) {
+  const { title } = SECTIONS.find((s) => s.id === id)!;
+  return (
+    <section id={id} aria-labelledby={`${id}-title`} className="doc-section">
+      <h2 id={`${id}-title`} className="doc-h2">{title}</h2>
+      {children}
+    </section>
+  );
+}
+
+const C = ({ children }: { children: ReactNode }) => <code className="doc-code">{children}</code>;
+
+export function GettingStarted({ commands, size, quickstart }: { commands: { label: string; code: string }[]; size: string; quickstart: Tab[] }) {
+  return (
+    <>
+      <Section id="install">
+        <p className="doc-p">Install the package, then import a figure wherever your interface runs.</p>
+        <div className="max-w-[460px]"><Install commands={commands} /></div>
+        <p className="doc-note">
+          Click the command to switch package manager. ESM only, no dependencies, <span data-size>{size}</span> gzipped for all six; a bundle that imports one carries one.
+        </p>
+      </Section>
+      <Section id="quick-start">
+        <p className="doc-p">Paste a figure. It fills its parent&rsquo;s width at a 5:4 aspect ratio.</p>
+        <Tabs tabs={quickstart} label="Quick start" />
+      </Section>
+      <Section id="options">
+        <p className="doc-p">Every figure takes the same four options, all optional.</p>
+        <div className="overflow-x-auto">
+          <table className="props" data-options>
+            <thead>
+              <tr><th>Option</th><th>Type</th><th>Default</th><th>What it does</th></tr>
+            </thead>
+            <tbody>
+              {OPTIONS.map((row) => (
+                <tr key={row.name}>
+                  <td><code>{row.name}</code></td><td><code>{row.type}</code></td><td><code>{row.default}</code></td><td>{row.description}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </Section>
+    </>
+  );
+}
+
+export function Api({ code }: { code: { reactSignature: string; react: string; vanillaSignature: string; vanilla: string; cdn: string } }) {
+  return (
+    <>
+      <Section id="react">
+        <CodeBlock title="Signature" html={code.reactSignature} plain />
+        <p className="doc-p">
+          Import any of the six from <C>{PACKAGE}/react</C>. Each renders a <C>&lt;div&gt;</C>, takes any <C>&lt;div&gt;</C> attribute and forwards its ref. The entry is a client module, so a Server Component renders it without writing <C>&quot;use client&quot;</C>.
+        </p>
+        <CodeBlock title="app/page.tsx" html={code.react} />
+      </Section>
+      <Section id="vanilla">
+        <CodeBlock title="Signature" html={code.vanillaSignature} plain />
+        <p className="doc-p">
+          One function per figure, named in lower case: {FIGURES.map((f, i) => <span key={f.id}>{i ? ", " : ""}<C>{f.id}</C></span>)}. In <C>update</C>, a key set to <C>undefined</C> goes back to its default and a key left out stays as it is. <C>destroy</C> removes the drawing and its listeners.
+        </p>
+        <CodeBlock title="main.ts" html={code.vanilla} />
+      </Section>
+      <Section id="cdn">
+        <p className="doc-p">Without a bundler, import from esm.sh in a module script.</p>
+        <CodeBlock title="index.html" html={code.cdn} />
+      </Section>
+    </>
+  );
+}
+
+export function Reference({ css }: { css: string }) {
+  return (
+    <>
+      <Section id="figures">
+        <p className="doc-p">Every figure takes <C>intensity</C>, from 0 to 1. Here is what it turns up.</p>
+        <ul className="grid">
+          {FIGURES.map((doc) => {
+            const Small = SMALL[doc.id];
+            return (
+              <li key={doc.id} className="figure-row" data-row={doc.id}>
+                <div>
+                  <h3 className="text-[20px] font-medium leading-none tracking-[-0.02em]">{doc.name}</h3>
+                  <p className="mt-3 text-[15px] leading-[1.5]">Higher intensity: {doc.stronger}</p>
+                  <p className="mt-1 max-w-[52ch] text-[14px] leading-[1.55] text-muted">{doc.summary}</p>
+                </div>
+                <div className="tile w-full max-w-[240px] justify-self-end"><Small /></div>
+              </li>
+            );
+          })}
+        </ul>
+        <div className="table-scroll" tabIndex={0} role="region" aria-label="What intensity sets in each figure">
+          <table className="intensity" data-intensity>
+            <thead>
+              <tr><th>Figure</th><th>Parameter</th><th>0</th><th>0.5</th><th>1</th></tr>
+            </thead>
+            <tbody>
+              {FIGURES.map((doc) => (
+                <tr key={doc.id}>
+                  <td>{doc.name}</td>
+                  <td><code>{doc.parameter.name}</code></td>
+                  {INTENSITY[doc.id].map((n, i) => <td key={i}><code>{measure(n, doc.parameter.unit)}</code></td>)}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <a className="doc-more" href="/#try">Try them on the home page →</a>
+      </Section>
+      <Section id="theme">
+        <p className="doc-p">
+          Six custom properties, set on the figure or on any ancestor. Without them a figure is light, or dark when an ancestor has class <C>dark</C> or <C>data-theme=&quot;dark&quot;</C>, or when the page&rsquo;s <C>color-scheme</C> is dark.
+        </p>
+        <div className="overflow-x-auto">
+          <table className="props" data-tokens>
+            <thead>
+              <tr><th>Property</th><th>Light</th><th>Role</th></tr>
+            </thead>
+            <tbody>
+              {THEME.map((t) => (
+                <tr key={t.property}><td><code>{t.property}</code></td><td><code>{t.light}</code></td><td>{t.role}</td></tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <CodeBlock title="globals.css" html={css} />
+      </Section>
+      <Section id="accessibility">
+        <ul className="doc-list">
+          <li>Each figure is an image with a description; <C>label</C> (or <C>aria-label</C> in React) replaces it.</li>
+          <li>Riffle is a focusable group: the arrow keys walk its cards and a live region reads out the card&rsquo;s number.</li>
+          <li>Under <C>prefers-reduced-motion</C>, Phosphor and Slow hold still, and every figure still answers the pointer.</li>
+        </ul>
+      </Section>
+    </>
+  );
+}

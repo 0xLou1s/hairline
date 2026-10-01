@@ -156,18 +156,20 @@ test("without a clipboard, copy selects the text instead and throws nothing", as
   expect(noise).toEqual([]);
 });
 
-test("Get started leads to the docs, whose quickstart pastes four ways and lists the four options", async ({ page, context }) => {
+test("Get started leads to the docs, whose quick start pastes three ways and copies the tab on show", async ({ page, context }) => {
   await context.grantPermissions(["clipboard-read", "clipboard-write"]);
   await page.goto("/");
   await page.getByRole("link", { name: "Get started" }).click();
   await expect(page).toHaveURL(/\/docs$/);
-  const quick = page.locator("section[aria-labelledby=quickstart]");
-  await expect(quick.getByRole("tab")).toHaveText(["React", "Vanilla", "CDN", "CSS"]);
-  await quick.getByRole("tab", { name: "CSS" }).click();
-  await expect(quick.locator(".code-panel")).toContainText("--hairline-plate: #ffffff;");
-  await quick.locator(".code").getByRole("button", { name: "Copy code" }).click();
-  expect(await page.evaluate(() => navigator.clipboard.readText())).toContain("--hairline-stroke: 0.9;");
-  await expect(quick.locator("[data-options] tbody tr td:first-child")).toHaveText(["intensity", "theme", "label", "onRead"]);
+  const quick = page.locator("#quick-start");
+  await expect(quick.getByRole("tab")).toHaveText(["React", "Vanilla", "CDN"]);
+  await expect(quick.locator(".code-title")).toHaveText("app/page.tsx");
+  await quick.getByRole("tab", { name: "CDN" }).click();
+  await expect(quick.locator(".code-title")).toHaveText("index.html");
+  await expect(quick.getByRole("tabpanel")).toContainText("https://esm.sh/@lucasmarkes/hairline");
+  await quick.getByRole("button", { name: "Copy code" }).click();
+  expect(await page.evaluate(() => navigator.clipboard.readText())).toMatch(/^<div id="figure"/);
+  await expect(page.locator("#options [data-options] tbody tr td:first-child")).toHaveText(["intensity", "theme", "label", "onRead"]);
 });
 
 test("llms.txt and the registry item are served", async ({ request }) => {
@@ -218,18 +220,26 @@ test("without a clipboard at all, the top bar's llms.txt button opens the file",
   expect(noise.filter((line) => line.startsWith("pageerror"))).toEqual([]);
 });
 
-test("one family outside the hero: the serif is the headline's one word, mono is code", async ({ page }) => {
-  await page.goto("/");
-  await expect(page.locator("h1 em")).toHaveCSS("font-family", /Instrument Serif/);
-  const families = await page.evaluate(() =>
+/** Every element that holds text of its own, outside code, the hero's serif word and the figures, with its family. */
+const families = (page: Page) =>
+  page.evaluate(() =>
     [...document.querySelectorAll("body *")]
       // the install pill is code, prompt and all
       .filter((el) => !el.closest("h1 em, code, pre, .pill, [data-hairline]") && [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent!.trim()))
       .map((el) => `${el.tagName} ${getComputedStyle(el).fontFamily}`),
   );
-  expect(families.length).toBeGreaterThan(5);
-  expect(families.filter((f) => !/geist/i.test(f) || /mono/i.test(f))).toEqual([]);
+
+test("one family outside the hero: the serif is the headline's one word, mono is code", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.locator("h1 em")).toHaveCSS("font-family", /Instrument Serif/);
+  const home = await families(page);
+  expect(home.length).toBeGreaterThan(5);
+  expect(home.filter((f) => !/geist/i.test(f) || /mono/i.test(f))).toEqual([]);
+
   await page.goto("/docs");
+  const docs = await families(page);
+  expect(docs.length).toBeGreaterThan(40);
+  expect(docs.filter((f) => !/geist/i.test(f) || /mono/i.test(f))).toEqual([]);
   for (const id of IDS) await expect(page.locator(`[data-row="${id}"] h3`)).toHaveCSS("font-style", "normal");
 });
 
@@ -258,4 +268,61 @@ test("the footer links the author's site, then X, GitHub, npm and llms.txt", asy
   await expect(footer.getByRole("link", { name: "Lucas Marques" })).toHaveAttribute("href", "https://lucasmarkes.com");
   await expect(footer.getByRole("link", { name: "X", exact: true })).toHaveAttribute("href", "https://x.com/lucasmarkes__");
   await expect(footer.getByRole("link")).toHaveText(["Lucas Marques", "X", "GitHub", "npm", "llms.txt"]);
+});
+
+test("a code block copies its code without the line numbers, and a signature has none", async ({ page, context }) => {
+  await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+  await page.goto("/docs");
+  const blocks = page.locator("#react [data-code]");
+  await expect(blocks.locator(".code-title")).toHaveText(["Signature", "app/page.tsx"]);
+  const usage = blocks.last();
+  await usage.getByRole("button", { name: "Copy code" }).click();
+  const text = await page.evaluate(() => navigator.clipboard.readText());
+  expect(text.split("\n")[0]).toBe('import { Terrain } from "@lucasmarkes/hairline/react";');
+  expect(text).not.toMatch(/^\s*\d/m);
+  const number = (block: typeof usage) => block.locator(".line").first().evaluate((el) => getComputedStyle(el, "::before").content);
+  expect(await number(usage)).not.toBe("none");
+  expect(await number(blocks.first())).toBe("none");
+});
+
+test("the quick start remembers the tab a reader picked", async ({ page }) => {
+  await page.goto("/docs");
+  const quick = page.locator("#quick-start");
+  await quick.getByRole("tab", { name: "Vanilla" }).click();
+  await page.reload();
+  await expect(quick.getByRole("tab", { name: "Vanilla" })).toHaveAttribute("aria-selected", "true");
+  await expect(quick.locator(".code-title")).toHaveText("main.ts");
+});
+
+test("when storage throws, the quick start stays on React and still switches, with a clean console", async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(window, "localStorage", { get() { throw new DOMException("blocked", "SecurityError"); } });
+  });
+  const noise = watch(page);
+  await page.goto("/docs");
+  const quick = page.locator("#quick-start");
+  await expect(quick.getByRole("tab", { name: "React" })).toHaveAttribute("aria-selected", "true");
+  await quick.getByRole("tab", { name: "CDN" }).click();
+  await expect(quick.getByRole("tab", { name: "CDN" })).toHaveAttribute("aria-selected", "true");
+  expect(noise).toEqual([]);
+});
+
+test("the docs fit a phone down to 320px: rows stack text first, and wide code and tables scroll in their own box", async ({ page }) => {
+  for (const width of [390, 320]) {
+    await page.setViewportSize({ width, height: 800 });
+    await page.goto("/docs");
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+    const row = page.locator('[data-row="terrain"]');
+    // the whole text block, so a tile centred beside a short heading does not pass for stacked
+    const text = (await row.locator(":scope > div").first().boundingBox())!;
+    const tile = (await row.locator(".tile").boundingBox())!;
+    expect(tile.y).toBeGreaterThan(text.y + text.height);
+  }
+});
+
+test("the figures' link goes to the home's figure", async ({ page }) => {
+  await page.goto("/docs");
+  await page.getByRole("link", { name: "Try them on the home page →" }).click();
+  await expect(page).toHaveURL(/\/#try$/);
+  await expect(page.locator("#try [data-inspector]")).toBeInViewport();
 });

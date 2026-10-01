@@ -14,6 +14,7 @@
 }
 
 :root {
+  --topbar: 54px;
   --lift: 0 1px 2px #00000008, 0 10px 28px -16px #00000024;
   --lift-lg: 0 1px 2px #00000008, 0 2px 6px #00000008, 0 32px 64px -34px #00000038;
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
@@ -39,7 +40,7 @@ em { font-style: italic; }
 .topbar {
   position: sticky; top: 0; z-index: 10;
   display: flex; align-items: center; justify-content: space-between;
-  padding: 12px clamp(18px, 5vw, 28px);
+  height: var(--topbar); padding: 0 clamp(18px, 5vw, 28px);
   background: color-mix(in srgb, var(--color-canvas) 82%, transparent);
   backdrop-filter: blur(12px);
 }
@@ -73,29 +74,47 @@ em { font-style: italic; }
 .slider::-moz-range-track { height: 2px; border-radius: 1px; background: rgba(0, 0, 0, 0.16); }
 .slider::-moz-range-thumb { width: 16px; height: 16px; border: 0; border-radius: 50%; background: #fff; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2); }
 
-.code { overflow: hidden; border-radius: 12px; background: #fff; box-shadow: inset 0 0 0 1px var(--color-stone); }
-.code-bar { display: flex; align-items: center; justify-content: space-between; padding: 4px 4px 4px 8px; border-bottom: 1px solid var(--color-line); }
-.code-tab { border-radius: 7px; padding: 6px 10px; font-size: 13px; font-weight: 500; line-height: 1; color: var(--color-muted); }
-.code-tab[aria-selected="true"] { background: var(--color-stone); color: var(--color-ink); }
+/* Code: a frame, a bar with the title and a copy icon, the code. Line numbers are a counter in ::before, so they are never selected or copied. */
+.code { overflow: hidden; border-radius: 12px; background: #fafafa; box-shadow: inset 0 0 0 1px var(--color-stone); }
+.code-bar { display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 4px 4px 4px 14px; border-bottom: 1px solid var(--color-stone); }
+.code-tabs { display: flex; flex: none; gap: 2px; margin-left: -8px; }
+.code-tab { border-radius: 7px; padding: 6px 10px; font-size: 13px; font-weight: 500; line-height: 1; color: var(--color-muted); transition: background-color 150ms ease, color 150ms ease; }
+.code-tab[aria-selected="true"] { background: #fff; color: var(--color-ink); box-shadow: 0 0 0 1px var(--color-stone); }
 .code-tab:hover { color: var(--color-ink); }
-.code-panel { margin: 0; overflow-x: auto; padding: 16px 18px; font: 400 13px/1.65 var(--font-mono); }
-.code-panel pre { margin: 0; background: transparent !important; }
-.code-panel code { font: inherit; }
+.code-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; color: var(--color-muted); }
+.code-tabs + .code-title { text-align: right; }
+.code-body { overflow-x: auto; padding: 16px 18px; font: 400 13px/1.65 var(--font-mono); }
+.code-body pre { margin: 0; }
+.code-body code { font: inherit; counter-reset: line; }
+.code-body .line::before { counter-increment: line; content: counter(line); display: inline-block; width: 2ch; margin-right: 16px; text-align: right; color: var(--color-faint); }
+.code-body[data-plain] .line::before { content: none; }
 
 .tile { overflow: hidden; border-radius: 14px; background: #fff; box-shadow: inset 0 0 0 1px var(--color-stone), var(--lift); }
 .figure-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(120px, 240px); align-items: center; gap: 24px; padding: 28px 0; border-top: 1px solid var(--color-line); }
 .figure-row:last-child { border-bottom: 1px solid var(--color-line); }
-.card { border-radius: 14px; padding: 20px; background: #fff; box-shadow: inset 0 0 0 1px var(--color-stone); }
-
-.step { min-width: 0; }
-.step-title { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; font-size: 17px; font-weight: 500; }
-.step-n { display: inline-grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: var(--color-ink); color: #fff; font-size: 12px; font-weight: 500; line-height: 1; font-variant-numeric: tabular-nums; }
-
-.props { width: 100%; border-collapse: collapse; font-size: 13px; }
-.props th { padding: 8px 14px 8px 0; text-align: left; font-size: 13px; font-weight: 500; color: var(--color-muted); }
-.props td { padding: 12px 14px 12px 0; vertical-align: top; border-top: 1px solid var(--color-line); line-height: 1.5; }
-.props td:nth-child(-n + 3) { font-family: var(--font-mono); white-space: nowrap; }
+.props, .intensity { width: 100%; border-collapse: collapse; font-size: 13px; }
+:is(.props, .intensity) th { padding: 8px 14px 8px 0; text-align: left; font-size: 13px; font-weight: 500; color: var(--color-muted); }
+:is(.props, .intensity) td { padding: 12px 14px 12px 0; vertical-align: top; border-top: 1px solid var(--color-line); line-height: 1.5; }
+.props td:nth-child(-n + 3) { white-space: nowrap; }
 .props td:nth-child(2), .props td:nth-child(3) { color: var(--color-muted); }
+.props[data-tokens] td:nth-child(3) { white-space: normal; color: var(--color-ink); }
+.intensity td { white-space: nowrap; }
+.intensity td:nth-child(n + 3) { color: var(--color-muted); font-variant-numeric: tabular-nums; }
+.table-scroll { overflow-x: auto; border-radius: 4px; }
+
+/* The docs: the header and nine sections in one column. Prose stops at 64ch; code and tables take the column. */
+.docs { --gutter: clamp(18px, 5vw, 28px); --doc-offset: calc(var(--topbar) + 24px); max-width: 1080px; margin: 0 auto; padding: 0 var(--gutter); }
+.docs-main { display: grid; gap: 64px; min-width: 0; padding: 48px 0 96px; }
+.docs-main > * { min-width: 0; }
+.doc-section { display: grid; gap: 16px; scroll-margin-top: var(--doc-offset); }
+.doc-section > * { min-width: 0; }
+.doc-h2 { font-size: 24px; font-weight: 500; line-height: 1.2; letter-spacing: -0.02em; }
+.doc-p, .doc-list { max-width: 64ch; font-size: 15px; line-height: 1.6; text-wrap: pretty; }
+.doc-list { display: grid; gap: 8px; padding-left: 1.2em; list-style: disc; }
+.doc-note { max-width: 64ch; font-size: 14px; line-height: 1.55; color: var(--color-muted); text-wrap: pretty; }
+.doc-code { font-size: 0.9em; color: var(--color-ink); }
+.doc-more { justify-self: start; font-size: 14px; color: var(--color-ink); text-decoration: underline; text-decoration-color: var(--color-faint); text-underline-offset: 4px; }
+.doc-more:hover { text-decoration-color: currentColor; }
 
 /* The hero: each block rises out of a blur, one after another. */
 .hero-title { max-width: 16ch; font-size: 44px; font-weight: 500; line-height: 1.02; letter-spacing: -0.045em; text-wrap: balance; }
@@ -166,15 +185,18 @@ em { font-style: italic; }
   .s-range { flex: 1; width: auto; }
 }
 
-:is(button, a, input, .code-panel):focus-visible { outline: 1.5px solid var(--color-ink); outline-offset: 2px; }
+:is(button, a, input, .code-body, .table-scroll):focus-visible { outline: 1.5px solid var(--color-ink); outline-offset: 2px; }
 
 @media (max-width: 640px) {
-  .figure-row { grid-template-columns: minmax(0, 1fr) 120px; gap: 16px; }
+  /* a row stacks, text first, and the figure keeps its width */
+  .figure-row { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  .figure-row .tile { justify-self: start; }
   /* one option per block: name, type and default on a line, the description under them */
   .props thead { display: none; }
   .props tr { display: flex; flex-wrap: wrap; column-gap: 12px; padding: 14px 0; border-top: 1px solid var(--color-line); }
   .props td { padding: 0; border: 0; }
   .props td:nth-child(4) { flex-basis: 100%; margin-top: 6px; }
+  .props[data-tokens] td:nth-child(3) { flex-basis: 100%; margin-top: 6px; }
 }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }

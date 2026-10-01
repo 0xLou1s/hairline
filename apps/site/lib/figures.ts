@@ -99,14 +99,6 @@ export const THEME: { property: string; light: string; role: string }[] = [
   { property: "--hairline-stroke", light: "0.9", role: "The stroke width, in CSS pixels at any size." },
 ];
 
-/** The four cards under the figures. Tiny's body is the measured size; see lib/size.ts. */
-export const CARDS: { title: string; body: string }[] = [
-  { title: "Tiny", body: "gzipped, all six figures. A bundle that imports one carries one." },
-  { title: "No dependencies", body: "SVG and one shared animation frame. React is optional." },
-  { title: "Accessible", body: "Keyboard on Riffle, a description for screen readers, and stillness under reduced motion." },
-  { title: "Themeable", body: "Six CSS variables, on the figure or anything above it. Light and dark built in." },
-];
-
 export const LINKS = {
   github: "https://github.com/lucasmarkes/hairline",
   npm: "https://www.npmjs.com/package/@lucasmarkes/hairline",

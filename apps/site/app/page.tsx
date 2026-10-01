@@ -33,7 +33,7 @@ export default function Page() {
           </div>
         </section>
 
-        <section aria-label="Try it">
+        <section id="try" aria-label="Try it" className="scroll-mt-[calc(var(--topbar)+24px)]">
           <Inspector />
         </section>
       </main>
