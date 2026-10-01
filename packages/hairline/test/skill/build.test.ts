@@ -32,6 +32,14 @@ it("names the page after the figure when no path is given", () => {
   expect(readFileSync(run.stdout.trim(), "utf8")).toContain("<title>");
 });
 
+it("names the page from the hairline({ … }) call, not from an earlier name: in the figure", () => {
+  const src = join(dir, "tables.js");
+  writeFileSync(src, 'const LINES = [{ name: "other", at: 0 }];\n' + terrain);
+  const run = node([SKILL + "build.mjs", src]);
+  expect(run.status).toBe(0);
+  expect(run.stdout.trim()).toMatch(/\/hairline-terrain\.html$/);
+});
+
 it("pastes text literally, so a figure may hold $& and $1", () => {
   const src = join(dir, "dollar.js"), out = join(dir, "dollar.html");
   const figure = terrain.replace("hairline({", () => 'const odd = "$& and $1 and $$";\nhairline({');

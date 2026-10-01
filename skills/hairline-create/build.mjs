@@ -19,8 +19,11 @@ export function assemble(figure) {
     .replace("/*FIGURE*/", () => `\n${figure.replace(/\r\n/g, "\n").trim()}\n`);
 }
 
-/** The figure's name, read from its declaration. */
-export const nameOf = (figure) => /\bname:\s*["'`]([a-z][a-z0-9-]*)["'`]/.exec(figure)?.[1] ?? null;
+/** The figure's name, read from its declaration: the last hairline({ … }) call, as validate.mjs reads it, so a `name:` earlier in the figure is not taken for it. */
+export function nameOf(figure) {
+  const call = [...figure.matchAll(/\bhairline\s*\(\s*\{/g)].at(-1);
+  return call ? /\bname:\s*["'`]([a-z][a-z0-9-]*)["'`]/.exec(figure.slice(call.index))?.[1] ?? null : null;
+}
 
 /** Whether two resolved paths are one file. Windows paths ignore case, and the drive letter's case can differ between the two. */
 export const same = (a, b, platform = process.platform) => platform === "win32" ? a.toLowerCase() === b.toLowerCase() : a === b;
