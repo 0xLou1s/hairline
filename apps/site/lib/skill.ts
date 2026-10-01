@@ -49,7 +49,7 @@ export function examples(): Shown[] {
   });
 }
 
-export const SUMMARY = "hairline-create is a skill for coding agents. Give it an idea and it draws a new figure to Hairline's ten rules, on the same engine as the six, as one HTML file.";
+export const SUMMARY = "hairline-create is a skill for coding agents. Give it an idea and it draws a new figure to Hairline's ten rules, on the same engine as the six in the docs, as one HTML file.";
 
 export const STEPS: { title: string; text: string }[] = [
   { title: "Concepts", text: "It offers two or three concepts, one line each: the object, what the pointer does, what the read-out says. You pick one." },
