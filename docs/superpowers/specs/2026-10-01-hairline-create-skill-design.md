@@ -38,6 +38,7 @@ What reaches the person's machine on install is the skill folder and nothing els
 | `concepts.md` | How to turn an idea into a figure: the ways of answering the pointer already proven in the package, and what makes a concept weak (dead at rest, needs words to be understood, more than one idea, no reason for the pointer). |
 | `kernel.js` | The engine as plain JavaScript, generated from `packages/hairline/src/core`. |
 | `bench.html` | The page template, with two marked slots: kernel and figure. |
+| `build.mjs` | Puts a figure on the bench: `node build.mjs <figure.js>` writes the page. No dependencies. |
 | `examples/terrain.js`, `examples/riffle.js` | Two figures of the package in the skill's format: a continuous field (springs, falloff by distance) and discrete items (stagger, tweens, identity by geometry). |
 | `validate.mjs` | The validator. No dependencies. |
 | `look.md` | The checklist for the look, and how to do it by reading code when there is no browser. |
@@ -62,6 +63,8 @@ Beside the mount function a figure declares:
 
 The bench owns everything else: it creates the host and the SVG, injects the kernel's stylesheet, maps the slider through `range` and calls `set`, switches the theme, and shows `means` and `rules`.
 
+Figures are pointer-only. The bench's stage is an image, not a focusable group, so the Riffle example leaves out the package's keyboard handling.
+
 ## The validator
 
 `node validate.mjs <file.html>` exits non-zero and prints what to fix when:
@@ -71,7 +74,9 @@ The bench owns everything else: it creates the host and the SVG, injects the ker
 - the figure sets its own `stroke-width`, or a colour, fill, filter or shadow outside the kernel's classes: rule 04, and the single stroke;
 - the page loads anything from outside (`<script src>`, `<link>`, `fetch`, `import`, remote `url()`);
 - the figure never writes the read-out, or does not return `set` and `destroy`;
-- the figure runs its own clock (`setInterval`, `setTimeout` loops, `requestAnimationFrame`) instead of the kernel's loop: rule 07 and reduced motion;
+- the figure runs its own clock (`setInterval`, `setTimeout`, `requestAnimationFrame`) or never joins the kernel's loop: rule 07 and reduced motion;
+- the figure listens to the pointer itself, measures what is on screen, or never calls the kernel's `pointer`: rule 01;
+- anything in the page other than the figure differs from the bench;
 - the figure does not declare `name`, `means`, `rules` and `range`;
 - the figure is over 200 lines, a sign the concept is too complicated.
 
@@ -87,6 +92,8 @@ With a browser, the agent opens the file and takes four pictures: at rest and wi
 - nothing flickers when the pointer sits on a moving edge (rule 01);
 - bright outside, dim inside, no vertical corners drawn (rule 09);
 - the read-out names what is under the pointer and says `rest` when nothing is.
+
+The bench takes two URL parameters for this: `?w=240` narrows the page, and `&at=x,y` holds the pointer at a viewBox point, for tools that cannot hover.
 
 Without a browser the agent answers the same list from the code and says so at hand-off. Without Node it reads the validator's list and says so too.
 

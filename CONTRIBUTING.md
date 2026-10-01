@@ -15,6 +15,7 @@ pnpm build
 packages/hairline   the package: src/core (maths, stage, styles), src/figures (six engines),
                     src/mount.ts (the public lifecycle), src/index.ts and src/react.tsx (the two entries)
 apps/site           hairline.lucasmarkes.com (Next.js)
+skills/hairline-create   the skill that draws a new figure: its kernel is generated from packages/hairline/src/core
 registry            the shadcn item: its source, and the scripts that build and validate it
 fixtures            two apps that install the packed tarball: Next.js and Vite
 scripts             the release gate and what it calls
@@ -29,6 +30,7 @@ scripts             the release gate and what it calls
 | `pnpm test` | Unit and component tests (Vitest, jsdom). |
 | `pnpm test:browser` | Browser tests in Chrome (Playwright): the figures, the theme, parity, the site. |
 | `pnpm dev` | The site on `localhost:3000`, with the package rebuilding on change. |
+| `pnpm kernel` | Regenerates `skills/hairline-create/kernel.js` from `packages/hairline/src/core`. Run it after any change there; a test fails until you do. |
 | `pnpm release --static` | The release gate without the steps that need the network. CI runs this. |
 | `pnpm release` | The whole gate. It never publishes. |
 | `node scripts/consumers.mjs` | Packs the package and installs it in both fixtures. |
