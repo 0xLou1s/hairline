@@ -40,3 +40,8 @@ jobs:
       - name: Unit and component tests
         run: pnpm test
 
+      # The browser tests drive the Chrome that ubuntu-latest ships
+      # (playwright.config.ts sets channel: "chrome"), so nothing is downloaded.
+      - name: Browser tests
+        run: pnpm test:browser
+
