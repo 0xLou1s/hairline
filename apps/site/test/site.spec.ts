@@ -326,3 +326,82 @@ test("the figures' link goes to the home's figure", async ({ page }) => {
   await expect(page).toHaveURL(/\/#try$/);
   await expect(page.locator("#try [data-inspector]")).toBeInViewport();
 });
+
+test("the sidebar's links land on their section under the top bar and mark it, and scrolling moves the mark", async ({ page }) => {
+  await page.goto("/docs");
+  const nav = page.getByRole("navigation", { name: "Docs" });
+  await expect(nav.getByRole("link")).toHaveText(["Install", "Quick start", "Options", "React", "Vanilla", "CDN", "Figures", "Theme", "Accessibility"]);
+  await expect(nav.getByRole("link", { name: "Install" })).toHaveAttribute("aria-current", "location");
+
+  await nav.getByRole("link", { name: "Theme" }).click();
+  await expect(page).toHaveURL(/\/docs#theme$/);
+  await expect(nav.getByRole("link", { name: "Theme" })).toHaveAttribute("aria-current", "location");
+  await expect(nav.locator("[aria-current]")).toHaveCount(1);
+  await expect.poll(() => page.locator("#theme-title").evaluate((el) => el.getBoundingClientRect().top)).toBeGreaterThanOrEqual(54);
+
+  await page.evaluate(() => document.getElementById("figures")!.scrollIntoView());
+  await expect(nav.getByRole("link", { name: "Figures" })).toHaveAttribute("aria-current", "location");
+
+  // Accessibility is too short to reach the band; the end of the page marks it
+  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+  await expect(nav.getByRole("link", { name: "Accessibility" })).toHaveAttribute("aria-current", "location");
+});
+
+test("opening /docs#theme lands on Theme, clear of the top bar, with Theme marked", async ({ page }) => {
+  await page.goto("/docs#theme");
+  const nav = page.getByRole("navigation", { name: "Docs" });
+  await expect(nav.getByRole("link", { name: "Theme" })).toHaveAttribute("aria-current", "location");
+  const top = await page.locator("#theme-title").evaluate((el) => el.getBoundingClientRect().top);
+  expect(top).toBeGreaterThanOrEqual(54);
+  expect(top).toBeLessThan(200);
+});
+
+test("on a phone the sidebar is one strip under the top bar, and it follows the reader", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 800 });
+  await page.goto("/docs");
+  const strip = page.locator(".doc-strip");
+  const scroller = strip.locator(".doc-strip-scroll");
+  await expect(strip).toBeVisible();
+  await expect(page.locator(".doc-sidebar")).toBeHidden();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
+  await expect(scroller).toHaveAttribute("data-end");
+  await expect(scroller).not.toHaveAttribute("data-start");
+
+  const inside = async (name: string) => {
+    const s = (await scroller.boundingBox())!;
+    const b = (await strip.getByRole("link", { name }).boundingBox())!;
+    return b.x >= s.x - 1 && b.x + b.width <= s.x + s.width + 1;
+  };
+  // the page moves, not the strip: the strip has to bring Accessibility in by itself
+  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+  await expect(strip.getByRole("link", { name: "Accessibility" })).toHaveAttribute("aria-current", "location");
+  await expect.poll(() => inside("Accessibility")).toBe(true);
+  await expect(scroller).toHaveAttribute("data-start");
+
+  await strip.getByRole("link", { name: "Install" }).click();
+  await expect(page).toHaveURL(/#install$/);
+  await expect(strip.getByRole("link", { name: "Install" })).toHaveAttribute("aria-current", "location");
+  await expect.poll(() => inside("Install")).toBe(true);
+  // the heading clears the top bar and the strip
+  await expect.poll(async () => {
+    const s = (await strip.boundingBox())!;
+    const t = (await page.locator("#install-title").boundingBox())!;
+    return t.y >= s.y + s.height;
+  }).toBe(true);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
+});
+
+test.describe("without JavaScript", () => {
+  test.use({ javaScriptEnabled: false });
+
+  test("the sidebar is plain links that still move the page, and the quick start shows React", async ({ page }) => {
+    await page.goto("/docs");
+    const nav = page.getByRole("navigation", { name: "Docs" });
+    await expect(nav.getByRole("link", { name: "Theme" })).toHaveAttribute("href", "#theme");
+    await nav.getByRole("link", { name: "Theme" }).click();
+    await expect(page).toHaveURL(/\/docs#theme$/);
+    const quick = page.locator("#quick-start");
+    await expect(quick.getByRole("tab", { name: "React" })).toHaveAttribute("aria-selected", "true");
+    await expect(quick.locator(".code-title")).toHaveText("app/page.tsx");
+  });
+});

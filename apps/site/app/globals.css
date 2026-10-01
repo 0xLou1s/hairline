@@ -33,7 +33,8 @@
   --code-token-link: #6b6b6b;
 }
 
-html { color-scheme: light; scroll-behavior: smooth; }
+html { color-scheme: light; }
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
 body { min-height: 100vh; color: var(--color-ink); background: var(--color-canvas); }
 em { font-style: italic; }
 
@@ -103,7 +104,7 @@ em { font-style: italic; }
 .table-scroll { overflow-x: auto; border-radius: 4px; }
 
 /* The docs: the header and nine sections in one column. Prose stops at 64ch; code and tables take the column. */
-.docs { --gutter: clamp(18px, 5vw, 28px); --doc-offset: calc(var(--topbar) + 24px); max-width: 1080px; margin: 0 auto; padding: 0 var(--gutter); }
+.docs { --gutter: clamp(18px, 5vw, 28px); --doc-offset: calc(var(--topbar) + 60px); max-width: 1080px; margin: 0 auto; padding: 0 var(--gutter); }
 .docs-main { display: grid; gap: 64px; min-width: 0; padding: 48px 0 96px; }
 .docs-main > * { min-width: 0; }
 .doc-section { display: grid; gap: 16px; scroll-margin-top: var(--doc-offset); }
@@ -115,6 +116,26 @@ em { font-style: italic; }
 .doc-code { font-size: 0.9em; color: var(--color-ink); }
 .doc-more { justify-self: start; font-size: 14px; color: var(--color-ink); text-decoration: underline; text-decoration-color: var(--color-faint); text-underline-offset: 4px; }
 .doc-more:hover { text-decoration-color: currentColor; }
+
+/* The sidebar: the same links twice, grouped in a column from 1024px, one sideways strip under the top bar below it. */
+.doc-link { display: flex; align-items: center; height: 32px; padding: 0 10px; border-radius: 8px; font-size: 14px; color: var(--color-muted); white-space: nowrap; transition: background-color 150ms ease, color 150ms ease; }
+.doc-link:hover { color: var(--color-ink); }
+.doc-link[aria-current] { color: var(--color-ink); background: var(--color-stone); }
+.doc-sidebar { display: none; }
+.doc-group-label { margin-bottom: 4px; padding: 0 10px; font-size: 12px; font-weight: 500; color: var(--color-muted); }
+.doc-strip { position: sticky; top: var(--topbar); z-index: 9; margin: 0 calc(-1 * var(--gutter)); background: color-mix(in srgb, var(--color-canvas) 82%, transparent); backdrop-filter: blur(12px); }
+.doc-strip-scroll { overflow-x: auto; padding: 6px var(--gutter); scrollbar-width: none; }
+.doc-strip-scroll::-webkit-scrollbar { display: none; }
+.doc-strip-scroll ul { display: flex; gap: 2px; width: max-content; }
+.doc-strip-scroll[data-start] { mask-image: linear-gradient(to right, transparent, #000 24px); }
+.doc-strip-scroll[data-end] { mask-image: linear-gradient(to right, #000 calc(100% - 24px), transparent); }
+.doc-strip-scroll[data-start][data-end] { mask-image: linear-gradient(to right, transparent, #000 24px, #000 calc(100% - 24px), transparent); }
+@media (min-width: 1024px) {
+  .docs { --doc-offset: calc(var(--topbar) + 24px); display: grid; grid-template-columns: 220px minmax(0, 1fr); column-gap: 56px; padding-top: 64px; }
+  .docs-main { padding-top: 0; }
+  .doc-strip { display: none; }
+  .doc-sidebar { display: grid; gap: 24px; align-self: start; position: sticky; top: calc(var(--topbar) + 24px); }
+}
 
 /* The hero: each block rises out of a blur, one after another. */
 .hero-title { max-width: 16ch; font-size: 44px; font-weight: 500; line-height: 1.02; letter-spacing: -0.045em; text-wrap: balance; }
@@ -199,7 +220,6 @@ em { font-style: italic; }
   .props[data-tokens] td:nth-child(3) { flex-basis: 100%; margin-top: 6px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  html { scroll-behavior: auto; }
   .hero-rise > *, .enter, .enter-hint { animation-name: fade; }
   .slide[data-ready] .slide-hl { transition: none; }
   .icopy-b, .icopy[data-copied] .icopy-a { transform: none; filter: none; }

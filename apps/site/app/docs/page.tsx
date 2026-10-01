@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Footer, Topbar } from "@/components/chrome";
+import { Sidebar } from "@/components/sidebar";
 import { LINKS } from "@/lib/figures";
 import { highlight } from "@/lib/highlight";
 import { tiny } from "@/lib/size";
@@ -30,6 +31,7 @@ export default async function Docs() {
     <>
       <Topbar />
       <div className="docs">
+        <Sidebar />
         <main className="docs-main">
           <header className="max-w-[64ch]">
             <h1 className="text-[36px] font-medium leading-[1.05] tracking-[-0.035em] md:text-[44px]">Six figures, one set of options.</h1>
