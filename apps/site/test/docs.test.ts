@@ -5,11 +5,12 @@ import * as components from "@lucasmarkes/hairline/react";
 import * as figures from "@lucasmarkes/hairline";
 import type { HairlineOptions } from "@lucasmarkes/hairline";
 import { TABLE } from "../../../packages/hairline/src/intensity";
-import { FIGURES, INTENSITY, OPTIONS } from "@/lib/figures";
+import { SECTIONS } from "@/lib/docs";
+import { FIGURES, INTENSITY, OPTIONS, measure } from "@/lib/figures";
 import { llms, scale } from "@/lib/llms";
 import { tiny } from "@/lib/size";
 import { highlight } from "@/lib/highlight";
-import { CDN, CSS, PASTE, REACT, VANILLA, install, snippet } from "@/lib/snippets";
+import { CDN, CSS, QUICKSTART, REACT, REACT_SIGNATURE, VANILLA, VANILLA_SIGNATURE, install, snippet } from "@/lib/snippets";
 
 /** The docs describe the package, and these check that nothing was written by hand around it. */
 
@@ -71,23 +72,78 @@ describe("the install commands", () => {
   });
 });
 
-describe("the quickstart", () => {
-  it("pastes React, Vanilla, CDN and CSS, and none of them sets an option the package dropped", () => {
-    expect(PASTE.map((p) => p.label)).toEqual(["React", "Vanilla", "CDN", "CSS"]);
-    for (const p of PASTE) expect(p.code).not.toMatch(/stagger|radius|afterglow|coast|bands|labels|ranges|className/);
-  });
-
-  it("sets all six theme properties in the CSS tab", () => {
-    const css = PASTE[3].code;
-    for (const key of ["plate", "hi", "edge", "mid", "lo", "stroke"]) expect(css).toContain(`--hairline-${key}:`);
+describe("the quick start", () => {
+  it("pastes React, Vanilla and CDN, each under a file name, and none of them sets an option the package dropped", () => {
+    expect(QUICKSTART.map((q) => [q.label, q.file])).toEqual([["React", "app/page.tsx"], ["Vanilla", "main.ts"], ["CDN", "index.html"]]);
+    expect(QUICKSTART.map((q) => q.code)).toEqual([REACT, VANILLA, CDN]);
+    for (const q of QUICKSTART) expect(q.code).not.toMatch(/stagger|radius|afterglow|coast|bands|labels|ranges|className/);
   });
 });
 
-describe("the Tiny card", () => {
+describe("the theme's CSS", () => {
+  it("sets all six theme properties", () => {
+    for (const key of ["plate", "hi", "edge", "mid", "lo", "stroke"]) expect(CSS).toContain(`--hairline-${key}:`);
+  });
+});
+
+describe("the signatures", () => {
+  it("list the component's four options with their types, read from the options table", () => {
+    expect(REACT_SIGNATURE).toBe(`<Terrain
+  intensity?: number
+  theme?: "auto" | "light" | "dark"
+  label?: string
+  onRead?: (text: string) => void
+  {...divProps}
+/>
+`);
+  });
+
+  it("give the function's handle its two methods", () => {
+    expect(VANILLA_SIGNATURE).toBe(`terrain(element: HTMLElement, options?: HairlineOptions): {
+  update(options: HairlineOptions): void
+  destroy(): void
+}
+`);
+  });
+});
+
+describe("the Install note's size", () => {
   it("is the gzip size of the vanilla entry, to a tenth of a kB", () => {
     const bytes = gzipSync(readFileSync(new URL("../../../packages/hairline/dist/index.js", import.meta.url))).length;
     expect(tiny()).toBe(`${(bytes / 1000).toFixed(1)} kB`);
     expect(tiny()).toMatch(/^\d+\.\d kB$/);
+  });
+});
+
+describe("the docs' sections", () => {
+  it("are nine, in three groups in order, with unique ids that work as fragments", () => {
+    expect(SECTIONS.map((s) => s.id)).toEqual(["install", "quick-start", "options", "react", "vanilla", "cdn", "figures", "theme", "accessibility"]);
+    expect(new Set(SECTIONS.map((s) => s.id)).size).toBe(9);
+    for (const s of SECTIONS) expect(s.id).toMatch(/^[a-z-]+$/);
+    expect(SECTIONS.map((s) => s.group)).toEqual([
+      "Getting started", "Getting started", "Getting started",
+      "API", "API", "API",
+      "Reference", "Reference", "Reference",
+    ]);
+  });
+
+  it("share their headings with /llms.txt", () => {
+    const text = llms("https://example.test");
+    for (const title of ["Install", "Options", "Figures", "Theme", "Accessibility"]) {
+      expect(SECTIONS.map((s) => s.title)).toContain(title);
+      expect(text).toContain(`\n## ${title}\n`);
+    }
+  });
+});
+
+describe("the intensity table", () => {
+  it("writes each number with its unit, as /llms.txt does", () => {
+    expect(measure(40, "ms")).toBe("40 ms");
+    expect(measure(0.2, "× normal speed")).toBe("0.2× normal speed");
+    for (const doc of FIGURES) {
+      const [lo, mid, hi] = INTENSITY[doc.id].map((n) => measure(n, doc.parameter.unit));
+      expect(scale(doc.id, doc.parameter)).toBe(`${doc.parameter.name} ${lo} at 0, ${mid} at 0.5, ${hi} at 1`);
+    }
   });
 });
 
@@ -119,7 +175,7 @@ describe("/llms.txt", () => {
 });
 
 /** Every snippet the docs highlight, with its language. */
-const SAMPLES: [code: string, lang: string][] = [[REACT, "tsx"], [VANILLA, "ts"], [CDN, "html"], [CSS, "css"]];
+const SAMPLES: [code: string, lang: string][] = [[REACT, "tsx"], [VANILLA, "ts"], [CDN, "html"], [CSS, "css"], [REACT_SIGNATURE, "tsx"], [VANILLA_SIGNATURE, "ts"]];
 
 describe("highlighting", () => {
   it("colours tokens with the --code- variables only, and leaves the block one tab stop", async () => {

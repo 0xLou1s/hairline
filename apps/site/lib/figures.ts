@@ -74,6 +74,11 @@ export const INTENSITY: Record<FigureId, readonly [number, number, number]> = {
   turntable: [200, 650, 1500],
 };
 
+/** A number with its unit, as the docs' table and /llms.txt write it: "40 ms", "0.2× normal speed". */
+export function measure(value: number, unit: string): string {
+  return `${value}${unit.startsWith("×") ? "" : " "}${unit}`;
+}
+
 export type Row = { name: string; type: string; default: string; description: string };
 
 /** The options every figure takes: the whole API, in the quickstart's table. */

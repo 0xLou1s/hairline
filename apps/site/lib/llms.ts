@@ -1,4 +1,4 @@
-import { FIGURES, INTENSITY, LINKS, OPTIONS, THEME, type Row } from "./figures";
+import { FIGURES, INTENSITY, LINKS, OPTIONS, THEME, measure, type Row } from "./figures";
 import { CDN, PACKAGE, REACT, VANILLA, install } from "./snippets";
 
 /** The page as plain text, for a model to read: the same data, the same copy. */
@@ -8,9 +8,8 @@ const fence = (lang: string, code: string) => "```" + lang + "\n" + code.trimEnd
 
 /** "stagger 0 ms at 0, 40 ms at 0.5, 90 ms at 1" */
 export function scale(id: keyof typeof INTENSITY, parameter: { name: string; unit: string }): string {
-  const unit = parameter.unit.startsWith("×") ? parameter.unit : ` ${parameter.unit}`;
-  const [lo, mid, hi] = INTENSITY[id];
-  return `${parameter.name} ${lo}${unit} at 0, ${mid}${unit} at 0.5, ${hi}${unit} at 1`;
+  const [lo, mid, hi] = INTENSITY[id].map((n) => measure(n, parameter.unit));
+  return `${parameter.name} ${lo} at 0, ${mid} at 0.5, ${hi} at 1`;
 }
 
 export function llms(base: string): string {
