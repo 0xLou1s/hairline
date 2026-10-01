@@ -27,7 +27,12 @@ const run = (cmd, args, opts = {}) => execFileSync(cmd, args, { encoding: "utf8"
 /** Runs a step and reports it; on failure prints the end of what the command said. */
 function step(label, cmd, args, opts) {
   try { run(cmd, args, opts); pass(label); return true; }
-  catch (err) { fail(`${label}\n${String((err.stdout ?? "") + (err.stderr ?? "") || err.message).trim().split("\n").slice(-30).join("\n")}`); return false; }
+  catch (err) {
+    /* Chrome's own log lines ([pid=…]) are noise on a runner; drop them so the tail shows the test that failed. */
+    const said = String((err.stdout ?? "") + (err.stderr ?? "") || err.message).trim().split("\n").filter((l) => !/^\s*\[pid=\d+\]/.test(l));
+    fail(`${label}\n${said.slice(-30).join("\n")}`);
+    return false;
+  }
 }
 
 console.log("\n▸ runner");
@@ -38,7 +43,9 @@ console.log("\n▸ build, typecheck, test");
 step("build", "pnpm", ["-w", "build"]);
 step("typecheck (includes the type tests)", "pnpm", ["-w", "typecheck"]);
 step("unit and component tests", "pnpm", ["-w", "test"]);
-step("browser tests (includes parity with the site)", "pnpm", ["-w", "test:browser"]);
+/* One suite at a time: run together, the first to fail interrupts the other, and the tail shows the wrong one. */
+step("browser tests, the package's (includes parity with the site)", "pnpm", ["--filter", "@lucasmarkes/hairline", "run", "test:browser"]);
+step("browser tests, the site's", "pnpm", ["--filter", "@hairline/site", "run", "test:browser"]);
 
 console.log("\n▸ package");
 step("publint --strict", "pnpm", ["exec", "publint", "--strict"], { cwd: PKG });
