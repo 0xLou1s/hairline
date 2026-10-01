@@ -10,7 +10,7 @@
  *   text      no words inside the figure (rule 10)
  *   paint     no stroke width, colour, fill, filter or shadow of its own (rule 04)
  *   outside   nothing loaded or reached outside the file; every node from HL.mk
- *   clock     no timers or frames of its own; it joins HL.register (rule 07)
+ *   clock     no timers, frames or SMIL animation of its own; it joins HL.register (rule 07)
  *   hit       input only through HL.pointer; nothing measured on screen (rule 01)
  *   readout   it writes read.textContent
  *   handle    mount returns { set, destroy }
@@ -86,7 +86,7 @@ const BAD = [
     // The keyword ends where the binding starts, so `important` or `imported` is a name, not an import.
     // `import.meta` is left alone on purpose: by itself it reaches nothing outside the file.
     /\bimport(?:\s*["'`({*]|\s+[\w$]+\s*(?:,|from\b))/],
-  ["clock", /\bsetInterval\b|\bsetTimeout\b|\brequestAnimationFrame\b|\.animate\s*\(|<animate|IntersectionObserver|\bmatchMedia\b/,
+  ["clock", /\bsetInterval\b|\bsetTimeout\b|\brequestAnimationFrame\b|\.animate\s*\(|<animate|["'`]animate(?:Transform|Motion)?["'`]|IntersectionObserver|\bmatchMedia\b/,
     "rule 07. The figure runs a clock of its own. Move inside HL.register(stage, tick), with springs (stepS) or tweens (tset, tval); a delay is a tween's delay. The loop sleeps offscreen and honours reduced motion for you."],
   ["hit", /getBoundingClientRect|elementFromPoint|elementsFromPoint|:hover|(?:addEventListener|\.on)\s*\(\s*(?:\w+\s*,\s*)?["'`](?:mouse|pointer|touch|click)|\bon(?:mouse|pointer|touch|click)\w*\s*=/,
     "rule 01. The figure listens to the pointer itself or measures what is on screen. Take the pointer from HL.pointer(stage, { move, leave }) and test it against the rest or target pose, in world units."],
