@@ -48,8 +48,16 @@ em { font-style: italic; }
 }
 
 /* the top bar's items, alike: muted 13px text, or a 16px icon, each 10px clear of its neighbours */
-.topbar-link { display: inline-flex; align-items: center; height: 30px; padding: 0 10px; border-radius: 8px; font-size: 13px; line-height: 1; color: var(--color-muted); }
-a.topbar-link:hover { color: var(--color-ink); }
+.topbar-link { position: relative; display: inline-flex; align-items: center; height: 30px; padding: 0 10px; border-radius: 8px; font-size: 13px; line-height: 1; color: var(--color-muted); }
+@media (hover: hover) { a.topbar-link:hover { color: var(--color-ink); } }
+/* a 40px target around each link, the name and the footer's links, taller than what is drawn */
+a.topbar-link::after { content: ""; position: absolute; inset: -5px 0; }
+.topbar > a { position: relative; }
+.topbar > a::after { content: ""; position: absolute; inset: -9px -6px; }
+/* the docs' underline, kept clear until the pointer is on the link */
+footer a { position: relative; text-decoration: underline; text-decoration-color: transparent; text-underline-offset: 4px; transition: text-decoration-color 150ms ease; }
+@media (hover: hover) { footer a:hover { text-decoration-color: currentColor; } }
+footer a::after { content: ""; position: absolute; inset: -12px -8px; }
 
 .btn {
   display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 14px;
@@ -63,14 +71,17 @@ a.topbar-link:hover { color: var(--color-ink); }
 
 .pill {
   display: flex; align-items: center; gap: 10px; height: 48px; padding: 0 6px 0 16px;
-  border-radius: 12px; background: #fff; box-shadow: inset 0 0 0 1px var(--color-stone), var(--lift);
+  border-radius: 14px; background: #fff; box-shadow: inset 0 0 0 1px var(--color-stone), var(--lift);
   font: 400 14px/1 var(--font-mono); text-align: left;
 }
-.pill-line { flex: 1; min-width: 0; overflow-x: auto; white-space: nowrap; scrollbar-width: none; }
+/* as tall as the pill, so the manager's 40px target fits inside the line's scroll box */
+.pill-line { flex: 1; min-width: 0; overflow-x: auto; white-space: nowrap; line-height: 48px; scrollbar-width: none; }
 .pill-line::-webkit-scrollbar { display: none; }
 .pill-line[data-more] { mask-image: linear-gradient(to right, #000 calc(100% - 32px), transparent); }
-.pill-manager { border-radius: 5px; padding: 3px 4px; margin: -3px -4px; color: var(--color-ink); text-decoration: underline dotted var(--color-faint); text-underline-offset: 4px; cursor: pointer; }
-.pill-manager:hover { background: var(--color-stone); }
+.pill-manager { position: relative; border-radius: 5px; padding: 3px 4px; margin: -3px -4px; line-height: 1; color: var(--color-ink); text-decoration: underline dotted var(--color-faint); text-underline-offset: 4px; cursor: pointer; transition: transform 160ms var(--ease-out); }
+.pill-manager::after { content: ""; position: absolute; inset: -10px -4px; }
+@media (hover: hover) { .pill-manager:hover { background: var(--color-stone); } }
+.pill-manager:active { transform: scale(0.96); }
 
 .slider { width: 100%; height: 18px; appearance: none; background: transparent; cursor: pointer; }
 .slider::-webkit-slider-runnable-track { height: 2px; border-radius: 1px; background: rgba(0, 0, 0, 0.16); }
@@ -82,9 +93,16 @@ a.topbar-link:hover { color: var(--color-ink); }
 .code { overflow: hidden; border-radius: 12px; background: #fafafa; box-shadow: inset 0 0 0 1px var(--color-stone); }
 .code-bar { display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 4px 4px 4px 14px; border-bottom: 1px solid var(--color-stone); }
 .code-tabs { display: flex; flex: none; gap: 2px; margin-left: -8px; }
-.code-tab { border-radius: 7px; padding: 6px 10px; font-size: 13px; font-weight: 500; line-height: 1; color: var(--color-muted); transition: background-color 150ms ease, color 150ms ease; }
+.code-tab { position: relative; border-radius: 7px; padding: 6px 10px; font-size: 13px; font-weight: 500; line-height: 1; color: var(--color-muted); transition: color 150ms ease, transform 160ms var(--ease-out); }
+.code-tab::after { content: ""; position: absolute; inset: -8px 0; }
 .code-tab[aria-selected="true"] { background: #fff; color: var(--color-ink); box-shadow: 0 0 0 1px var(--color-stone); }
-.code-tab:hover { color: var(--color-ink); }
+@media (hover: hover) { .code-tab:hover { color: var(--color-ink); } }
+.code-tab:active { transform: scale(0.96); }
+/* Once measured, the selected tab's white plate and its ring are one highlight that slides: a stone layer clipped to
+   the tab plus a pixel, and a white one over it clipped to the tab. */
+.code-tabs[data-hl] .code-tab[aria-selected="true"] { background: none; box-shadow: none; }
+.code-tabs .slide-hl { top: -1px; left: -1px; background: var(--color-stone); clip-path: inset(var(--t) var(--r) var(--b) var(--l) round 8px); }
+.code-tabs .slide-hl::before { content: ""; position: absolute; inset: 0; background: #fff; clip-path: inset(calc(var(--t) + 1px) calc(var(--r) + 1px) calc(var(--b) + 1px) calc(var(--l) + 1px) round 7px); }
 .code-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; color: var(--color-muted); }
 .code-tabs + .code-title { text-align: right; }
 .code-body { overflow-x: auto; padding: 16px 18px; font: 400 13px/1.65 var(--font-mono); }
@@ -112,17 +130,20 @@ a.topbar-link:hover { color: var(--color-ink); }
 .docs-main > * { min-width: 0; }
 .doc-section { display: grid; gap: 16px; scroll-margin-top: var(--doc-offset); }
 .doc-section > * { min-width: 0; }
-.doc-h2 { font-size: 24px; font-weight: 500; line-height: 1.2; letter-spacing: -0.02em; }
+.doc-h2 { font-size: 24px; font-weight: 500; line-height: 1.2; letter-spacing: -0.02em; text-wrap: balance; }
 .doc-p, .doc-list { max-width: 64ch; font-size: 15px; line-height: 1.6; text-wrap: pretty; }
 .doc-list { display: grid; gap: 8px; padding-left: 1.2em; list-style: disc; }
 .doc-note { max-width: 64ch; font-size: 14px; line-height: 1.55; color: var(--color-muted); text-wrap: pretty; }
 .doc-code { font-size: 0.9em; color: var(--color-ink); }
 .doc-more { justify-self: start; font-size: 14px; color: var(--color-ink); text-decoration: underline; text-decoration-color: var(--color-faint); text-underline-offset: 4px; }
-.doc-more:hover { text-decoration-color: currentColor; }
+@media (hover: hover) { .doc-more:hover { text-decoration-color: currentColor; } }
 
 /* The sidebar: the same links twice, grouped in a column from 1024px, one sideways strip under the top bar below it. */
-.doc-link { display: flex; align-items: center; height: 32px; padding: 0 10px; border-radius: 8px; font-size: 14px; color: var(--color-muted); white-space: nowrap; transition: color 200ms ease; }
-.doc-link:hover, .doc-link[aria-current] { color: var(--color-ink); }
+.doc-link { position: relative; display: flex; align-items: center; height: 32px; padding: 0 10px; border-radius: 8px; font-size: 14px; color: var(--color-muted); white-space: nowrap; transition: color 200ms ease; }
+.doc-link[aria-current] { color: var(--color-ink); }
+@media (hover: hover) { .doc-link:hover { color: var(--color-ink); } }
+/* in the strip, where a finger picks, a 40px target inside the strip's own padding */
+.doc-strip .doc-link::after { content: ""; position: absolute; inset: -4px 0; }
 /* The marked link's text steps aside for a dot that flies in from the link marked before. The old text steps back at
    once and the new one steps aside as the dot lands, so the two never meet. Nothing moves until the first mark is
    drawn: the page opens with it in place. */
@@ -172,16 +193,17 @@ a.topbar-link:hover { color: var(--color-ink); }
 /* A single choice whose highlight slides to the checked option. */
 .slide { position: relative; display: flex; isolation: isolate; }
 .slide-hl { position: absolute; top: 0; left: 0; z-index: -1; pointer-events: none; }
-.slide[data-ready] .slide-hl { transition: transform 200ms var(--ease-out), clip-path 200ms var(--ease-out); }
+.slide[data-ready] .slide-hl, .slide[data-ready] .slide-hl::before { transition: transform 200ms var(--ease-out), clip-path 200ms var(--ease-out); }
 /* a choice made with the keyboard lands at once */
-.slide[data-keyed] .slide-hl { transition: none; }
+.slide[data-keyed] .slide-hl, .slide[data-keyed] .slide-hl::before { transition: none; }
 .slide-item { position: relative; display: inline-flex; flex: none; align-items: center; justify-content: center; white-space: nowrap; color: var(--color-muted); transition: color 150ms ease; }
-.slide-item:hover, .slide-item[aria-checked="true"] { color: var(--color-ink); }
+.slide-item[aria-checked="true"] { color: var(--color-ink); }
+@media (hover: hover) { .slide-item:hover { color: var(--color-ink); } }
 
 /* Copy as an icon: the clipboard blurs and shrinks away as the check grows in. */
 .icopy { position: relative; flex: none; display: grid; place-items: center; width: 36px; height: 36px; border-radius: 8px; color: var(--color-muted); transition: color 150ms ease, background-color 150ms ease, transform 160ms var(--ease-out); }
 .icopy::after { content: ""; position: absolute; inset: -2px; }
-.icopy:hover { color: var(--color-ink); background: var(--color-stone); }
+@media (hover: hover) { .icopy:hover { color: var(--color-ink); background: var(--color-stone); } }
 .icopy:active { transform: scale(0.96); }
 .icopy[data-copied] { color: var(--color-ink); }
 .icopy svg { grid-area: 1 / 1; transition: opacity 200ms var(--ease-icon), transform 200ms var(--ease-icon), filter 200ms var(--ease-icon); }
@@ -226,44 +248,82 @@ a.topbar-link:hover { color: var(--color-ink); }
   .s-range { flex: 1; width: auto; }
 }
 
-/* Inspo: one column, prose at a reading measure, pictures on the dark plate they were taken on. */
-.inspo { --gutter: clamp(18px, 5vw, 28px); display: grid; gap: 72px; max-width: 1080px; margin: 0 auto; padding: 64px var(--gutter) 96px; }
-.inspo > * { min-width: 0; }
-.inspo-prose, .inspo-step > :not(.inspo-figure, .inspo-split) { width: 100%; max-width: 640px; }
+/* Inspo: an essay. Everything sits on one centred axis: prose keeps to the measure, and the evidence (pictures, the
+   ledger of pushback) takes the page's width around it. */
+.inspo { --gutter: clamp(18px, 5vw, 28px); --measure: 640px; display: grid; grid-template-columns: minmax(0, 1fr); justify-items: center; gap: 80px; max-width: 1080px; margin: 0 auto; padding: 56px var(--gutter) 96px; }
+.inspo-prose, .inspo-step > * { width: 100%; max-width: var(--measure); }
 .inspo-label { font: 400 12px/1 var(--font-mono); letter-spacing: 0.02em; text-transform: uppercase; color: var(--color-muted); }
-.inspo-title { margin-top: 16px; font-size: 40px; font-weight: 500; line-height: 1.05; letter-spacing: -0.04em; text-wrap: balance; }
-.inspo-lede { margin-top: 20px; font-size: 18px; line-height: 1.5; color: var(--color-muted); text-wrap: pretty; }
-.inspo-step { display: grid; gap: 20px; }
-.inspo-step > * { min-width: 0; }
-.inspo-h2 { display: flex; align-items: baseline; gap: 12px; font-size: 24px; font-weight: 500; line-height: 1.2; letter-spacing: -0.02em; }
-.inspo-n { font: 400 13px/1 var(--font-mono); letter-spacing: 0; color: var(--color-faint); font-variant-numeric: tabular-nums; }
-.inspo-p { font-size: 16px; line-height: 1.6; text-wrap: pretty; }
-.inspo-prompt { padding: 16px 18px; border-radius: 12px; background: var(--color-stone); }
-.inspo-quote { display: grid; gap: 14px; margin-top: 18px; font-size: 16px; line-height: 1.55; text-wrap: pretty; }
-.inspo-part { display: grid; gap: 8px; }
-.inspo-pushback { display: grid; gap: 0; counter-reset: turn; }
-.inspo-pushback li { display: grid; gap: 8px; padding: 18px 0 18px 36px; border-top: 1px solid var(--color-line); counter-increment: turn; position: relative; }
+.inspo-title { margin-top: 20px; font-size: 44px; font-weight: 500; line-height: 1.02; letter-spacing: -0.045em; text-wrap: balance; }
+.inspo-title em { font-family: var(--font-serif); font-size: 1.08em; font-weight: 400; letter-spacing: -0.02em; }
+.inspo-lede { margin-top: 24px; font-size: 18px; line-height: 1.5; color: var(--color-muted); text-wrap: pretty; }
+/* the seven steps as a way in: two columns that read down, each row a 40px target */
+.inspo-toc { margin-top: 40px; }
+.inspo-toc ol { display: grid; border-bottom: 1px solid var(--color-line); }
+.inspo-toc a { display: flex; align-items: baseline; gap: 14px; padding: 11px 0; border-top: 1px solid var(--color-line); font-size: 14px; line-height: 18px; color: var(--color-muted); transition: color 150ms ease; }
+@media (hover: hover) { .inspo-toc a:hover { color: var(--color-ink); } }
+.inspo-step { display: grid; grid-template-columns: minmax(0, 1fr); justify-items: center; gap: 24px; width: 100%; }
+/* a step opens under a hairline, its number over its title */
+.inspo-h2 { display: grid; gap: 16px; padding-top: 28px; border-top: 1px solid var(--color-line); font-size: 24px; font-weight: 500; line-height: 1.15; letter-spacing: -0.025em; text-wrap: balance; scroll-margin-top: calc(var(--topbar) + 16px); }
+.inspo-n { font: 400 12px/1 var(--font-mono); letter-spacing: 0.02em; color: var(--color-muted); font-variant-numeric: tabular-nums; }
+.inspo-p { font-size: 16px; line-height: 1.65; text-wrap: pretty; }
+/* A prompt: a white card like the site's other surfaces, a row per part, its label in a column of its own when there is room. */
+.inspo-prompt { margin-block: 8px; border-radius: 16px; background: #fff; box-shadow: inset 0 0 0 1px var(--color-stone), var(--lift); }
+.inspo-prompt > .inspo-label { padding: 18px 20px; }
+.inspo-quote { font-size: 15px; line-height: 1.6; text-wrap: pretty; }
+.inspo-part { display: grid; gap: 8px; padding: 16px 20px; border-top: 1px solid var(--color-line); }
+.inspo-part > .inspo-label { line-height: 1.5; }
+/* The pushback: a ledger. What I said, and across from it what that changed. */
+.inspo-pushback { display: grid; counter-reset: turn; }
+.inspo-pushback li { position: relative; display: grid; gap: 10px; padding: 22px 0 22px 40px; border-top: 1px solid var(--color-line); counter-increment: turn; }
 .inspo-pushback li:last-child { border-bottom: 1px solid var(--color-line); }
-.inspo-pushback li::before { content: counter(turn, decimal-leading-zero); position: absolute; top: 22px; left: 0; font: 400 13px/1 var(--font-mono); color: var(--color-faint); font-variant-numeric: tabular-nums; }
+.inspo-pushback li::before { content: counter(turn, decimal-leading-zero); position: absolute; top: 28px; left: 0; font: 400 12px/1 var(--font-mono); letter-spacing: 0.02em; color: var(--color-muted); font-variant-numeric: tabular-nums; }
 .inspo-said { font-size: 16px; line-height: 1.55; text-wrap: pretty; }
-.inspo-changed { font-size: 14px; line-height: 1.55; color: var(--color-muted); text-wrap: pretty; }
+.inspo-changed { font-size: 14px; line-height: 1.6; color: var(--color-muted); text-wrap: pretty; }
 .inspo-changed::before { content: "Changed: "; color: var(--color-ink); font-weight: 500; }
-.inspo-figure { display: grid; gap: 10px; margin-top: 8px; }
-.inspo-shot { padding: clamp(8px, 2vw, 16px); border-radius: 18px; background: var(--color-ink); }
+/* A picture on its plate. The plate's corner is the picture's plus the padding between them. */
+.inspo-figure { display: grid; justify-items: center; gap: 14px; margin-block: 16px; }
+.inspo-step > .inspo-figure, .inspo-step > .inspo-pushback, .inspo-step > .inspo-split { max-width: none; }
+.inspo-shot { --pad: clamp(6px, 1.6vw, 16px); width: 100%; padding: var(--pad); border-radius: calc(8px + var(--pad)); background: var(--color-ink); }
 .inspo-shot img { display: block; width: 100%; height: auto; border-radius: 8px; }
-.inspo-caption { font-size: 13px; line-height: 1.5; color: var(--color-muted); }
-.inspo-split { display: grid; gap: 20px; align-items: start; }
-.inspo-split-text { display: grid; gap: 16px; max-width: 640px; }
-.inspo-split .inspo-figure { margin-top: 0; max-width: 480px; }
-.inspo-rules { display: grid; gap: 16px; }
-.inspo-rules li { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px; padding-top: 16px; border-top: 1px solid var(--color-line); }
-.inspo-rules .inspo-n { line-height: 1.6; }
+.inspo-caption { width: 100%; max-width: var(--measure); font-size: 13px; line-height: 1.5; color: var(--color-muted); text-wrap: pretty; }
+.inspo-split { display: grid; justify-items: center; gap: 24px; }
+.inspo-split-text { display: grid; gap: 16px; width: 100%; max-width: var(--measure); }
+.inspo-split .inspo-figure { width: 100%; max-width: 480px; margin-block: 8px 0; }
+.inspo-rules { display: grid; }
+.inspo-rules li { display: grid; gap: 10px; padding: 20px 0; border-top: 1px solid var(--color-line); }
+.inspo-rules li:last-child { border-bottom: 1px solid var(--color-line); }
+.inspo-rules .inspo-n { line-height: 24px; text-transform: uppercase; }
+.inspo-rules li > div { display: grid; gap: 4px; }
 .inspo-rule { font-size: 16px; font-weight: 500; line-height: 1.5; }
-.inspo-keep { display: grid; gap: 12px; padding-left: 1.2em; list-style: disc; font-size: 16px; line-height: 1.6; text-wrap: pretty; }
+.inspo-rules .inspo-p { font-size: 15px; line-height: 1.6; color: var(--color-muted); }
+/* what the story leaves behind, a line each */
+.inspo-keep { display: grid; font-size: 16px; line-height: 1.55; text-wrap: pretty; }
+.inspo-keep li { padding: 16px 0; border-top: 1px solid var(--color-line); }
+.inspo-keep li:last-child { border-bottom: 1px solid var(--color-line); }
+/* a 14px link on its own gets a taller target than its text */
+.inspo .doc-more { display: inline-block; margin-block: -10px; padding-block: 10px; }
+@media (min-width: 600px) {
+  .inspo-toc ol { grid-auto-flow: column; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(4, auto); column-gap: 32px; }
+  .inspo-part { grid-template-columns: 148px minmax(0, 1fr); align-items: baseline; gap: 20px; }
+  .inspo-rules li { grid-template-columns: 84px minmax(0, 1fr); gap: 12px; }
+}
 @media (min-width: 768px) {
-  .inspo { gap: 96px; padding-top: 96px; }
-  .inspo-title { font-size: 56px; }
-  .inspo-split { grid-template-columns: minmax(0, 1fr) minmax(0, 440px); gap: 40px; }
+  .inspo { gap: 112px; padding-top: 96px; }
+  .inspo-title { font-size: 64px; }
+  .inspo-lede { font-size: 20px; }
+  .inspo-h2 { font-size: 28px; }
+  .inspo-keep { font-size: 18px; }
+}
+/* from here the ledger and the bench have the width for two columns */
+@media (min-width: 960px) {
+  .inspo-pushback li { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); align-items: baseline; gap: 48px; padding-left: 56px; }
+  .inspo-said { font-size: 17px; }
+}
+/* the bench beside its story: the words keep the measure's left edge and the picture runs to the page's right */
+@media (min-width: 1024px) {
+  .inspo-split { grid-template-columns: calc((100% - var(--measure)) / 2) minmax(0, 1fr) 400px; align-items: center; justify-items: stretch; gap: 0; margin-top: 16px; }
+  .inspo-split-text { grid-column: 2; max-width: none; padding-right: 48px; }
+  .inspo-split .inspo-figure { max-width: none; margin: 0; }
 }
 
 :is(button, a, input, .code-body, .table-scroll):focus-visible { outline: 1.5px solid var(--color-ink); outline-offset: 2px; }
@@ -281,7 +341,7 @@ a.topbar-link:hover { color: var(--color-ink); }
 }
 @media (prefers-reduced-motion: reduce) {
   .hero-rise > *, .enter, .enter-hint { animation-name: fade; }
-  .slide[data-ready] .slide-hl { transition: none; }
+  .slide[data-ready] .slide-hl, .slide[data-ready] .slide-hl::before { transition: none; }
   .icopy-b, .icopy[data-copied] .icopy-a { transform: none; filter: none; }
   [data-live] > .doc-dot, [data-live] .doc-link > span { transition: none; }
 }

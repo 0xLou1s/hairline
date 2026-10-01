@@ -26,7 +26,7 @@ export function Topbar() {
 
 export function Footer() {
   return (
-    <footer className="mx-auto flex max-w-[1080px] flex-wrap items-baseline gap-x-6 gap-y-3 border-t border-line px-[clamp(18px,5vw,28px)] py-8 text-[13px] text-muted">
+    <footer className="mx-auto flex max-w-[1080px] flex-wrap items-baseline gap-x-6 gap-y-6 border-t border-line px-[clamp(18px,5vw,28px)] py-8 text-[13px] text-muted">
       <p>
         MIT licensed. Built by <a className="text-ink" href={LINKS.author}>Lucas Marques</a>.
       </p>

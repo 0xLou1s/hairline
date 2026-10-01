@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Image, { type StaticImageData } from "next/image";
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { Footer, Topbar } from "@/components/chrome";
 import craft from "@/public/inspo/craft.webp";
 import dissection from "@/public/inspo/dissection.webp";
@@ -18,13 +18,19 @@ export const metadata: Metadata = {
   openGraph: { title: TITLE, description: DESCRIPTION, url: "/inspo", siteName: "hairline", type: "article", images: [{ url: "/og.png", width: 1200, height: 630, alt: "Line drawings that answer the pointer: the Terrain figure, its pillars rising." }] },
 };
 
-/** One part of the story: a mono number and a title over the prose. */
-function Step({ n, title, children }: { n: number; title: string; children: ReactNode }) {
+/** The story's parts, in order: the header lists them and each step takes its title from here. */
+const STEPS = ["A feeling, not a look", "The brief", "What came back", "Pushback", "The design pass", "Into a package", "What I’d keep"];
+
+const two = (n: number) => String(n).padStart(2, "0");
+const at = (i: number) => ({ "--i": i }) as CSSProperties;
+
+/** One part of the story: under a hairline, a mono number over its title, then the prose. */
+function Step({ n, children }: { n: number; children: ReactNode }) {
   return (
     <section data-step aria-labelledby={`step-${n}`} className="inspo-step">
       <h2 id={`step-${n}`} className="inspo-h2">
-        <span className="inspo-n">{String(n).padStart(2, "0")}</span>
-        {title}
+        <span className="inspo-n">{two(n)}</span>
+        {STEPS[n - 1]}
       </h2>
       {children}
     </section>
@@ -94,15 +100,27 @@ export default function Inspo() {
     <>
       <Topbar />
       <main className="inspo">
-        <header className="inspo-prose">
-          <p className="inspo-label">Inspo</p>
-          <h1 className="inspo-title">{TITLE}</h1>
-          <p className="inspo-lede">
+        <header className="inspo-prose hero-rise">
+          <p className="inspo-label" style={at(0)}>Inspo</p>
+          <h1 className="inspo-title" style={at(1)}>How Hairline was <em>made</em></h1>
+          <p className="inspo-lede" style={at(2)}>
             Not with one prompt. With a long brief, a lot of questions, and every correction written down as a rule so it couldn&rsquo;t come back. Claude Opus did the building, a live Artifact was the bench, and the judgement stayed with me.
           </p>
+          <nav aria-label="Steps" className="inspo-toc" style={at(3)}>
+            <ol>
+              {STEPS.map((title, i) => (
+                <li key={title}>
+                  <a href={`#step-${i + 1}`}>
+                    <span className="inspo-n">{two(i + 1)}</span>
+                    {title}
+                  </a>
+                </li>
+              ))}
+            </ol>
+          </nav>
         </header>
 
-        <Step n={1} title="A feeling, not a look">
+        <Step n={1}>
           <p className="inspo-p">
             I&rsquo;d been collecting interfaces that feel alive without moving much. One was a section of linear.app: three small line figures that answer the pointer so quietly you only notice late that they&rsquo;ve been listening the whole time.
           </p>
@@ -112,7 +130,7 @@ export default function Inspo() {
           <Shot src={linear} priority alt="Linear's three line figures, Fig 0.1 to 0.3, drawn in thin grey strokes on near-black: a stack of rounded layers with a sun on top, a cluster of rounded cubes, and a row of plates rising in height." caption="The reference, for the feeling: Fig 0.1 to 0.3 on linear.app." />
         </Step>
 
-        <Step n={2} title="The brief">
+        <Step n={2}>
           <p className="inspo-p">
             The first prompt was long, and most of it wasn&rsquo;t about drawing. It said what I was making, what I wanted to understand first, what was off limits, and what shape the answer had to take.
           </p>
@@ -136,7 +154,7 @@ export default function Inspo() {
           </Prompt>
         </Step>
 
-        <Step n={3} title="What came back">
+        <Step n={3}>
           <p className="inspo-p">
             A dissection first, as asked: a 50ms stagger, one 700ms curve, <code className="doc-code">cubic-bezier(.32, .72, 0, 1)</code>, a falloff that drops from 128 to 40 to 12 away from the pointer, frames stored as 25-bit masks. Then eight rules, and six figures built on them: Riffle, Terrain, Exploded, Phosphor, Slow and Turntable.
           </p>
@@ -145,7 +163,7 @@ export default function Inspo() {
           <Shot src={figures} alt="The six first-draft figures in a three by two grid of dark cards: a riffle of index cards, a field of pillars, an exploded stack of screens, a tile of lit dots, crates passing under a gate, and a turntable of blocks." caption="The first six figures, before any of the arguing." />
         </Step>
 
-        <Step n={4} title="Pushback">
+        <Step n={4}>
           <p className="inspo-p">
             Most of the work happened here. I questioned every number I couldn&rsquo;t feel, every figure I couldn&rsquo;t explain, and every motion that looked fine in a still and wrong under the hand. A few of those turns:
           </p>
@@ -170,7 +188,7 @@ export default function Inspo() {
           </div>
         </Step>
 
-        <Step n={5} title="The design pass">
+        <Step n={5}>
           <p className="inspo-p">
             The motion was right; the drawings weren&rsquo;t mine yet. A model won&rsquo;t flag that on its own, so I wrote the critique the way I&rsquo;d give it to a designer: what&rsquo;s wrong, why, and the exact fix.
           </p>
@@ -210,15 +228,17 @@ export default function Inspo() {
           <Shot src={craft} alt="The same six figures after the design pass, in a three by two grid: rounded solids with bright silhouettes, one dim crease on each top, and no words inside the drawings." caption="After the pass: rounded, quieter, and wordless." />
         </Step>
 
-        <Step n={6} title="Into a package">
+        <Step n={6}>
           <p className="inspo-p">
             The API was a design decision too. Six sliders became one <code className="doc-code">intensity</code>, because nobody using a figure should need to know what a falloff is. <code className="doc-code">theme</code> covers light and dark; <code className="doc-code">label</code> and <code className="doc-code">onRead</code> carry the read-out the words moved to. Then this site, and more arguing: Slow&rsquo;s gate was still being tuned after the figures shipped.
           </p>
-          <a className="doc-more" href="/docs">Read the docs</a>
+          <p>
+            <a className="doc-more" href="/docs">Read the docs</a>
+          </p>
         </Step>
 
-        <Step n={7} title="What I’d keep">
-          <ul className="inspo-keep">
+        <Step n={7}>
+          <ul role="list" className="inspo-keep">
             <li>Write the brief like a spec: what it is, what to understand first, what&rsquo;s off limits, what shape the answer takes.</li>
             <li>Ask for numbers and reasons, then argue with them. A first draft is something to push against.</li>
             <li>Make the model build the instrument you judge with. Sliders beat descriptions.</li>
