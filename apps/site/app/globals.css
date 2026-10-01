@@ -58,6 +58,8 @@ a.topbar-link::after { content: ""; position: absolute; inset: -5px 0; }
 footer a { position: relative; text-decoration: underline; text-decoration-color: transparent; text-underline-offset: 4px; transition: text-decoration-color 150ms ease; }
 @media (hover: hover) { footer a:hover { text-decoration-color: currentColor; } }
 footer a::after { content: ""; position: absolute; inset: -12px -8px; }
+/* under 360px the name and the first link would run together: the version, the item least needed there, goes */
+@media (max-width: 359px) { .topbar [data-version] { display: none; } }
 
 .btn {
   display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 14px;

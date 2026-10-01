@@ -173,9 +173,16 @@ test("the top bar's Skill link opens /skill", async ({ page }) => {
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Make your own figure");
 });
 
-test("the top bar fits a 320px screen with its five items on one row", async ({ page }) => {
+test("the top bar fits a 320px screen on one row, the version left out so the name stands clear of the links", async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 700 });
   await page.goto("/skill");
+  await expect(page.locator(".topbar [data-version]")).toBeHidden();
+  // from the name's last letter to the Skill link's first: at least the 20px the links keep between each other
+  const gap = await page.evaluate(() => {
+    const text = (el: Element) => { const r = document.createRange(); r.selectNodeContents(el); return r.getBoundingClientRect(); };
+    return text(document.querySelector(".topbar-link")!).left - text(document.querySelector(".topbar > a")!).right;
+  });
+  expect(gap).toBeGreaterThanOrEqual(20);
   expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBe(0);
   const tops = await page.locator(".topbar nav > *").evaluateAll((els) => els.filter((el) => getComputedStyle(el).display !== "none").map((el) => Math.round(el.getBoundingClientRect().top)));
   expect(new Set(tops).size).toBe(1);
