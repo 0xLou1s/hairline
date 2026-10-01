@@ -25,7 +25,7 @@ Answer each with yes or no. A no is fixed in the figure before anything is hande
 1. **The silhouette reads at 240px.** You can say what the object is from the small picture alone.
 2. **Rest is a composition** (rule 05). Not flat, not empty, not a regular grid; something is bright where the eye should start.
 3. **The answer falls off with distance, or spreads out from the pointer** (rules 02 and 03). It is not everything at once, and not one part alone.
-4. **Nothing flickers** (rule 01). Hold `at` on an edge that moves when touched and take two pictures a second apart: they are the same.
+4. **Nothing flickers** (rule 01). Hold `at` on an edge that moves when touched and take two pictures a second apart: they are the same. `at` moves the pointer once, so also read the hit test: it picks from the rest pose or the target, never from the pose on screen.
 5. **Bright outside, dim inside** (rule 09). Every solid is a silhouette and one crease; no vertical corner is drawn; no corner is sharp.
 6. **Nothing shows through** (rule 06). No far edge crosses a near solid; no guide crosses its own plate.
 7. **One highlight** (rule 04). What is bright is what the pointer chose, and it is a stroke.
