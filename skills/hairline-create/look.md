@@ -38,7 +38,7 @@ Answer each with yes or no. A no is fixed in the figure before anything is hande
 4. **Nothing flickers** (rule 01). Hold `at` on an edge that moves when touched and take two pictures a second apart: they are the same. `at` moves the pointer once, so also read the hit test: it picks from the rest pose or the target, never from the pose on screen.
 5. **Bright outside, dim inside** (rule 09). Every solid is a silhouette and one crease; no vertical corner is drawn; no corner is sharp.
 6. **Nothing shows through** (rule 06). No far edge crosses a near solid; no guide crosses its own plate.
-7. **One highlight** (rule 04). What is bright is what the pointer chose, and it is a stroke.
+7. **One highlight** (rule 04). At rest, one bright mark says where the eye should start. When the pointer chooses, the bright goes to what it chose and the rest mark gives it up. One highlight may cover the parts of one thing, a tray's rim and its beads, but it marks one place and means one thing. It is a stroke or a dot, never a fill.
 8. **The read-out names what is under the pointer**, in a few characters, and says `rest` at rest.
 9. **Nothing leaves the frame.** With the slider at each end (`?intensity=0`, `?intensity=1`) and the pointer at the figure's edges, every part stays inside the plate.
 10. **Both themes.** In `?theme=dark` and `?theme=light`, nothing vanishes and nothing is left the wrong colour.

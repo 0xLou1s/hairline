@@ -27,14 +27,14 @@ The answer has a far end, and the figure is still composed there.
 
 No fills, glows or shadows. The active edge goes from the silhouette's stroke to the bright one and nothing else changes colour, so the colour reads as information.
 
-- **Keep it:** `el.sil.classList.toggle("hi", active)`. Dots change between `dot`, `dot m` and `dot off`. That is the whole palette.
-- **Rejected when:** the figure sets any colour, fill, opacity trick, gradient, filter, shadow or stroke width of its own; more than one thing is bright without each meaning something; highlight is used as decoration.
+- **Keep it:** `el.sil.classList.toggle("hi", active)`. Dots change between `dot`, `dot m` and `dot off`. That is the whole palette. At rest, one bright mark says where the eye should start. When the pointer chooses, the bright goes to what it chose and the rest mark gives it up. One highlight may cover the parts of one thing, a tray's rim and its beads, a dune's top, but it marks one place and means one thing.
+- **Rejected when:** the figure sets any colour, fill, opacity trick, gradient, filter, shadow or stroke width of its own; two places are bright at once; the rest mark stays lit beside the pointer's choice; bright is used as decoration.
 
 ## 05 · rest: rest is designed, never flat
 
 Leaving returns the figure to a composition: a dune, a lean, a slight explode. The still frame is the thumbnail, so it has to hold up alone.
 
-- **Keep it:** give every part a rest value that is not zero and not uniform (Terrain's dune is two Gaussians; Riffle's cards lean back 12°). Put one bright mark at rest where the eye should start.
+- **Keep it:** give every part a rest value that is not zero and not uniform (Terrain's dune is two Gaussians; Riffle's cards lean back 12°). Put one bright mark at rest where the eye should start. When the pointer chooses, the mark gives the bright up to what it chose (rule 04).
 - **Rejected when:** at rest the figure is a flat grid, an empty tray, a perfectly regular row; at rest nothing says what the figure is about; rest and "nothing rendered yet" look alike.
 
 ## 06 · honesty: construction stays honest
