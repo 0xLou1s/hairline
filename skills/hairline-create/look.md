@@ -28,6 +28,8 @@ Wait 1.5 seconds after loading before each picture. Strokes fade over 260ms, twe
 
 `npx playwright screenshot --channel chrome --viewport-size "800, 900" --wait-for-timeout 1500 "file:///<path>/hairline-<name>.html?at=<x>,<y>" shot.png`
 
+It needs Node and an installed Chrome; without Chrome, run `npx playwright install chromium` once and drop `--channel chrome` from the command.
+
 ## What to see
 
 Answer each with yes or no. A no is fixed in the figure before anything is handed over.
