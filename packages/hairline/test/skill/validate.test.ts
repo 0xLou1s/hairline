@@ -122,7 +122,7 @@ const BROKEN: [id: string, why: string, figure: string, change?: (page: string) 
   ["declare", "a range that turns back", terrain.replace("range: [1.5, 3, 5]", "range: [1.5, 5, 3]")],
   ["declare", "a rule that does not exist", terrain.replace("rules: [1, 3, 5, 9]", "rules: [1, 11]")],
   ["declare", "no declaration", terrain.replace(/hairline\(\{[\s\S]*$/, "")],
-  ["length", "over 200 lines", plus(Array.from({ length: 200 }, (_, i) => `const pad${i} = ${i};`).join("\n"))],
+  ["length", "over 200 lines", plus(Array.from({ length: 200 }, (_, i) => `const pad${i} = ${i};`).join("\n"))],  ["parse", "a const declared twice, so the module never loads", plus("const twice = 1;\nconst twice = 2;")],
 ];
 
 describe("pages that fail, each for its own reason", () => {
@@ -152,4 +152,12 @@ it("knows a path that differs only in the case of its drive letter is the same p
   expect(same("C:\\x\\validate.mjs", "c:\\x\\validate.mjs", "darwin")).toBe(false);
   expect(same("/x/validate.mjs", "/x/validate.mjs", "darwin")).toBe(true);
   expect(same("C:\\x\\validate.mjs", "C:\\x\\validate.mjs", "win32")).toBe(true);
+});
+
+it("names the syntax error that stops the figure loading, and its line", () => {
+  const run = check(plus("const twice = 1;\nconst twice = 2;"));
+  expect(run.status).toBe(1);
+  expect(run.err).toContain("Identifier 'twice' has already been declared");
+  const line = plus("const twice = 1;\nconst twice = 2;").trim().split("\n").indexOf("const twice = 2;") + 1;
+  expect(run.err).toContain(`line ${line}`);
 });

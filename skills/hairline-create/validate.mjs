@@ -6,6 +6,7 @@
  * (look.md) catches the rest. Each line it prints starts with the check's name:
  *
  *   kernel    the kernel in the page is this folder's kernel.js, untouched
+ *   parse     the figure loads as a module: no syntax error stops it before it draws
  *   bench     nothing but the figure differs from bench.html
  *   text      no words inside the figure (rule 10)
  *   paint     no stroke width, colour, fill, opacity, filter or shadow of its own (rule 04)
@@ -17,8 +18,11 @@
  *   declare   the file ends with hairline({ name, means, rules, range, mount })
  *   length    at most 200 lines
  */
+import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { readFileSync, realpathSync } from "node:fs";
+import { mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { assemble } from "./build.mjs";
 
@@ -125,6 +129,25 @@ function declared(code) {
   return wrong.length ? [say(`Wrong or missing: ${wrong.join("; ")}.`)] : [];
 }
 
+/**
+ * The syntax error that keeps the figure from loading, or nothing. The page
+ * loads the figure as a module, so it is checked as one, by `node --check`:
+ * the browser would stop at the same error and draw nothing.
+ */
+function parse(src) {
+  const dir = mkdtempSync(join(tmpdir(), "hl-parse-")), file = join(dir, "figure.mjs");
+  try {
+    writeFileSync(file, src);
+    const run = spawnSync(process.execPath, ["--check", file], { encoding: "utf8" });
+    if (run.status === 0) return [];
+    const line = /figure\.mjs:(\d+)/.exec(run.stderr)?.[1];
+    const error = /^\w*Error: .*$/m.exec(run.stderr)?.[0] ?? run.stderr.trim().split("\n")[0];
+    return [`parse: the figure does not load${line ? `, line ${line}` : ""}: ${error}. The browser stops there and draws nothing. Fix it in the figure and build again.`];
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
+
 /** Everything wrong with a page, one line each; empty when it passes. */
 export function validate(input) {
   const page = unix(input), out = [];
@@ -145,6 +168,7 @@ export function validate(input) {
   }
 
   const src = fig[1], code = bare(src), shape = bare(src, false);
+  out.push(...parse(src));
   for (const [id, re, say, empty] of BAD) if (re.test(code) || empty?.test(shape)) out.push(`${id}: ${say}`);
   for (const [id, re, say] of NEED) if (!re.test(code)) out.push(`${id}: ${say}`);
   out.push(...declared(code));
