@@ -1,0 +1,104 @@
+import { execFileSync, spawnSync } from "node:child_process";
+import { mkdtempSync, readFileSync, symlinkSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { fileURLToPath } from "node:url";
+import { describe, expect, it } from "vitest";
+
+/**
+ * validate.mjs passes the two examples and fails a page broken in one way,
+ * naming that way and no other. The broken pages are Terrain with one change.
+ */
+const SKILL = fileURLToPath(new URL("../../../../skills/hairline-create/", import.meta.url));
+const dir = mkdtempSync(join(tmpdir(), "hl-validate-"));
+const terrain = readFileSync(SKILL + "examples/terrain.js", "utf8");
+let n = 0;
+
+/** Builds a figure's page, changes the page if asked, and validates it. */
+function check(figure: string, change?: (page: string) => string, script = SKILL + "validate.mjs") {
+  const src = join(dir, `f${++n}.js`), out = join(dir, `f${n}.html`);
+  writeFileSync(src, figure);
+  execFileSync("node", [SKILL + "build.mjs", src, out]);
+  if (change) writeFileSync(out, change(readFileSync(out, "utf8")));
+  const run = spawnSync("node", [script, out], { encoding: "utf8" });
+  return { status: run.status, out: run.stdout, err: run.stderr };
+}
+/** Terrain with a line of code just before its declaration. */
+const plus = (code: string) => terrain.replace("hairline({", () => `${code}\nhairline({`);
+
+describe("pages that pass", () => {
+  for (const name of ["terrain", "riffle"]) {
+    it(`the ${name} example`, () => {
+      const figure = readFileSync(`${SKILL}examples/${name}.js`, "utf8");
+      expect(figure.trim().split("\n").length).toBeLessThanOrEqual(200);
+      const run = check(figure);
+      expect(run.err).toBe("");
+      expect(run.status).toBe(0);
+      expect(run.out).toMatch(/^ok .*kernel and bench intact/);
+    });
+  }
+
+  it("a page saved with CRLF line endings", () => {
+    expect(check(terrain, (page) => page.replace(/\n/g, "\r\n")).status).toBe(0);
+  });
+
+  it("a range that falls, as Slow's does", () => {
+    expect(check(terrain.replace("range: [1.5, 3, 5]", "range: [5, 3, 1.5]")).status).toBe(0);
+  });
+
+  it("through a symlink to the skill folder", () => {
+    const link = join(dir, "linked");
+    symlinkSync(SKILL, link);
+    const run = check(terrain, undefined, join(link, "validate.mjs"));
+    expect(run.status).toBe(0);
+    expect(run.out).toMatch(/^ok /);
+  });
+});
+
+const BROKEN: [id: string, why: string, figure: string, change?: (page: string) => string][] = [
+  ["kernel", "the kernel was edited", terrain, (page) => page.replace("var HL = ", "var HL = /* mine */ ")],
+  ["bench", "the bench was edited", terrain, (page) => page.replace("</main>", "<p>better</p></main>")],
+  ["text", "a text element", plus('mk("text", {}, document.querySelector("svg"));')],
+  ["text", "markup written as a string", plus('document.querySelector("svg").innerHTML = "";')],
+  ["paint", "a fill of its own", plus('mk("path", { fill: "red" });')],
+  ["paint", "a stroke width of its own", plus('mk("path", { "stroke-width": 2 });')],
+  ["paint", "an inline style", plus('document.body.style.background = "#000";')],
+  ["outside", "a fetch", plus('fetch("https://example.com/data.json");')],
+  ["outside", "a node made by hand", plus('document.createElementNS("http://www.w3.org/2000/svg", "path");')],
+  ["outside", "a script tag in a string", plus('const s = "</script>";')],
+  ["clock", "its own frame", plus("requestAnimationFrame(() => {});")],
+  ["clock", "its own timer", plus("setTimeout(() => {}, 100);")],
+  ["clock", "no kernel loop", terrain.replace("register(stage,", "((s, t) => ({ wake() {}, unregister() {} }))(stage,")],
+  ["hit", "a box measured on screen", plus("stage.getBoundingClientRect();")],
+  ["hit", "its own listener", plus('stage.addEventListener("pointermove", () => {});')],
+  ["hit", "no pointer", terrain.replace("bag.add(pointer(stage,", "bag.add(((s, h) => () => {})(stage,")],
+  ["readout", "no read-out", terrain.replace(/read\.textContent = [^;]+;/g, "")],
+  ["handle", "no destroy", terrain.replace("destroy: bag.dispose", "stop: bag.dispose")],
+  ["declare", "no means", terrain.replace(/\n {2}means: .*\n/, "\n")],
+  ["declare", "a range that turns back", terrain.replace("range: [1.5, 3, 5]", "range: [1.5, 5, 3]")],
+  ["declare", "a rule that does not exist", terrain.replace("rules: [1, 3, 5, 9]", "rules: [1, 11]")],
+  ["declare", "no declaration", terrain.replace(/hairline\(\{[\s\S]*$/, "")],
+  ["length", "over 200 lines", plus(Array.from({ length: 200 }, (_, i) => `const pad${i} = ${i};`).join("\n"))],
+];
+
+describe("pages that fail, each for its own reason", () => {
+  for (const [id, why, figure, change] of BROKEN) {
+    it(`${id}: ${why}`, () => {
+      const run = check(figure, change);
+      expect(run.status).toBe(1);
+      const ids = run.err.split("\n").map((line) => /^([a-z]+): /.exec(line)?.[1]).filter(Boolean);
+      expect(ids.length).toBeGreaterThan(0);
+      expect([...new Set(ids)]).toEqual([id]);
+      expect(run.err).toMatch(/\d+ to fix in /);
+    });
+  }
+});
+
+it("says how to call it when it is given nothing, and when the file is not there", () => {
+  const none = spawnSync("node", [SKILL + "validate.mjs"], { encoding: "utf8" });
+  expect(none.status).toBe(2);
+  expect(none.stderr).toContain("usage: node validate.mjs <page.html>");
+  const gone = spawnSync("node", [SKILL + "validate.mjs", join(dir, "nope.html")], { encoding: "utf8" });
+  expect(gone.status).toBe(2);
+  expect(gone.stderr).toContain("cannot read");
+});
