@@ -1,18 +1,17 @@
-import { exploded, phosphor, ranges, riffle, slow, terrain, turntable, type Figure, type RiffleOptions } from "@lucasmarkes/hairline";
+import { exploded, phosphor, riffle, slow, terrain, turntable, type Figure } from "@lucasmarkes/hairline";
 
 /** No framework: six elements, six calls. */
 const el = (id: string) => document.getElementById(id)!;
 const read = el("read");
 
-const cards: Figure<RiffleOptions> = riffle(el("riffle"), {
-  stagger: ranges.riffle.stagger.max,
-  labels: ["Radial menu", "Drum"],
+const cards: Figure = riffle(el("riffle"), {
+  intensity: 1,
   onRead: (text) => { read.textContent = text; },
 });
-terrain(el("terrain"), { radius: 4 });
+terrain(el("terrain"), { intensity: 0.75 });
 exploded(el("exploded"));
 phosphor(el("phosphor"), { theme: "dark" });
 slow(el("slow"));
 turntable(el("turntable"));
 
-cards.update({ bands: true });
+cards.update({ intensity: 0.8 });

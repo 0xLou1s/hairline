@@ -1,5 +1,5 @@
 import type { CSSProperties } from "react";
-import { Terrain } from "@/components/ui/hairline";
+import { Riffle, Terrain } from "@/components/ui/hairline";
 
 /** shadcn's tokens, as a dark theme would define them. */
 const tokens = { "--background": "#101014", "--foreground": "#fafafa", "--muted-foreground": "#a1a1aa", "--border": "#27272a" } as CSSProperties;
@@ -13,6 +13,7 @@ export default function Page() {
   return (
     <main style={{ width: 400, margin: "40px auto", background: "var(--background)", ...tokens }}>
       <Terrain id="themed" />
+      <Riffle intensity={0.8} />
     </main>
   );
 }
