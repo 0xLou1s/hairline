@@ -11,7 +11,8 @@
       "dependsOn": ["^build"]
     },
     "test": {
-      "dependsOn": ["^build"]
+      "dependsOn": ["^build"],
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/skills/**", "$TURBO_ROOT$/scripts/kernel.mjs"]
     },
     "test:browser": {
       "dependsOn": ["build"],
