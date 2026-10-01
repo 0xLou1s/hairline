@@ -107,6 +107,26 @@ for (const width of [1200, 320]) {
   });
 }
 
+for (const width of [320, 900]) {
+  test(`at ${width}px every prompt reads whole, and the install line fades while more of it is hidden`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 800 });
+    await page.goto("/skill");
+    const lines = page.locator('[data-command="prompt"] .pill-line');
+    await expect(lines).toHaveCount(4);
+    for (const over of await lines.evaluateAll((els) => els.map((el) => el.scrollWidth - el.clientWidth))) expect(over).toBeLessThanOrEqual(0);
+    const install = page.locator('[data-command="install"] .pill-line');
+    expect(await install.evaluate((el) => getComputedStyle(el).whiteSpace)).toBe("nowrap");
+    const hidden = await install.evaluate((el) => el.scrollWidth - el.clientWidth > 1);
+    if (hidden) {
+      await expect(install).toHaveAttribute("data-more", "");
+      await install.evaluate((el) => { el.scrollLeft = el.scrollWidth; });
+      await expect(install).not.toHaveAttribute("data-more");
+    } else {
+      await expect(install).not.toHaveAttribute("data-more");
+    }
+  });
+}
+
 test("at 1200px each plate starts on its prompt's line and meets the column's edges", async ({ page }) => {
   await page.goto("/skill");
   await frames(page);
