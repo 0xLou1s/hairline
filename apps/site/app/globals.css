@@ -355,7 +355,7 @@ footer a::after { content: ""; position: absolute; inset: -12px -8px; }
 .example { display: grid; gap: 16px; padding: 28px 0; border-top: 1px solid var(--color-line); }
 .example:last-child { border-bottom: 1px solid var(--color-line); }
 .example > * { min-width: 0; }
-.example-prompt { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; align-content: start; }
+.example-prompt { position: relative; z-index: 1; display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; align-content: start; }
 .example-figure { container-type: inline-size; }
 /* the prompt and its follow-up, one exchange: the follow-up is marked as the next turn */
 .example-turns { display: grid; gap: 8px; }
@@ -365,11 +365,11 @@ footer a::after { content: ""; position: absolute; inset: -12px -8px; }
 .pill:is([data-command="prompt"], [data-command="follow-up"], [data-command="usage"]) { height: auto; min-height: 48px; padding-block: 6px; align-items: start; }
 .pill:is([data-command="prompt"], [data-command="follow-up"], [data-command="usage"]) .pill-line { padding-block: 8px; line-height: 20px; white-space: normal; overflow: visible; text-wrap: pretty; }
 /* The generated page pads its column by 24px above and below and 16px at the sides. The frame bleeds by that much,
-   so the plate meets the column: its edges on the column's, its top on the prompt's. Stacked, the frame stops at the
-   link above it instead of covering it. The height is the one the page takes before it is measured: its plate, as
-   wide as the column up to 640px, a 5:4 stage, and the 171px of controls and lines under it, which wrap onto more
+   so the plate meets the column: its edges on the column's, its top on the prompt's. Stacked, the frame's top padding
+   runs under the prompt above it, which is drawn over the frame, so the plate sits one gap under the prompt. The height is the one the page takes before it is measured: its plate, as
+   wide as the column up to 640px, a 5:4 stage, and the 148px of controls and lines under it, which wrap onto more
    lines in a column narrower than 360px. */
-.example-frame { display: block; width: calc(100% + 32px); margin: -16px -16px -24px; height: calc(min(100cqw, 640px) * 0.8 + 171px + max(0px, 360px - 100cqw) * 0.75); border: 0; }
+.example-frame { display: block; width: calc(100% + 32px); margin: -24px -16px; height: calc(min(100cqw, 640px) * 0.8 + 148px + max(0px, 360px - 100cqw) * 0.75); border: 0; }
 .skill-steps { display: grid; gap: 12px; max-width: 64ch; counter-reset: step; }
 .skill-steps > li { display: grid; grid-template-columns: 2.2em minmax(0, 1fr); align-items: baseline; font-size: 15px; line-height: 1.55; color: var(--color-muted); counter-increment: step; }
 .skill-steps > li::before { content: counter(step, decimal-leading-zero); font: 400 12px/1 var(--font-mono); font-variant-numeric: tabular-nums; color: var(--color-faint); }
@@ -378,5 +378,4 @@ footer a::after { content: ""; position: absolute; inset: -12px -8px; }
 @media (min-width: 900px) {
   .example { grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); gap: 40px; align-items: start; }
   .example-prompt { position: sticky; top: calc(var(--topbar) + 24px); }
-  .example-frame { margin-top: -24px; }
 }

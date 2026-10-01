@@ -39,7 +39,7 @@ export default function Skill() {
 
         <section aria-labelledby="examples-title" className="doc-section">
           <h2 id="examples-title" className="doc-h2">What it draws</h2>
-          <p className="doc-p">Each figure below is the page the skill wrote for the line next to it, as it wrote it. Move the pointer over one.</p>
+          <p className="doc-p">Each figure below is the page the skill wrote for the line next to it. Move the pointer over one.</p>
           <div>
             {shown.map((e) => (
               <article key={e.file} className="example" data-example={e.name}>
@@ -54,7 +54,6 @@ export default function Skill() {
                       </>
                     )}
                   </div>
-                  <a className="doc-more" href={e.href}>Open the page</a>
                 </div>
                 <div className="example-figure">
                   <ExampleFrame src={`${e.href}?theme=light`} title={e.means} />

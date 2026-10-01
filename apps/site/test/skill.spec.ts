@@ -71,18 +71,28 @@ test("a figure on /skill answers the pointer and goes back to rest", async ({ pa
   }
 });
 
-test("each frame is named by what its figure means, and its link opens the page the skill wrote", async ({ page, request }) => {
+test("each frame is named by what its figure means, and shows the page the skill wrote, light", async ({ page, request }) => {
   await page.goto("/skill");
   await expect(page.locator("[data-example]")).toHaveCount(4);
   for (const row of await page.locator("[data-example]").all()) {
-    const title = await row.locator("iframe").getAttribute("title");
-    expect(title!.length).toBeGreaterThan(20);
-    const href = await row.getByRole("link", { name: "Open the page" }).getAttribute("href");
-    expect(href).toMatch(/^\/skill\/hairline-[a-z0-9-]+\.html$/);
-    const res = await request.get(href!);
+    const frame = row.locator("iframe");
+    expect((await frame.getAttribute("title"))!.length).toBeGreaterThan(20);
+    const src = (await frame.getAttribute("src"))!;
+    expect(src).toMatch(/^\/skill\/hairline-[a-z0-9-]+\.html\?theme=light$/);
+    const res = await request.get(src.replace(/\?.*$/, ""));
     expect(res.status()).toBe(200);
     expect(res.headers()["content-type"]).toContain("text/html");
     expect(await res.text()).toContain('id="hl-figure"');
+  }
+});
+
+test("each example shows the figure, its controls and what it means, without the page's name tags or rules line", async ({ page }) => {
+  await page.goto("/skill");
+  await expect(page.getByRole("link", { name: "Open the page" })).toHaveCount(0);
+  for (const frame of await frames(page)) {
+    for (const hidden of ["#name", "#read", "#rules"]) await expect(frame.locator(hidden)).toBeHidden();
+    await expect(frame.locator("#means")).toBeVisible();
+    await expect(frame.locator("#intensity")).toBeVisible();
   }
 });
 
@@ -158,11 +168,11 @@ test.describe("on a dark system", () => {
 test.describe("without JavaScript", () => {
   test.use({ javaScriptEnabled: false });
 
-  test("/skill still gives the install command, the prompts and the links to the pages", async ({ page }) => {
+  test("/skill still gives the install command, the prompts and the frames with the pages", async ({ page }) => {
     await page.goto("/skill");
     await expect(page.locator('[data-command="install"]')).toHaveText(new RegExp(INSTALL));
     await expect(page.locator('[data-command="prompt"]')).toHaveCount(4);
-    await expect(page.getByRole("link", { name: "Open the page" })).toHaveCount(4);
+    await expect(page.locator('[data-example] iframe[src^="/skill/hairline-"]')).toHaveCount(4);
   });
 });
 

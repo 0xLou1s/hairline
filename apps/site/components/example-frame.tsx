@@ -5,12 +5,22 @@ import { useEffect, useRef } from "react";
 /** The bench's `body` padding, 24px above and 24px below the page's one column: every page the skill writes has it. */
 const PAD = 48;
 
+/** Set inside the frame: the plate's two corner tags (the figure's name and its read-out) and the rules line under it. */
+const QUIET = "hl-site-quiet";
+const HIDDEN = "#name, #read, #rules { display: none !important; }";
+
 /**
  * A page the skill wrote, in a frame as tall as that page: the frame never
  * scrolls inside. Its height is reserved in CSS before it loads, then fitted
  * to the page's column and kept fitted as the column's text wraps. The pages
  * are served from the site's own origin; were they not, `contentDocument`
  * would be null and the frame would keep its CSS height.
+ *
+ * Here an example shows only the figure, its controls and what it means: the
+ * name tag, the read-out and the rules line are hidden from the site's side,
+ * by one style added to the frame's document before it is measured, because
+ * the page itself stays exactly as the skill wrote it. Its error line is left
+ * alone, so a figure that throws still says so.
  */
 export function ExampleFrame({ src, title }: { src: string; title: string }) {
   const frame = useRef<HTMLIFrameElement>(null);
@@ -21,8 +31,15 @@ export function ExampleFrame({ src, title }: { src: string; title: string }) {
     let watch: ResizeObserver | undefined;
     const fit = () => {
       const view = el.contentWindow as (Window & typeof globalThis) | null;
-      const main = el.contentDocument?.querySelector("main");
-      if (!view || !main) return;
+      const doc = el.contentDocument;
+      const main = doc?.querySelector("main");
+      if (!view || !doc || !main) return;
+      if (!doc.getElementById(QUIET)) {
+        const style = doc.createElement("style");
+        style.id = QUIET;
+        style.textContent = HIDDEN;
+        doc.head.append(style);
+      }
       const size = () => { el.style.height = `${Math.ceil(main.getBoundingClientRect().height) + PAD}px`; };
       size();
       watch?.disconnect();
