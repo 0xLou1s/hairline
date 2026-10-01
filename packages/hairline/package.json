@@ -33,7 +33,7 @@
     "build": "rm -rf dist && tsup",
     "dev": "tsup --watch",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run --passWithNoTests",
+    "test": "vitest run",
     "clean": "rm -rf dist .turbo",
     "test:browser": "playwright test",
     "capture": "node test/parity/capture.mjs",
