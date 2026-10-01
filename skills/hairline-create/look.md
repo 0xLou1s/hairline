@@ -60,6 +60,8 @@ process.exit(bad.length ? 1 : 0);
 
 For an `?at=` point, put world points `x,y,z` after the address. The script runs each through the `P` your figure made with its own camera. Take a point on the part's top in its rest pose. For the riffle example, the top edge of card 05 at rest: `node look.mjs "file:///<path>/hairline-riffle.html" 42,28,52` prints `42,28,52 -> at=220,120`. Then check the point: `node look.mjs "file:///<path>/hairline-riffle.html?at=220,120"` prints `read-out: 05`.
 
+A change that moves the fit or the scale moves every `?at=` point with it. Take the points again from the figure, with the script, before the next pictures.
+
 ## What to see
 
 Answer each with yes or no. A no is fixed in the figure before anything is handed over.
