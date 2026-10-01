@@ -34,7 +34,8 @@
 }
 
 html { color-scheme: light; }
-@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+/* smooth only once the docs' sidebar has mounted (it sets data-smooth), so a deep link lands at once instead of sweeping down from the top */
+@media (prefers-reduced-motion: no-preference) { html[data-smooth] { scroll-behavior: smooth; } }
 body { min-height: 100vh; color: var(--color-ink); background: var(--color-canvas); }
 em { font-style: italic; }
 

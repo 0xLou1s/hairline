@@ -30,6 +30,8 @@ export function Sidebar() {
       if (end) return setActive(LAST);
       const first = SECTIONS.find((s) => inBand.has(s.id));
       if (first) setActive(first.id);
+      // above the first section nothing is in the band, so Install is active again, as on load
+      else if (sections[0].getBoundingClientRect().top >= window.innerHeight * 0.3) setActive(SECTIONS[0].id);
     };
     const observer = new IntersectionObserver(
       (entries) => {
@@ -43,9 +45,12 @@ export function Sidebar() {
     );
     for (const el of sections) observer.observe(el);
     window.addEventListener("scroll", pick, { passive: true });
+    // the browser has already scrolled to a deep link's section, at once; the reader's own clicks from here on glide
+    document.documentElement.dataset.smooth = "";
     return () => {
       observer.disconnect();
       window.removeEventListener("scroll", pick);
+      delete document.documentElement.dataset.smooth;
     };
   }, []);
 

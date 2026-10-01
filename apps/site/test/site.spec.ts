@@ -405,3 +405,30 @@ test.describe("without JavaScript", () => {
     await expect(quick.locator(".code-title")).toHaveText("app/page.tsx");
   });
 });
+
+test("a deep link lands on its section at once, without sweeping down the page", async ({ page }) => {
+  await page.goto("/docs#theme");
+  // read at once, not polled: a smooth scroll from the top would still be under way
+  const top = await page.locator("#theme-title").evaluate((el) => el.getBoundingClientRect().top);
+  expect(top).toBeGreaterThanOrEqual(54);
+  expect(top).toBeLessThan(200);
+});
+
+test("back at the top of the page, Install is marked again", async ({ page }) => {
+  await page.goto("/docs");
+  const nav = page.getByRole("navigation", { name: "Docs" });
+  await page.evaluate(() => document.getElementById("theme")!.scrollIntoView({ behavior: "instant" }));
+  await expect(nav.getByRole("link", { name: "Theme" })).toHaveAttribute("aria-current", "location");
+  // an instant jump, as Back makes under reduced motion: no section passes through the band on the way
+  await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
+  await expect(nav.getByRole("link", { name: "Install" })).toHaveAttribute("aria-current", "location");
+});
+
+test("a click in the sidebar still scrolls smoothly to its section", async ({ page }) => {
+  await page.goto("/docs");
+  await page.getByRole("navigation", { name: "Docs" }).getByRole("link", { name: "Theme" }).click();
+  const final = await page.locator("#theme").evaluate((el) => el.getBoundingClientRect().top + scrollY - parseFloat(getComputedStyle(el).scrollMarginTop));
+  // just after the click the page is still on its way
+  expect(await page.evaluate(() => scrollY)).toBeLessThan(final - 100);
+  await expect.poll(() => page.evaluate(() => scrollY)).toBeGreaterThan(final - 2);
+});
