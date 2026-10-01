@@ -39,6 +39,12 @@ test("the home prerenders an empty box, then draws the inspector's figure with a
   expect(noise).toEqual([]);
 });
 
+test("the top bar holds the docs, the version and GitHub, and no llms.txt button", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.locator(".topbar nav > *")).toHaveCount(3);
+  await expect(page.locator(".topbar")).not.toContainText("llms.txt");
+});
+
 test("the top bar's links sit as one row: one height, one centre line, one type, even spaces between them", async ({ page }) => {
   await page.goto("/");
   const items = await page.locator(".topbar nav > *").evaluateAll((els) => els.map((el) => {
@@ -50,7 +56,7 @@ test("the top bar's links sit as one row: one height, one centre line, one type,
     const style = getComputedStyle(el);
     return { height: box.height, middle: box.top + box.height / 2, left: ink.left, right: ink.right, type: [style.fontSize, style.fontWeight, style.color, style.backgroundColor].join(" ") };
   }));
-  expect(items).toHaveLength(4);
+  expect(items).toHaveLength(3);
   expect(new Set(items.map((i) => i.height)).size).toBe(1);
   for (const i of items) expect(Math.abs(i.middle - items[0].middle)).toBeLessThan(0.5);
   expect(new Set(items.map((i) => i.type)).size).toBe(1);
@@ -226,18 +232,6 @@ test("the page fits a phone, with the longest install command and every control"
   await inspector.getByRole("slider", { name: "Intensity" }).fill("0.85");
   await expect(inspector.locator("[data-snippet] pre")).toContainText('<Turntable intensity={0.85} theme="dark" />');
   expect(await width()).toBeLessThanOrEqual(390);
-});
-
-test("without a clipboard at all, the top bar's llms.txt button opens the file", async ({ page }) => {
-  await page.addInitScript(() => {
-    Object.defineProperty(navigator, "clipboard", { value: undefined });
-  });
-  const noise = watch(page);
-  await page.goto("/");
-  await page.locator(".topbar").getByRole("button", { name: "llms.txt" }).click();
-  await expect(page).toHaveURL(/\/llms\.txt$/);
-  // the text file has no icon, so Chrome's own request for /favicon.ico 404s there
-  expect(noise.filter((line) => line.startsWith("pageerror"))).toEqual([]);
 });
 
 /** Every element that holds text of its own, outside code, the hero's serif word and the figures, with its family. */

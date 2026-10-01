@@ -1,8 +1,5 @@
 import pkg from "@lucasmarkes/hairline/package.json";
 import { LINKS } from "@/lib/figures";
-import { CopyButton } from "./copy";
-
-const SITE = process.env.NEXT_PUBLIC_SITE_URL!;
 
 export function GitHub() {
   return (
@@ -12,7 +9,7 @@ export function GitHub() {
   );
 }
 
-/** The bar on every page: the name home, the docs, the version, GitHub, llms.txt. */
+/** The bar on every page: the name home, the docs, the version, GitHub. */
 export function Topbar() {
   return (
     <header className="topbar">
@@ -21,7 +18,6 @@ export function Topbar() {
         <a className="topbar-link" href="/docs">Docs</a>
         <span className="topbar-link tabular-nums" data-version>v{pkg.version}</span>
         <a className="topbar-link" href={LINKS.github} aria-label="GitHub"><GitHub /></a>
-        <CopyButton text={`${SITE}/llms.txt`} open="/llms.txt" label="llms.txt" className="topbar-link" />
       </nav>
     </header>
   );

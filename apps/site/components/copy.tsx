@@ -37,23 +37,6 @@ export function useCopy(): [copied: boolean, copy: (text: string, fallback?: Ele
 }
 
 /**
- * A button that copies `text`, or when it cannot, selects what `select` points
- * at, or opens `open` for a button with no text of its own on the page. `text`
- * can be a function, read at the click, for text the button does not own.
- */
-export function CopyButton({ text, select, open, label = "Copy", className = "btn" }: { text: string | (() => string); select?: RefObject<Element | null>; open?: string; label?: string; className?: string }) {
-  const [copied, copy] = useCopy();
-  const click = async () => {
-    if (!(await copy(typeof text === "function" ? text() : text, select?.current)) && open) window.location.assign(open);
-  };
-  return (
-    <button type="button" className={className} onClick={click} aria-live="polite">
-      {copied ? "Copied" : label}
-    </button>
-  );
-}
-
-/**
  * Copy as an icon: the clipboard gives way to a check through scale, opacity
  * and blur, and back. Both icons stay in the DOM so the swap is a transition
  * either way, and interrupts cleanly on a second click.

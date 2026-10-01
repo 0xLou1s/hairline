@@ -49,7 +49,7 @@ em { font-style: italic; }
 
 /* the top bar's items, alike: muted 13px text, or a 16px icon, each 10px clear of its neighbours */
 .topbar-link { display: inline-flex; align-items: center; height: 30px; padding: 0 10px; border-radius: 8px; font-size: 13px; line-height: 1; color: var(--color-muted); }
-:is(a, button).topbar-link:hover { color: var(--color-ink); }
+a.topbar-link:hover { color: var(--color-ink); }
 
 .btn {
   display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 14px;
