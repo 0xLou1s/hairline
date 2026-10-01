@@ -151,10 +151,13 @@ describe("the intensity table", () => {
 describe("/llms.txt", () => {
   const text = llms("https://example.test");
 
-  it("says how to install the skill and links each example to the page it produced", () => {
+  it("says how to install the skill and links each example, with its follow-up, to the page it produced", () => {
     expect(text).toContain("## Make your own");
     expect(text).toContain(INSTALL);
-    for (const e of EXAMPLES) expect(text).toContain(`- \`${COMMAND} ${e.idea}\`: https://example.test/skill/${e.file}`);
+    for (const e of EXAMPLES) expect(text).toContain(`- \`${COMMAND} ${e.idea}\`${e.followUp ? `, then "${e.followUp}"` : ""}: https://example.test/skill/${e.file}`);
+    // the two pages a follow-up made say so
+    expect(text).toContain(`- \`${COMMAND} git branches\`, then "The rails almost disappear`);
+    expect(text).toContain(`- \`${COMMAND} weather over a city\`, then "The cloud looks like a stack of cylinders`);
     expect(text).toContain("https://example.test/skill\n");
     expect(text.indexOf("## Make your own")).toBeLessThan(text.indexOf("## Links"));
   });
