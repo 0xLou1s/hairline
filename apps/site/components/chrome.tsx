@@ -9,13 +9,14 @@ export function GitHub() {
   );
 }
 
-/** The bar on every page: the name home, the docs, the version, GitHub. */
+/** The bar on every page: the name home, the docs, the story, the version, GitHub. */
 export function Topbar() {
   return (
     <header className="topbar">
       <a href="/" className="text-[15px] font-medium tracking-[-0.02em]">hairline</a>
       <nav className="flex items-center">
         <a className="topbar-link" href="/docs">Docs</a>
+        <a className="topbar-link" href="/inspo">Inspo</a>
         <span className="topbar-link tabular-nums" data-version>v{pkg.version}</span>
         <a className="topbar-link" href={LINKS.github} aria-label="GitHub"><GitHub /></a>
       </nav>

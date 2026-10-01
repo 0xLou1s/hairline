@@ -226,6 +226,46 @@ a.topbar-link:hover { color: var(--color-ink); }
   .s-range { flex: 1; width: auto; }
 }
 
+/* Inspo: one column, prose at a reading measure, pictures on the dark plate they were taken on. */
+.inspo { --gutter: clamp(18px, 5vw, 28px); display: grid; gap: 72px; max-width: 1080px; margin: 0 auto; padding: 64px var(--gutter) 96px; }
+.inspo > * { min-width: 0; }
+.inspo-prose, .inspo-step > :not(.inspo-figure, .inspo-split) { width: 100%; max-width: 640px; }
+.inspo-label { font: 400 12px/1 var(--font-mono); letter-spacing: 0.02em; text-transform: uppercase; color: var(--color-muted); }
+.inspo-title { margin-top: 16px; font-size: 40px; font-weight: 500; line-height: 1.05; letter-spacing: -0.04em; text-wrap: balance; }
+.inspo-lede { margin-top: 20px; font-size: 18px; line-height: 1.5; color: var(--color-muted); text-wrap: pretty; }
+.inspo-step { display: grid; gap: 20px; }
+.inspo-step > * { min-width: 0; }
+.inspo-h2 { display: flex; align-items: baseline; gap: 12px; font-size: 24px; font-weight: 500; line-height: 1.2; letter-spacing: -0.02em; }
+.inspo-n { font: 400 13px/1 var(--font-mono); letter-spacing: 0; color: var(--color-faint); font-variant-numeric: tabular-nums; }
+.inspo-p { font-size: 16px; line-height: 1.6; text-wrap: pretty; }
+.inspo-prompt { padding: 16px 18px; border-radius: 12px; background: var(--color-stone); }
+.inspo-quote { display: grid; gap: 14px; margin-top: 18px; font-size: 16px; line-height: 1.55; text-wrap: pretty; }
+.inspo-part { display: grid; gap: 8px; }
+.inspo-pushback { display: grid; gap: 0; counter-reset: turn; }
+.inspo-pushback li { display: grid; gap: 8px; padding: 18px 0 18px 36px; border-top: 1px solid var(--color-line); counter-increment: turn; position: relative; }
+.inspo-pushback li:last-child { border-bottom: 1px solid var(--color-line); }
+.inspo-pushback li::before { content: counter(turn, decimal-leading-zero); position: absolute; top: 22px; left: 0; font: 400 13px/1 var(--font-mono); color: var(--color-faint); font-variant-numeric: tabular-nums; }
+.inspo-said { font-size: 16px; line-height: 1.55; text-wrap: pretty; }
+.inspo-changed { font-size: 14px; line-height: 1.55; color: var(--color-muted); text-wrap: pretty; }
+.inspo-changed::before { content: "Changed: "; color: var(--color-ink); font-weight: 500; }
+.inspo-figure { display: grid; gap: 10px; margin-top: 8px; }
+.inspo-shot { padding: clamp(8px, 2vw, 16px); border-radius: 18px; background: var(--color-ink); }
+.inspo-shot img { display: block; width: 100%; height: auto; border-radius: 8px; }
+.inspo-caption { font-size: 13px; line-height: 1.5; color: var(--color-muted); }
+.inspo-split { display: grid; gap: 20px; align-items: start; }
+.inspo-split-text { display: grid; gap: 16px; max-width: 640px; }
+.inspo-split .inspo-figure { margin-top: 0; max-width: 480px; }
+.inspo-rules { display: grid; gap: 16px; }
+.inspo-rules li { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 8px; padding-top: 16px; border-top: 1px solid var(--color-line); }
+.inspo-rules .inspo-n { line-height: 1.6; }
+.inspo-rule { font-size: 16px; font-weight: 500; line-height: 1.5; }
+.inspo-keep { display: grid; gap: 12px; padding-left: 1.2em; list-style: disc; font-size: 16px; line-height: 1.6; text-wrap: pretty; }
+@media (min-width: 768px) {
+  .inspo { gap: 96px; padding-top: 96px; }
+  .inspo-title { font-size: 56px; }
+  .inspo-split { grid-template-columns: minmax(0, 1fr) minmax(0, 440px); gap: 40px; }
+}
+
 :is(button, a, input, .code-body, .table-scroll):focus-visible { outline: 1.5px solid var(--color-ink); outline-offset: 2px; }
 
 @media (max-width: 640px) {

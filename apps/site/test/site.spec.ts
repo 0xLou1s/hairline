@@ -39,9 +39,9 @@ test("the home prerenders an empty box, then draws the inspector's figure with a
   expect(noise).toEqual([]);
 });
 
-test("the top bar holds the docs, the version and GitHub, and no llms.txt button", async ({ page }) => {
+test("the top bar holds the docs, the story, the version and GitHub, and no llms.txt button", async ({ page }) => {
   await page.goto("/");
-  await expect(page.locator(".topbar nav > *")).toHaveCount(3);
+  await expect(page.locator(".topbar nav > *")).toHaveCount(4);
   await expect(page.locator(".topbar")).not.toContainText("llms.txt");
 });
 
@@ -56,7 +56,7 @@ test("the top bar's links sit as one row: one height, one centre line, one type,
     const style = getComputedStyle(el);
     return { height: box.height, middle: box.top + box.height / 2, left: ink.left, right: ink.right, type: [style.fontSize, style.fontWeight, style.color, style.backgroundColor].join(" ") };
   }));
-  expect(items).toHaveLength(3);
+  expect(items).toHaveLength(4);
   expect(new Set(items.map((i) => i.height)).size).toBe(1);
   for (const i of items) expect(Math.abs(i.middle - items[0].middle)).toBeLessThan(0.5);
   expect(new Set(items.map((i) => i.type)).size).toBe(1);
@@ -728,4 +728,47 @@ test("a click in the sidebar still scrolls smoothly to its section", async ({ pa
   // just after the click the page is still on its way
   expect(await page.evaluate(() => scrollY)).toBeLessThan(final - 100);
   await expect.poll(() => page.evaluate(() => scrollY)).toBeGreaterThan(final - 2);
+});
+
+test("the top bar's Inspo link opens the story of how Hairline was made, with a clean console", async ({ page }) => {
+  const noise = watch(page);
+  await page.goto("/");
+  await page.getByRole("banner").getByRole("link", { name: "Inspo" }).click();
+  await expect(page).toHaveURL(/\/inspo$/);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("How Hairline was made");
+  await expect(page.locator("[data-step]")).toHaveCount(7);
+  // the story is the arguing: each pushback names what it changed
+  await expect(page.locator("[data-pushback] > li")).toHaveCount(5);
+  for (const item of await page.locator("[data-pushback] > li").all()) await expect(item.locator("[data-changed]")).not.toBeEmpty();
+  expect(noise).toEqual([]);
+});
+
+test("every picture on /inspo loads and says what it shows", async ({ page }) => {
+  await page.goto("/inspo");
+  const images = page.locator("main img");
+  await expect(images).toHaveCount(5);
+  for (const img of await images.all()) {
+    await img.scrollIntoViewIfNeeded();
+    expect((await img.getAttribute("alt"))?.length).toBeGreaterThan(20);
+    await expect.poll(() => img.evaluate((el: HTMLImageElement) => el.complete && el.naturalWidth)).toBeGreaterThan(0);
+  }
+});
+
+test("/inspo fits a phone down to 320px", async ({ page }) => {
+  for (const width of [320, 390]) {
+    await page.setViewportSize({ width, height: 800 });
+    await page.goto("/inspo");
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+  }
+});
+
+test("every small label on /inspo is set the same: one face, size, weight and colour", async ({ page }) => {
+  await page.goto("/inspo");
+  const types = await page.locator(".inspo-label").evaluateAll((els) => els.map((el) => {
+    const s = getComputedStyle(el);
+    return [s.fontFamily, s.fontSize, s.fontWeight, s.letterSpacing, s.color].join(" ");
+  }));
+  expect(types.length).toBeGreaterThan(10);
+  expect(new Set(types).size).toBe(1);
 });
