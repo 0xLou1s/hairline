@@ -1,40 +1,16 @@
 "use client";
 
-import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
+import { useId, useRef, useState, type KeyboardEvent } from "react";
+import { CopyButton } from "./copy";
 
 export type Tab = { label: string; html: string };
 
-/**
- * Code behind tabs, with a copy button. The HTML is highlighted at build; when
- * `live` is given, every span marked data-live shows it, so a snippet follows
- * a slider without a highlighter in the browser.
- */
-export function Tabs({ tabs, label, live }: { tabs: Tab[]; label: string; live?: string }) {
+/** Code behind tabs, with a copy button. The HTML is highlighted at build. */
+export function Tabs({ tabs, label }: { tabs: Tab[]; label: string }) {
   const [at, setAt] = useState(0);
-  const [copied, setCopied] = useState(false);
   const panel = useRef<HTMLDivElement>(null);
   const list = useRef<HTMLDivElement>(null);
   const id = useId();
-
-  useEffect(() => {
-    if (live === undefined) return;
-    panel.current?.querySelectorAll("[data-live]").forEach((node) => { node.textContent = live; });
-  }, [live, at]);
-
-  useEffect(() => {
-    if (!copied) return;
-    const timer = setTimeout(() => setCopied(false), 1600);
-    return () => clearTimeout(timer);
-  }, [copied]);
-
-  const copy = async () => {
-    try {
-      await navigator.clipboard.writeText(panel.current?.textContent ?? "");
-      setCopied(true);
-    } catch {
-      // no clipboard permission: the text is still selectable
-    }
-  };
 
   const onKeyDown = (event: KeyboardEvent) => {
     const step = event.key === "ArrowRight" ? 1 : event.key === "ArrowLeft" ? -1 : 0;
@@ -55,11 +31,11 @@ export function Tabs({ tabs, label, live }: { tabs: Tab[]; label: string; live?:
             </button>
           ))}
         </div>
-        <button type="button" onClick={copy} className="code-copy" aria-live="polite">
-          {copied ? "Copied" : "Copy"}
-        </button>
+        {/* read at the click, so it is always the tab on screen */}
+        <CopyButton text={() => panel.current?.textContent ?? ""} select={panel} />
       </div>
       <div ref={panel} role="tabpanel" id={`${id}-panel`} aria-labelledby={`${id}-tab-${at}`} tabIndex={0} className="code-panel" dangerouslySetInnerHTML={{ __html: tabs[at].html }} />
     </div>
   );
 }
+
