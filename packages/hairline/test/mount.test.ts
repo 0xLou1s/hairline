@@ -2,6 +2,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { frames, host, observers, pending } from "./dom";
 import { exploded, phosphor, riffle, slow, terrain, turntable } from "../src/index";
+import { css } from "../src/core/styles";
 
 const ALL = { riffle, terrain, exploded, phosphor, slow, turntable };
 const key = (el: Element, k: string) => el.dispatchEvent(new KeyboardEvent("keydown", { key: k, bubbles: true, cancelable: true }));
@@ -79,6 +80,13 @@ describe("mount", () => {
     expect(el.querySelector("[data-hairline-live]")).toBeNull();
   });
 
+  it("draws no hit bands on Riffle, and the stylesheet has no rules for them", () => {
+    const el = host();
+    riffle(el);
+    expect(el.querySelector(".bands")).toBeNull();
+    expect(css(true) + css(false)).not.toMatch(/bands/);
+  });
+
   it("puts the stylesheet in the document once, however many figures mount", () => {
     riffle(host()); terrain(host()); slow(host());
     const sheets = document.adoptedStyleSheets?.length ?? 0;
@@ -111,29 +119,61 @@ describe("options", () => {
   });
 
   // Review Focus 1: a caller without types passes what it has
-  it.each(["60", NaN, null, "fast", {}, Infinity])("mounts and updates with %o as the number", (v) => {
+  it.each(["0.8", -3, 7, NaN, null, "fast", {}, Infinity])("mounts, updates and draws with %o as the intensity", (v) => {
     const el = host();
     const bad = v as unknown as number;
     for (const mount of Object.values(ALL)) {
-      const f = (mount as (el: HTMLElement, o?: Record<string, unknown>) => { update(o: Record<string, unknown>): void; destroy(): void })(
-        el, { stagger: bad, radius: bad, gap: bad, afterglow: bad, rate: bad, coast: bad });
-      f.update({ stagger: bad, radius: bad, gap: bad, afterglow: bad, rate: bad, coast: bad });
+      const f = mount(el, { intensity: bad });
+      el.dispatchEvent(new MouseEvent("pointermove", { clientX: 200, clientY: 160, bubbles: true }));
+      f.update({ intensity: bad });
       frames(3);
       expect(el.querySelector("svg")!.innerHTML).not.toMatch(/NaN|Infinity|undefined/);
       f.destroy();
     }
   });
+});
 
-  it("shows Riffle's bands only for true", () => {
-    const el = host();
-    const f = riffle(el, { bands: true });
-    const bands = el.querySelector(".bands")!;
-    expect(bands.classList.contains("show")).toBe(true);
-    f.update({ bands: "yes" as unknown as boolean });
-    expect(bands.classList.contains("show")).toBe(false);
-    f.update({ bands: true });
-    f.update({ bands: undefined });
-    expect(bands.classList.contains("show")).toBe(false);
+describe("intensity", () => {
+  /* the same input for every host: a point, or a number of frames */
+  const PLAY: Record<keyof typeof ALL, Array<[number, number] | number>> = {
+    riffle: [[150, 120], 12],
+    terrain: [[200, 160], 20],
+    exploded: [[100, 80], 30],
+    phosphor: [[240, 140], 2, [260, 145], 2, [280, 150], 15],
+    slow: [[200, 160], 60],
+    turntable: [[50, 176], 1, [120, 176], 1, [200, 176], 1, [280, 176], 1, [350, 176], 40],
+  };
+  const svg = (el: Element) => el.querySelector("svg")!.innerHTML.replace(/hl-fd\d+/g, "hl-fd");
+
+  /* the hosts run side by side on one clock, so the default and an explicit 0.5 must draw alike: that is the control */
+  it.each(Object.keys(ALL) as Array<keyof typeof ALL>)("reaches %s's engine, at mount and through update", (id) => {
+    const mount = ALL[id];
+    const els = Array.from({ length: 6 }, host);
+    const [base, half, none, full, text, reset] = els;
+    mount(base);
+    mount(half, { intensity: 0.5 });
+    mount(none, { intensity: 0 });
+    mount(full, { intensity: 1 });
+    mount(text, { intensity: "1" as unknown as number });
+    mount(reset, { intensity: 1 }).update({ intensity: undefined });
+    for (const step of PLAY[id]) {
+      if (typeof step === "number") frames(step);
+      else for (const el of els) el.dispatchEvent(new MouseEvent("pointermove", { clientX: step[0], clientY: step[1], bubbles: true }));
+    }
+    expect(svg(half)).toBe(svg(base));
+    expect(svg(reset)).toBe(svg(base));
+    expect(svg(none)).not.toBe(svg(base));
+    expect(svg(full)).not.toBe(svg(base));
+    expect(svg(text)).toBe(svg(full));
+  });
+
+  it("keeps the intensity when update leaves it out", () => {
+    const els = [host(), host()];
+    terrain(els[0], { intensity: 1 }).update({ theme: "dark" });
+    terrain(els[1], { intensity: 1 });
+    for (const el of els) el.dispatchEvent(new MouseEvent("pointermove", { clientX: 200, clientY: 160, bubbles: true }));
+    frames(20);
+    expect(svg(els[0])).toBe(svg(els[1]));
   });
 });
 
@@ -153,31 +193,21 @@ describe("the caption", () => {
     expect(onRead.mock.calls).toEqual([["rate 1.00×"]]);
   });
 
-  it("reads a pulled card out by number, and by name when it has one", () => {
+  it("reads a pulled card out by its number alone, in the caption and the live region", () => {
     const el = host(), onRead = vi.fn();
-    const f = riffle(el, { onRead });
+    /* the old option, from a caller without types: ignored */
+    const f = riffle(el, { onRead, labels: ["Radial menu", "Drum"] } as never);
     key(el, "ArrowLeft");
     expect(onRead).toHaveBeenLastCalledWith("01");
     expect(el.querySelector("[data-hairline-live]")!.textContent).toBe("01");
-    f.update({ labels: ["Radial menu", "Drum"] });
-    expect(onRead).toHaveBeenLastCalledWith("01 · Radial menu");
+    f.update({ labels: ["Radial menu"] } as never);
     key(el, "ArrowRight");
-    expect(onRead).toHaveBeenLastCalledWith("02 · Drum");
-    key(el, "ArrowRight");
-    expect(onRead).toHaveBeenLastCalledWith("03"); // fewer than eight names: the rest go by number
+    expect(onRead).toHaveBeenLastCalledWith("02");
+    for (let i = 0; i < 7; i++) key(el, "ArrowRight");
+    expect(onRead).toHaveBeenLastCalledWith("08");
+    expect(el.querySelector("[data-hairline-live]")!.textContent).toBe("08");
     key(el, "Escape");
     expect(onRead).toHaveBeenLastCalledWith("rest");
-  });
-
-  it("takes the first eight labels and reads anything that is not a string as no name", () => {
-    const el = host(), onRead = vi.fn();
-    riffle(el, { onRead, labels: [7, "b", "c", "d", "e", "f", "g", "h", "ninth"] as unknown as string[] });
-    key(el, "ArrowLeft");
-    expect(onRead).toHaveBeenLastCalledWith("01");
-    for (let i = 0; i < 7; i++) key(el, "ArrowRight");
-    expect(onRead).toHaveBeenLastCalledWith("08 · h");
-    key(el, "ArrowRight");
-    expect(onRead).toHaveBeenLastCalledWith("08 · h");
   });
 
   // Review Focus 2: every figure on the page shares one frame loop
@@ -211,7 +241,7 @@ describe("teardown", () => {
     const el = host();
     const f = terrain(el);
     f.destroy();
-    f.update({ theme: "dark", label: "late", radius: 5 });
+    f.update({ theme: "dark", label: "late", intensity: 1 });
     expect(el.outerHTML).toBe("<div></div>");
   });
 

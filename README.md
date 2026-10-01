@@ -8,12 +8,12 @@ Six isometric line figures that answer the pointer. For React and for anything w
 
 ![The six figures: a tray of cards, a field of pillars, a window in layers, a dot matrix, a conveyor belt and a turntable](https://raw.githubusercontent.com/lucasmarkes/hairline/main/assets/hero.gif)
 
-Live, with a slider for every option: **[hairline.lucasmarkes.com](https://hairline.lucasmarkes.com)**
+Live, with a slider for `intensity`: **[hairline.lucasmarkes.com](https://hairline.lucasmarkes.com)**
 
 ## Install
 
 ```sh
-pnpm add @lucasmarkes/hairline
+npm i @lucasmarkes/hairline
 ```
 
 No dependencies. ESM only. React 18 or later is an optional peer, needed only by `@lucasmarkes/hairline/react`.
@@ -32,53 +32,48 @@ npx shadcn@latest add https://hairline.lucasmarkes.com/r/hairline.json
 import { Terrain } from "@lucasmarkes/hairline/react";
 
 export function Hero() {
-  return <Terrain radius={4} className="w-96" />;
+  return <Terrain />;
 }
 ```
 
-The entry is a client module, so a Server Component can render it with no `"use client"` of its own. A component takes its figure's options and every `<div>` attribute, and forwards its ref to the `<div>`.
+The figure fills its parent's width at a 5:4 aspect ratio. The entry is a client module, so a Server Component can render it with no `"use client"` of its own. Every component takes the options below and every `<div>` attribute, and forwards its ref to the `<div>`.
 
 ### Anything else
 
 ```ts
 import { terrain } from "@lucasmarkes/hairline";
 
-const figure = terrain(document.getElementById("figure")!, { radius: 4 });
+const figure = terrain(document.getElementById("figure")!);
 
-figure.update({ radius: 2 });
+figure.update({ intensity: 0.8 });
 figure.destroy();
 ```
 
-A figure draws into the element you give it, at the element's width and a 5:4 aspect ratio. `update` changes options on the running figure; `destroy` removes what the figure added. That is the shape of a Svelte action, so `use:terrain={{ radius }}` works as it is.
+A figure draws into the element you give it, at the element's width and a 5:4 aspect ratio. `update` changes options on the running figure; `destroy` removes what the figure added. That is the shape of a Svelte action, so `use:terrain={{ intensity }}` works as it is.
 
 ## The figures
 
-| Function | Component | What it is | Option | Range | Default |
-| --- | --- | --- | --- | --- | --- |
-| `riffle` | `Riffle` | A tray of eight cards. The card under the pointer stands up; the arrow keys walk the cards. | `stagger` | 0 to 90 ms | 40 |
-| `terrain` | `Terrain` | Eighty-one pillars on a plinth that rise around the pointer. | `radius` | 1.5 to 5 cells | 3 |
-| `exploded` | `Exploded` | An app window in four layers. Moving across opens the gap; moving down picks a layer. | `gap` | 12 to 40 units | 28 |
-| `phosphor` | `Phosphor` | A dot matrix that plays a loop, and fades like phosphor where the pointer paints it. | `afterglow` | 150 to 1500 ms | 520 |
-| `slow` | `Slow` | Crates riding a belt through a gate. Hovering slows the clock without stopping it. | `rate` | 0.05 to 0.6 × | 0.2 |
-| `turntable` | `Turntable` | Blocks on a turntable. A flick spins it; it settles on the nearest quarter turn. | `coast` | 200 to 1500 ms | 650 |
+| Function | Component | What it is | A stronger `intensity` |
+| --- | --- | --- | --- |
+| `riffle` | `Riffle` | A tray of eight cards. The card under the pointer stands up; the arrow keys walk the cards. | The ripple spreads further from the pulled card. |
+| `terrain` | `Terrain` | Eighty-one pillars on a plinth that rise around the pointer. | A wider area rises. |
+| `exploded` | `Exploded` | An app window in four layers. Moving across opens the gap; moving down picks a layer. | The layers open further. |
+| `phosphor` | `Phosphor` | A dot matrix that plays a loop, and fades like phosphor where the pointer paints it. | The trail lingers longer. |
+| `slow` | `Slow` | Crates riding a belt through a gate. Hovering slows the clock without stopping it. | Time slows down more. |
+| `turntable` | `Turntable` | Blocks on a turntable. A flick spins it; it settles on the nearest quarter turn. | The spin coasts longer. |
 
-A number outside its range is clamped, and anything that is not a number falls back to the default. The bounds are exported, so a slider or a table never repeats them:
+## Options
 
-```ts
-import { ranges } from "@lucasmarkes/hairline";
-
-ranges.terrain.radius; // { min: 1.5, max: 5, step: 0.25, default: 3, unit: "cells" }
-```
-
-Riffle takes two more options: `bands` (boolean) shows the bands the pointer is tested against, and `labels` (up to eight strings) names the cards.
-
-Every figure also takes:
+Every figure takes the same four, all optional:
 
 | Option | Type | Default | |
 | --- | --- | --- | --- |
+| `intensity` | `number` | `0.5` | How strongly the figure answers the pointer, from 0 (subtle) to 1 (strong). A number outside 0…1 is clamped; anything that is not a number is 0.5. |
 | `theme` | `"auto" \| "light" \| "dark"` | `"auto"` | `"auto"` follows the page: an ancestor with class `dark` or `data-theme="dark"`, then the page's `color-scheme`. |
 | `label` | `string` | a description in English | The accessible name. In React, `aria-label` does the same. |
-| `onRead` | `(text: string) => void` | | The figure's caption, each time it changes: `"03 · Dock"`, `"gap 28.0"`, `"rate 0.20×"`. |
+| `onRead` | `(text: string) => void` | | The figure's caption, each time it changes: `"03"`, `"gap 28.0"`, `"rate 0.20×"`. |
+
+In `update`, a key set to `undefined` goes back to its default, and a key left out stays as it is.
 
 ## Theme
 
@@ -109,7 +104,7 @@ The figure's styles have no specificity, so any rule of yours wins without `!imp
 
 ## More
 
-- [hairline.lucasmarkes.com](https://hairline.lucasmarkes.com): every figure live, a theme editor, and snippets for Next.js, Vue, Svelte, Astro and a CDN.
+- [hairline.lucasmarkes.com](https://hairline.lucasmarkes.com): every figure live, an inspector that writes the snippet for you, and a CDN example.
 - [The essay](https://lucasmarkes.com/lab/hairline): how the figures are drawn, and why with lines.
 - [CHANGELOG.md](https://github.com/lucasmarkes/hairline/blob/main/CHANGELOG.md) and [CONTRIBUTING.md](https://github.com/lucasmarkes/hairline/blob/main/CONTRIBUTING.md).
 

@@ -11,6 +11,12 @@ export const OPTION = {
   phosphor: ["afterglow", 900], slow: ["rate", 0.4], turntable: ["coast", 1000],
 };
 
+/** The intensity the package is set to at `set`: each maps exactly onto the value in OPTION (test/intensity.test.ts holds them together). */
+export const INTENSITY = {
+  riffle: 0.7, terrain: 0.75, exploded: 5 / 6,
+  phosphor: 0.5 + 190 / 980, slow: 0.25, turntable: 0.5 + 175 / 850,
+};
+
 export const SCRIPTS = {
   riffle: [
     { adv: 30 }, { cp: "rest" },

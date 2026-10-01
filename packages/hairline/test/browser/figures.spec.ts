@@ -41,14 +41,14 @@ test("every figure mounts, answers the pointer and leaves, with nothing on the c
 });
 
 test("Riffle walks its cards from the keyboard and says each one in the live region", async ({ page }) => {
-  await mount(page, "riffle", { labels: ["Radial menu", "Drum"] });
+  await mount(page, "riffle");
   const host = page.locator("#host"), live = host.locator("[data-hairline-live]");
   await page.keyboard.press("Tab");
   await expect(host).toBeFocused();
   await page.keyboard.press("ArrowLeft");
-  await expect(live).toHaveText("01 · Radial menu");
+  await expect(live).toHaveText("01");
   await page.keyboard.press("ArrowRight");
-  await expect(live).toHaveText("02 · Drum");
+  await expect(live).toHaveText("02");
   await page.keyboard.press("ArrowRight");
   await expect(live).toHaveText("03");
   await page.keyboard.press("Escape");

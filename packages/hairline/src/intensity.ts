@@ -1,0 +1,37 @@
+/**
+ * One option, `intensity`, for every figure. Each figure turns it into the
+ * one number its engine takes: two straight lines that meet at 0.5, where the
+ * number is the figure's default, with the figure's limits at 0 and 1.
+ *
+ * Internal: neither entry exports this. The site keeps a copy of TABLE for its
+ * copy and its tests hold the two together.
+ */
+
+export type FigureId = "riffle" | "terrain" | "exploded" | "phosphor" | "slow" | "turntable";
+
+/** Each figure's number at intensity 0, 0.5 and 1. Slow's falls: a slower clock is a stronger answer. */
+export const TABLE: Record<FigureId, readonly [number, number, number]> = {
+  riffle: [0, 40, 90], // stagger, ms
+  terrain: [1.5, 3, 5], // radius, cells
+  exploded: [12, 28, 40], // gap, viewBox units
+  phosphor: [150, 520, 1500], // afterglow, ms
+  slow: [0.6, 0.2, 0.05], // rate, × normal speed
+  turntable: [200, 650, 1500], // coast, ms
+};
+
+export const DEFAULT = 0.5;
+
+/** An intensity from anything: numeric strings are read, what is not a finite number is the default, the rest is clamped to 0…1. */
+export function intensity(value: unknown): number {
+  const n = typeof value === "string" && value.trim() !== "" ? Number(value) : value;
+  if (typeof n !== "number" || !Number.isFinite(n)) return DEFAULT;
+  return Math.min(1, Math.max(0, n));
+}
+
+/** The figure's own number for an intensity, rounded to three decimals so 0.7 gives Riffle 60 and not 59.99999999999999. */
+export function parameter(figure: FigureId, value: unknown): number {
+  const [lo, mid, hi] = TABLE[figure];
+  const i = intensity(value);
+  const v = i <= 0.5 ? lo + (i / 0.5) * (mid - lo) : mid + ((i - 0.5) / 0.5) * (hi - mid);
+  return Math.round(v * 1000) / 1000;
+}

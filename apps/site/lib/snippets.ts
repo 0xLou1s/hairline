@@ -1,4 +1,4 @@
-import type { FigureDoc } from "./figures";
+import { OPTIONS, THEME } from "./figures";
 
 /**
  * Every piece of code the page shows, as plain text. The page highlights it;
@@ -7,110 +7,81 @@ import type { FigureDoc } from "./figures";
 
 export const PACKAGE = "@lucasmarkes/hairline";
 
+/** npm first: it is the command a stranger already knows. */
 export function install(base: string): { label: string; code: string }[] {
   return [
+    { label: "npm", code: `npm i ${PACKAGE}` },
     { label: "pnpm", code: `pnpm add ${PACKAGE}` },
-    { label: "npm", code: `npm install ${PACKAGE}` },
     { label: "yarn", code: `yarn add ${PACKAGE}` },
     { label: "bun", code: `bun add ${PACKAGE}` },
     { label: "shadcn", code: `npx shadcn@latest add ${base}/r/hairline.json` },
   ];
 }
 
-export function react(doc: FigureDoc, value: string | number): string {
-  return `import { ${doc.name} } from "${PACKAGE}/react";
+export type Theme = "auto" | "light" | "dark";
 
-export function Figure() {
-  return <${doc.name} ${doc.option}={${value}} className="w-80" />;
-}
-`;
-}
-
-export function vanilla(doc: FigureDoc, value: string | number): string {
-  return `import { ${doc.id} } from "${PACKAGE}";
-
-const figure = ${doc.id}(document.getElementById("figure")!, { ${doc.option}: ${value} });
-
-// later
-figure.update({ ${doc.option}: ${doc.range.max} });
-figure.destroy();
-`;
+/**
+ * The inspector's snippet: the component with only the props that differ
+ * from the default. The intensity is read to two decimals, the slider's
+ * precision, so 0.5 and a float a hair away from it both leave it out.
+ */
+export function snippet(name: string, state: { intensity: number; theme: Theme }): string {
+  const intensity = Math.round(state.intensity * 100) / 100;
+  const props = [
+    intensity !== 0.5 ? ` intensity={${intensity}}` : "",
+    state.theme !== "auto" ? ` theme="${state.theme}"` : "",
+  ].join("");
+  return `import { ${name} } from "${PACKAGE}/react";\n\n<${name}${props} />\n`;
 }
 
-export const FRAMEWORKS: { label: string; lang: string; code: string }[] = [
-  {
-    label: "Next.js",
-    lang: "tsx",
-    code: `// app/page.tsx — a Server Component. The React entry is a client module,
-// so there is no "use client" to write.
-import { Terrain } from "${PACKAGE}/react";
+export const REACT = `import { Terrain } from "${PACKAGE}/react";
 
 export default function Page() {
-  return <Terrain radius={4} className="w-96" />;
+  return <Terrain />;
 }
-`,
-  },
-  {
-    label: "Vue",
-    lang: "vue",
-    code: `<script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref } from "vue";
-import { terrain, type Figure, type TerrainOptions } from "${PACKAGE}";
+`;
 
-const el = ref<HTMLElement>();
-let figure: Figure<TerrainOptions> | undefined;
+export const VANILLA = `import { terrain } from "${PACKAGE}";
 
-onMounted(() => { figure = terrain(el.value!, { radius: 4 }); });
-onBeforeUnmount(() => figure?.destroy());
-</script>
+const figure = terrain(document.getElementById("figure")!);
 
-<template>
-  <div ref="el" />
-</template>
-`,
-  },
-  {
-    label: "Svelte",
-    lang: "svelte",
-    code: `<script lang="ts">
-  import { terrain, type TerrainOptions } from "${PACKAGE}";
+figure.update({ intensity: 0.8 });
+figure.destroy();
+`;
 
-  // A figure has the shape of a Svelte action: { update, destroy }.
-  const figure = (el: HTMLElement, options: TerrainOptions) => terrain(el, options);
-  let radius = 4;
-</script>
-
-<div use:figure={{ radius }} />
-`,
-  },
-  {
-    label: "Astro",
-    lang: "astro",
-    code: `<div id="figure"></div>
-
-<script>
-  import { terrain } from "${PACKAGE}";
-
-  terrain(document.getElementById("figure")!, { radius: 4 });
-</script>
-`,
-  },
-  {
-    label: "CDN",
-    lang: "html",
-    code: `<div id="figure" style="width: 400px"></div>
+export const CDN = `<div id="figure" style="width: 400px"></div>
 
 <script type="module">
   import { terrain } from "https://esm.sh/${PACKAGE}";
 
-  terrain(document.getElementById("figure"), { radius: 4 });
+  terrain(document.getElementById("figure"));
 </script>
-`,
-  },
+`;
+
+export const CSS = `/* On a figure or anything above it. Without them a figure is light,
+   or dark when the page says so. --hairline-plate must be the colour
+   the figure sits on: it hides what is drawn behind each plate. */
+.figures {
+${THEME.map((t) => `  ${t.property}: ${t.light};`).join("\n")}
+}
+`;
+
+/** The quick start's tabs: the same figure three ways, each under the file it goes in. */
+export const QUICKSTART: { label: string; lang: string; file: string; code: string }[] = [
+  { label: "React", lang: "tsx", file: "app/page.tsx", code: REACT },
+  { label: "Vanilla", lang: "ts", file: "main.ts", code: VANILLA },
+  { label: "CDN", lang: "html", file: "index.html", code: CDN },
 ];
 
-/** What the theme editor prints. */
-export function themeCss(colors: Record<string, string>, stroke: number): string {
-  const lines = Object.entries(colors).map(([k, v]) => `  --hairline-${k}: ${v};`);
-  return `.figures {\n${lines.join("\n")}\n  --hairline-stroke: ${stroke};\n}\n`;
+/** The component's props, read from the options table so the two cannot drift. */
+export const REACT_SIGNATURE = `<Terrain
+${OPTIONS.map((o) => `  ${o.name}?: ${o.type}`).join("\n")}
+  {...divProps}
+/>
+`;
+
+export const VANILLA_SIGNATURE = `terrain(element: HTMLElement, options?: HairlineOptions): {
+  update(options: HairlineOptions): void
+  destroy(): void
 }
+`;

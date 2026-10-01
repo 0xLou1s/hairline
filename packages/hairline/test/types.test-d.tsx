@@ -4,53 +4,77 @@
  * an error. Vitest does not pick it up (it is not a `.test.` file).
  */
 import { createRef } from "react";
-import { exploded, ranges, riffle, slow, terrain, type Figure, type RiffleOptions } from "../src/index";
-import { Riffle, Terrain, Turntable, type RiffleProps } from "../src/react";
+import { exploded, phosphor, riffle, slow, terrain, turntable, type Figure, type HairlineOptions } from "../src/index";
+import * as vanilla from "../src/index";
+import * as components from "../src/react";
+import { Exploded, Phosphor, Riffle, Slow, Terrain, Turntable, type HairlineProps } from "../src/react";
 
 declare const el: HTMLElement;
 type Equal<A, B> = (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2 ? true : false;
 const yes = <T extends true>() => {};
 
-/* each figure takes its own option and no other's */
-riffle(el, { stagger: 60, bands: true, labels: ["a", "b"], theme: "dark", label: "Cards", onRead: (t: string) => t });
-terrain(el, { radius: 4 });
+/* every figure takes the same options */
+riffle(el, { intensity: 0.8, theme: "dark", label: "Cards", onRead: (t: string) => t });
 riffle(el);
-// @ts-expect-error radius is Terrain's
-riffle(el, { radius: 4 });
-// @ts-expect-error stagger is Riffle's
-terrain(el, { stagger: 60 });
+for (const mount of [riffle, terrain, exploded, phosphor, slow, turntable]) {
+  yes<Equal<typeof mount, (el: HTMLElement, options?: HairlineOptions) => Figure>>();
+  // @ts-expect-error the old per-figure options are gone
+  mount(el, { stagger: 60 });
+  // @ts-expect-error the old per-figure options are gone
+  mount(el, { radius: 3 });
+  // @ts-expect-error Riffle's bands are gone
+  mount(el, { bands: true });
+  // @ts-expect-error Riffle's names are gone
+  mount(el, { labels: [] });
+}
 // @ts-expect-error a number, not a string
-slow(el, { rate: "0.4" });
+slow(el, { intensity: "0.8" });
 // @ts-expect-error not a theme
 exploded(el, { theme: "sepia" });
 // @ts-expect-error the element is required
 riffle();
+yes<Equal<keyof HairlineOptions, "intensity" | "theme" | "label" | "onRead">>();
 
 /* the handle */
 const f = riffle(el);
-yes<Equal<typeof f, Figure<RiffleOptions>>>();
-f.update({ stagger: undefined, labels: ["a"] as const });
+yes<Equal<typeof f, Figure>>();
+f.update({ intensity: undefined, theme: "light" });
 f.destroy();
-// @ts-expect-error update takes Riffle's options
-f.update({ radius: 4 });
-/* ranges is literal, so a slider built from it is typed */
-yes<Equal<(typeof ranges)["riffle"]["stagger"]["default"], 40>>();
-yes<Equal<keyof typeof ranges, "riffle" | "terrain" | "exploded" | "phosphor" | "slow" | "turntable">>();
-// @ts-expect-error read-only
-ranges.riffle.stagger.max = 100;
+// @ts-expect-error update takes the same options
+f.update({ stagger: 60 });
+// @ts-expect-error update takes the same options
+f.update({ bands: true });
+
+/* the entries export the functions, the components and three types, and nothing of the old API */
+yes<Equal<keyof typeof vanilla, "riffle" | "terrain" | "exploded" | "phosphor" | "slow" | "turntable">>();
+yes<Equal<keyof typeof components, "Riffle" | "Terrain" | "Exploded" | "Phosphor" | "Slow" | "Turntable">>();
+// @ts-expect-error ranges is gone
+void vanilla.ranges;
+// @ts-expect-error the per-figure option types are gone
+type Old = import("../src/index").RiffleOptions;
+// @ts-expect-error the per-figure props types are gone
+type OldProps = import("../src/react").RiffleProps;
 
 /* components: the options, plus what a div takes */
 const ref = createRef<HTMLDivElement>();
-<Riffle ref={ref} stagger={60} bands labels={["a"]} className="w-80" id="cards" onClick={() => {}} onRead={(text) => text.length} />;
-<Terrain radius={4} style={{ width: 320 }} aria-label="Dunes" data-x="1" />;
-<Turntable />;
-// @ts-expect-error radius is Terrain's
-<Riffle radius={4} />;
+<Riffle ref={ref} intensity={0.8} theme="dark" className="w-80" id="cards" onClick={() => {}} onRead={(text) => text.length} />;
+<Terrain style={{ width: 320 }} aria-label="Dunes" data-x="1" />;
+<Riffle />;
+for (const C of [Riffle, Terrain, Exploded, Phosphor, Slow, Turntable]) {
+  // @ts-expect-error the old per-figure options are gone
+  <C stagger={60} />;
+  // @ts-expect-error the old per-figure options are gone
+  <C radius={3} />;
+  // @ts-expect-error Riffle's bands are gone
+  <C bands />;
+  // @ts-expect-error Riffle's names are gone
+  <C labels={[]} />;
+}
 // @ts-expect-error a number, not a string
-<Terrain radius="4" />;
+<Terrain intensity="0.8" />;
 // @ts-expect-error a figure has no children
 <Riffle>text</Riffle>;
 // @ts-expect-error the ref is to a div
 <Riffle ref={createRef<HTMLSpanElement>()} />;
-const props: RiffleProps = { stagger: 60, className: "w-80" };
+const props: HairlineProps = { intensity: 0.8, className: "w-80" };
 void props;

@@ -1,71 +1,247 @@
 @import "tailwindcss";
 
-/* The look of the tweet videos: warm paper, white tiles with a soft shadow, mono captions in the corners. */
+/* Black and white: a white canvas, chroma-free greys, one serif word in the hero, mono only for code. */
 @theme {
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
-  --color-ground: #efebe5;
-  --color-ink: #232327;
-  --color-muted: #77736c;
-  --color-line: rgba(28, 22, 14, 0.1);
+  --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", Menlo, monospace;
+  --font-serif: var(--font-instrument-serif), Georgia, serif;
+  --color-canvas: #fff;
+  --color-stone: #f4f4f4;
+  --color-ink: #0a0a0a;
+  --color-muted: #737373;
+  --color-faint: #a3a3a3;
+  --color-line: rgba(0, 0, 0, 0.07);
 }
 
-html { color-scheme: light; scroll-behavior: smooth; }
-
-body {
-  min-height: 100vh;
-  color: var(--color-ink);
-  background:
-    radial-gradient(60% 75% at 16% 8%, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0) 70%) fixed,
-    linear-gradient(160deg, #f7f5f2 0%, #f0ece6 55%, #e9e4dd 100%) fixed,
-    var(--color-ground);
+:root {
+  --topbar: 54px;
+  --lift: 0 1px 2px #00000008, 0 10px 28px -16px #00000024;
+  --lift-lg: 0 1px 2px #00000008, 0 2px 6px #00000008, 0 32px 64px -34px #00000038;
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-icon: cubic-bezier(0.2, 0, 0, 1);
+  /* Code in greys, each at least 4.5:1 on the code frame's #fafafa. shiki writes these names. */
+  --code-foreground: #0a0a0a;
+  --code-background: transparent;
+  --code-token-constant: #0a0a0a;
+  --code-token-function: #404040;
+  --code-token-parameter: #404040;
+  --code-token-string: #525252;
+  --code-token-string-expression: #525252;
+  --code-token-keyword: #6b6b6b;
+  --code-token-comment: #6b6b6b;
+  --code-token-punctuation: #6b6b6b;
+  --code-token-link: #6b6b6b;
 }
 
-.tile {
-  position: relative;
-  overflow: hidden;
-  border-radius: 12px;
-  background: #fff;
-  box-shadow:
-    0 0 0 1px rgba(0, 0, 0, 0.05),
-    0 2px 6px rgba(28, 22, 14, 0.05),
-    0 20px 50px -18px rgba(28, 22, 14, 0.18);
+html { color-scheme: light; }
+/* smooth only once the docs' sidebar has mounted (it sets data-smooth), so a deep link lands at once instead of sweeping down from the top */
+@media (prefers-reduced-motion: no-preference) { html[data-smooth] { scroll-behavior: smooth; } }
+body { min-height: 100vh; color: var(--color-ink); background: var(--color-canvas); }
+em { font-style: italic; }
+
+.topbar {
+  position: sticky; top: 0; z-index: 10;
+  display: flex; align-items: center; justify-content: space-between;
+  height: var(--topbar); padding: 0 clamp(18px, 5vw, 28px);
+  background: color-mix(in srgb, var(--color-canvas) 82%, transparent);
+  backdrop-filter: blur(12px);
 }
 
-.cap {
-  position: absolute;
-  font: 500 11px/1 var(--font-mono);
-  letter-spacing: 0.02em;
-  color: var(--hairline-edge, #a4a4ac);
-  pointer-events: none;
-  font-variant-numeric: tabular-nums;
+/* the top bar's items, alike: muted 13px text, or a 16px icon, each 10px clear of its neighbours */
+.topbar-link { display: inline-flex; align-items: center; height: 30px; padding: 0 10px; border-radius: 8px; font-size: 13px; line-height: 1; color: var(--color-muted); }
+a.topbar-link:hover { color: var(--color-ink); }
+
+.btn {
+  display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 14px;
+  border-radius: 9px; font-size: 14px; font-weight: 500;
+  background: #fff; box-shadow: inset 0 0 0 1px var(--color-stone), var(--lift);
 }
+.btn-primary { background: var(--color-ink); color: #fff; box-shadow: var(--lift); }
+/* on its own layer from the start, so the press scales the text as drawn instead of redrawing it as the layer comes and goes */
+.press { transition: transform 160ms var(--ease-out); will-change: transform; }
+.press:active { transform: scale(0.96); }
 
-.code { overflow: hidden; border-radius: 12px; background: rgba(255, 255, 255, 0.66); box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.05); }
-.code-bar { display: flex; align-items: center; justify-content: space-between; padding: 6px 6px 6px 8px; border-bottom: 1px solid var(--color-line); }
-.code-tab, .code-copy, .chip { border-radius: 7px; padding: 5px 10px; font: 500 12px/1 var(--font-mono); color: var(--color-muted); }
-.code-tab[aria-selected="true"], .chip[aria-pressed="true"] { background: rgba(28, 22, 14, 0.07); color: var(--color-ink); }
-.code-copy:hover, .code-tab:hover, .chip:hover { color: var(--color-ink); }
-.chip { box-shadow: 0 0 0 1px var(--color-line); }
-.code-panel { margin: 0; overflow-x: auto; padding: 14px 16px; font: 400 13px/1.6 var(--font-mono); }
-.code-panel pre { margin: 0; background: transparent !important; }
-.code-panel code { font: inherit; }
-:is(.code-tab, .code-copy, .chip, .code-panel, .slider, .swatch, a):focus-visible { outline: 1.5px solid var(--color-ink); outline-offset: 2px; }
+.pill {
+  display: flex; align-items: center; gap: 10px; height: 48px; padding: 0 6px 0 16px;
+  border-radius: 12px; background: #fff; box-shadow: inset 0 0 0 1px var(--color-stone), var(--lift);
+  font: 400 14px/1 var(--font-mono); text-align: left;
+}
+.pill-line { flex: 1; min-width: 0; overflow-x: auto; white-space: nowrap; scrollbar-width: none; }
+.pill-line::-webkit-scrollbar { display: none; }
+.pill-line[data-more] { mask-image: linear-gradient(to right, #000 calc(100% - 32px), transparent); }
+.pill-manager { border-radius: 5px; padding: 3px 4px; margin: -3px -4px; color: var(--color-ink); text-decoration: underline dotted var(--color-faint); text-underline-offset: 4px; cursor: pointer; }
+.pill-manager:hover { background: var(--color-stone); }
 
-.slider { flex: 1; min-width: 0; height: 18px; appearance: none; background: transparent; cursor: pointer; }
-.slider::-webkit-slider-runnable-track { height: 2px; border-radius: 1px; background: rgba(28, 22, 14, 0.18); }
-.slider::-webkit-slider-thumb { appearance: none; width: 14px; height: 14px; margin-top: -6px; border-radius: 50%; background: var(--color-ink); }
-.slider::-moz-range-track { height: 2px; border-radius: 1px; background: rgba(28, 22, 14, 0.18); }
-.slider::-moz-range-thumb { width: 14px; height: 14px; border: 0; border-radius: 50%; background: var(--color-ink); }
+.slider { width: 100%; height: 18px; appearance: none; background: transparent; cursor: pointer; }
+.slider::-webkit-slider-runnable-track { height: 2px; border-radius: 1px; background: rgba(0, 0, 0, 0.16); }
+.slider::-webkit-slider-thumb { appearance: none; width: 16px; height: 16px; margin-top: -7px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2), var(--lift); }
+.slider::-moz-range-track { height: 2px; border-radius: 1px; background: rgba(0, 0, 0, 0.16); }
+.slider::-moz-range-thumb { width: 16px; height: 16px; border: 0; border-radius: 50%; background: #fff; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2); }
 
-.swatch { width: 26px; height: 26px; padding: 0; border: 0; border-radius: 7px; background: none; cursor: pointer; }
-.swatch::-webkit-color-swatch-wrapper { padding: 0; }
-.swatch::-webkit-color-swatch { border: 1px solid var(--color-line); border-radius: 7px; }
+/* Code: a frame, a bar with the title and a copy icon, the code. Line numbers are a counter in ::before, so they are never selected or copied. */
+.code { overflow: hidden; border-radius: 12px; background: #fafafa; box-shadow: inset 0 0 0 1px var(--color-stone); }
+.code-bar { display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 4px 4px 4px 14px; border-bottom: 1px solid var(--color-stone); }
+.code-tabs { display: flex; flex: none; gap: 2px; margin-left: -8px; }
+.code-tab { border-radius: 7px; padding: 6px 10px; font-size: 13px; font-weight: 500; line-height: 1; color: var(--color-muted); transition: background-color 150ms ease, color 150ms ease; }
+.code-tab[aria-selected="true"] { background: #fff; color: var(--color-ink); box-shadow: 0 0 0 1px var(--color-stone); }
+.code-tab:hover { color: var(--color-ink); }
+.code-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; color: var(--color-muted); }
+.code-tabs + .code-title { text-align: right; }
+.code-body { overflow-x: auto; padding: 16px 18px; font: 400 13px/1.65 var(--font-mono); }
+.code-body pre { margin: 0; }
+.code-body code { font: inherit; counter-reset: line; }
+.code-body .line::before { counter-increment: line; content: counter(line); display: inline-block; width: 2ch; margin-right: 16px; text-align: right; color: var(--color-faint); }
+.code-body[data-plain] .line::before { content: none; }
 
-.props { width: 100%; border-collapse: collapse; font-size: 13px; }
-.props th { padding: 8px 12px 8px 0; text-align: left; font: 500 11px/1 var(--font-mono); letter-spacing: 0.04em; text-transform: uppercase; color: var(--color-muted); }
-.props td { padding: 10px 12px 10px 0; vertical-align: top; border-top: 1px solid var(--color-line); }
-.props td:nth-child(-n + 3) { font-family: var(--font-mono); white-space: nowrap; }
+.tile { overflow: hidden; border-radius: 14px; background: #fff; box-shadow: inset 0 0 0 1px var(--color-stone), var(--lift); }
+.figure-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(120px, 240px); align-items: center; gap: 24px; padding: 28px 0; border-top: 1px solid var(--color-line); }
+.figure-row:last-child { border-bottom: 1px solid var(--color-line); }
+.props, .intensity { width: 100%; border-collapse: collapse; font-size: 13px; }
+:is(.props, .intensity) th { padding: 8px 14px 8px 0; text-align: left; font-size: 13px; font-weight: 500; color: var(--color-muted); }
+:is(.props, .intensity) td { padding: 12px 14px 12px 0; vertical-align: top; border-top: 1px solid var(--color-line); line-height: 1.5; }
+.props td:nth-child(-n + 3) { white-space: nowrap; }
 .props td:nth-child(2), .props td:nth-child(3) { color: var(--color-muted); }
+.props[data-tokens] td:nth-child(3) { white-space: normal; color: var(--color-ink); }
+.intensity td { white-space: nowrap; }
+.intensity td:nth-child(n + 3) { color: var(--color-muted); font-variant-numeric: tabular-nums; }
+.table-scroll { overflow-x: auto; border-radius: 4px; }
 
-@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+/* The docs: the header and nine sections in one column. Prose stops at 64ch; code and tables take the column. */
+.docs { --gutter: clamp(18px, 5vw, 28px); --doc-offset: calc(var(--topbar) + 60px); max-width: 1080px; margin: 0 auto; padding: 0 var(--gutter); }
+.docs-main { display: grid; gap: 64px; min-width: 0; padding: 48px 0 96px; }
+.docs-main > * { min-width: 0; }
+.doc-section { display: grid; gap: 16px; scroll-margin-top: var(--doc-offset); }
+.doc-section > * { min-width: 0; }
+.doc-h2 { font-size: 24px; font-weight: 500; line-height: 1.2; letter-spacing: -0.02em; }
+.doc-p, .doc-list { max-width: 64ch; font-size: 15px; line-height: 1.6; text-wrap: pretty; }
+.doc-list { display: grid; gap: 8px; padding-left: 1.2em; list-style: disc; }
+.doc-note { max-width: 64ch; font-size: 14px; line-height: 1.55; color: var(--color-muted); text-wrap: pretty; }
+.doc-code { font-size: 0.9em; color: var(--color-ink); }
+.doc-more { justify-self: start; font-size: 14px; color: var(--color-ink); text-decoration: underline; text-decoration-color: var(--color-faint); text-underline-offset: 4px; }
+.doc-more:hover { text-decoration-color: currentColor; }
+
+/* The sidebar: the same links twice, grouped in a column from 1024px, one sideways strip under the top bar below it. */
+.doc-link { display: flex; align-items: center; height: 32px; padding: 0 10px; border-radius: 8px; font-size: 14px; color: var(--color-muted); white-space: nowrap; transition: color 200ms ease; }
+.doc-link:hover, .doc-link[aria-current] { color: var(--color-ink); }
+/* The marked link's text steps aside for a dot that flies in from the link marked before. The old text steps back at
+   once and the new one steps aside as the dot lands, so the two never meet. Nothing moves until the first mark is
+   drawn: the page opens with it in place. */
+.doc-link > span { display: inline-block; }
+.doc-link[aria-current] > span { transform: translateX(12px); }
+[data-live] .doc-link > span { transition: transform 250ms var(--ease-out); }
+[data-live] .doc-link[aria-current] > span { transition-duration: 300ms; transition-delay: 160ms; }
+.doc-dot { position: absolute; top: 0; left: 0; width: 5px; height: 5px; border-radius: 50%; background: var(--color-ink); pointer-events: none; }
+[data-live] > .doc-dot { transition: translate 350ms var(--ease-out); }
+.doc-sidebar { display: none; }
+.doc-group-label { margin-bottom: 4px; padding: 0 10px; font-size: 12px; font-weight: 500; color: var(--color-muted); }
+.doc-strip { position: sticky; top: var(--topbar); z-index: 9; margin: 0 calc(-1 * var(--gutter)); background: color-mix(in srgb, var(--color-canvas) 82%, transparent); backdrop-filter: blur(12px); }
+.doc-strip-scroll { position: relative; overflow-x: auto; padding: 6px var(--gutter); scrollbar-width: none; }
+.doc-strip-scroll::-webkit-scrollbar { display: none; }
+.doc-strip-scroll ul { display: flex; gap: 8px; width: max-content; }
+.doc-strip-scroll[data-start] { mask-image: linear-gradient(to right, transparent, #000 24px); }
+.doc-strip-scroll[data-end] { mask-image: linear-gradient(to right, #000 calc(100% - 24px), transparent); }
+.doc-strip-scroll[data-start][data-end] { mask-image: linear-gradient(to right, transparent, #000 24px, #000 calc(100% - 24px), transparent); }
+@media (min-width: 1024px) {
+  .docs { --doc-offset: calc(var(--topbar) + 24px); display: grid; grid-template-columns: 220px minmax(0, 1fr); column-gap: 56px; padding-top: 64px; }
+  .docs-main { padding-top: 0; }
+  .doc-strip { display: none; }
+  /* short enough to fit the window from where it starts, 64px under the top bar, with 24px to spare; a shorter
+     window scrolls it */
+  .doc-sidebar { display: grid; gap: 24px; align-self: start; position: sticky; top: calc(var(--topbar) + 24px); max-height: calc(100vh - var(--topbar) - 88px); overflow-y: auto; scrollbar-width: thin; }
+}
+
+/* The hero: each block rises out of a blur, one after another. */
+.hero-title { max-width: 16ch; font-size: 44px; font-weight: 500; line-height: 1.02; letter-spacing: -0.045em; text-wrap: balance; }
+.hero-title em { font-family: var(--font-serif); font-size: 1.08em; font-weight: 400; letter-spacing: -0.02em; }
+.hero-sub { margin-top: 20px; max-width: 44ch; font-size: 18px; line-height: 1.5; color: var(--color-muted); text-wrap: pretty; }
+.hero-install { margin-top: 36px; width: 100%; max-width: 460px; }
+.hero-actions { margin-top: 20px; display: flex; gap: 8px; }
+@media (min-width: 768px) { .hero-title { font-size: 64px; } }
+
+/* Rise, blur and fade end in that order. The rise and the blur end in steps: moving text is drawn on whole device
+   pixels, so the last pixel of travel lands as a hop, and Chrome draws no blur under 0.4px, so the last of it goes
+   in one frame. The hop comes under the blur, the blur goes while the block still fades in, and the fade ends it. */
+.hero-rise > * { animation: fade 750ms var(--ease-out) both, unblur 560ms var(--ease-out) both, rise 380ms var(--ease-out) both; animation-delay: calc(var(--i) * 70ms + 60ms); }
+.enter { animation: fade 850ms var(--ease-out) both, unblur 640ms var(--ease-out) both, rise 440ms var(--ease-out) both; animation-delay: var(--d, 0ms); }
+.enter-hint { animation: hint 220ms var(--ease-out) both; }
+@keyframes unblur { from { filter: blur(6px); } to { filter: none; } }
+@keyframes rise { from { transform: translateY(12px); } to { transform: none; } }
+@keyframes hint { from { opacity: 0; transform: translateY(2px); filter: blur(2px); } to { opacity: 1; transform: none; filter: none; } }
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+
+/* A single choice whose highlight slides to the checked option. */
+.slide { position: relative; display: flex; isolation: isolate; }
+.slide-hl { position: absolute; top: 0; left: 0; z-index: -1; pointer-events: none; }
+.slide[data-ready] .slide-hl { transition: transform 200ms var(--ease-out), clip-path 200ms var(--ease-out); }
+/* a choice made with the keyboard lands at once */
+.slide[data-keyed] .slide-hl { transition: none; }
+.slide-item { position: relative; display: inline-flex; flex: none; align-items: center; justify-content: center; white-space: nowrap; color: var(--color-muted); transition: color 150ms ease; }
+.slide-item:hover, .slide-item[aria-checked="true"] { color: var(--color-ink); }
+
+/* Copy as an icon: the clipboard blurs and shrinks away as the check grows in. */
+.icopy { position: relative; flex: none; display: grid; place-items: center; width: 36px; height: 36px; border-radius: 8px; color: var(--color-muted); transition: color 150ms ease, background-color 150ms ease, transform 160ms var(--ease-out); }
+.icopy::after { content: ""; position: absolute; inset: -2px; }
+.icopy:hover { color: var(--color-ink); background: var(--color-stone); }
+.icopy:active { transform: scale(0.96); }
+.icopy[data-copied] { color: var(--color-ink); }
+.icopy svg { grid-area: 1 / 1; transition: opacity 200ms var(--ease-icon), transform 200ms var(--ease-icon), filter 200ms var(--ease-icon); }
+.icopy-b, .icopy[data-copied] .icopy-a { opacity: 0; transform: scale(0.25); filter: blur(4px); }
+.icopy[data-copied] .icopy-b { opacity: 1; transform: none; filter: none; }
+
+/* The inspector's snippet, in greys: only the tag name carries weight. */
+.p-code { flex: 1; min-width: 0; margin: 0; overflow-x: auto; font: 400 13px/1.65 var(--font-mono); color: var(--color-ink); white-space: pre; }
+.t-kw { color: var(--code-token-keyword); }
+.t-str { color: var(--code-token-string); }
+.t-tag { color: var(--code-token-constant); font-weight: 500; }
+.t-attr { color: var(--code-token-function); }
+.t-val { color: var(--code-foreground); }
+
+/* The inspector: the figure on the page itself, one dock under it for every control. */
+.s-inspector { display: grid; grid-template-columns: minmax(0, 1fr); justify-items: center; }
+.s-stage { position: relative; display: grid; place-items: center; width: 100%; max-width: 760px; padding: clamp(8px, 4vw, 40px); border-radius: 28px; }
+.s-stage > [data-hairline] { width: 100%; max-width: 560px; }
+.s-stage[data-dark] { background: #08090a; }
+.s-dock { margin-top: 8px; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px; max-width: 100%; padding: 6px; border-radius: 16px; background: #fff; box-shadow: inset 0 0 0 1px var(--color-stone), var(--lift-lg); }
+.s-figures { min-width: 0; max-width: 100%; overflow-x: auto; scrollbar-width: none; }
+.s-figures::-webkit-scrollbar { display: none; }
+.s-figures .slide-item { height: 36px; padding: 0 12px; font-size: 14px; }
+.s-figures { --slide-radius: 10px; }
+.s-figures .slide-hl { background: var(--color-stone); }
+.s-row { display: flex; align-items: center; gap: 12px; padding-left: 12px; border-left: 1px solid var(--color-line); }
+.s-range { display: flex; align-items: center; gap: 10px; width: 230px; }
+.s-range-label { font-size: 13px; color: var(--color-muted); }
+.s-range .slider { flex: 1; min-width: 0; }
+.s-value { width: 4ch; font-size: 13px; font-weight: 500; font-variant-numeric: tabular-nums; text-align: right; }
+.s-themes { padding: 2px; border-radius: 10px; background: var(--color-stone); }
+.s-themes .slide-item { width: 36px; height: 36px; }
+.s-themes .slide-hl { border-radius: 8px; background: #fff; box-shadow: var(--lift); }
+.s-hint { margin-top: 14px; min-height: 1.5em; font-size: 13px; line-height: 1.5; color: var(--color-muted); text-align: center; text-wrap: balance; }
+.s-code { margin-top: 28px; display: flex; align-items: flex-start; gap: 8px; width: 100%; max-width: 560px; padding: 6px 6px 6px 0; border-radius: 14px; background: #fff; box-shadow: inset 0 0 0 1px var(--color-stone), var(--lift); }
+.s-code .p-code { padding: 10px 0 10px 18px; }
+
+@media (max-width: 760px) {
+  .s-dock { width: 100%; }
+  .s-figures { flex: 1 1 100%; }
+  .s-row { width: 100%; justify-content: space-between; padding: 6px 0 0 10px; border-left: 0; border-top: 1px solid var(--color-line); }
+  .s-range { flex: 1; width: auto; }
+}
+
+:is(button, a, input, .code-body, .table-scroll):focus-visible { outline: 1.5px solid var(--color-ink); outline-offset: 2px; }
+
+@media (max-width: 640px) {
+  /* a row stacks, text first, and the figure keeps its width */
+  .figure-row { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  .figure-row .tile { justify-self: start; }
+  /* one option per block: name, type and default on a line, the description under them */
+  .props thead { display: none; }
+  .props tr { display: flex; flex-wrap: wrap; column-gap: 12px; padding: 14px 0; border-top: 1px solid var(--color-line); }
+  .props td { padding: 0; border: 0; }
+  .props td:nth-child(4) { flex-basis: 100%; margin-top: 6px; }
+  .props[data-tokens] td:nth-child(3) { flex-basis: 100%; margin-top: 6px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-rise > *, .enter, .enter-hint { animation-name: fade; }
+  .slide[data-ready] .slide-hl { transition: none; }
+  .icopy-b, .icopy[data-copied] .icopy-a { transform: none; filter: none; }
+  [data-live] > .doc-dot, [data-live] .doc-link > span { transition: none; }
+}

@@ -1,82 +1,198 @@
+import { gzipSync } from "node:zlib";
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { ranges } from "@lucasmarkes/hairline";
 import * as components from "@lucasmarkes/hairline/react";
 import * as figures from "@lucasmarkes/hairline";
-import { FIGURES, SHARED, rows, span } from "@/lib/figures";
-import { llms } from "@/lib/llms";
-import { FRAMEWORKS, install, react, vanilla } from "@/lib/snippets";
+import type { HairlineOptions } from "@lucasmarkes/hairline";
+import { TABLE } from "../../../packages/hairline/src/intensity";
+import { SECTIONS } from "@/lib/docs";
+import { FIGURES, INTENSITY, OPTIONS, measure } from "@/lib/figures";
+import { llms, scale } from "@/lib/llms";
+import { tiny } from "@/lib/size";
+import { highlight } from "@/lib/highlight";
+import { CDN, CSS, QUICKSTART, REACT, REACT_SIGNATURE, VANILLA, VANILLA_SIGNATURE, install, snippet } from "@/lib/snippets";
 
-/** The docs are generated from the package, and these check that nothing was written by hand around it. */
+/** The docs describe the package, and these check that nothing was written by hand around it. */
 
-describe("the props tables", () => {
-  it("have one figure per entry of ranges, in the same order", () => {
-    expect(FIGURES.map((f) => f.id)).toEqual(Object.keys(ranges));
+/* a key added to or taken from HairlineOptions fails the typecheck here, before the table can drift */
+const KEYS = { intensity: true, theme: true, label: true, onRead: true } satisfies Record<keyof HairlineOptions, true>;
+
+describe("the figures", () => {
+  it("are the package's six, each with a function and a component", () => {
+    expect(FIGURES.map((f) => f.id).sort()).toEqual(Object.keys(figures).sort());
+    for (const doc of FIGURES) expect(components).toHaveProperty(doc.name);
   });
 
-  it.each(FIGURES)("$name's first row is its numeric option, with the package's default and bounds", (doc) => {
-    const range = (ranges[doc.id] as Record<string, { min: number; max: number; default: number }>)[doc.option];
-    const [row] = rows(doc);
-    expect(range).toBeDefined();
-    expect(row.name).toBe(doc.option);
-    expect(row.type).toBe("number");
-    expect(row.default).toBe(String(range.default));
-    expect(row.description).toContain(String(range.min));
-    expect(row.description).toContain(String(range.max));
-  });
-
-  it("list Riffle's two other options and nobody else's", () => {
-    expect(rows(FIGURES[0]).map((r) => r.name)).toEqual(["stagger", "bands", "labels"]);
-    for (const doc of FIGURES.slice(1)) expect(rows(doc)).toHaveLength(1);
-  });
-
-  it("list the shared options", () => {
-    expect(SHARED.map((r) => r.name)).toEqual(["theme", "label", "onRead"]);
-  });
-
-  it("write a range the way a person would", () => {
-    expect(span(ranges.riffle.stagger)).toBe("0 to 90 ms");
-    expect(span(ranges.slow.rate)).toBe("0.05× to 0.6×");
-    expect(span(ranges.exploded.gap)).toBe("12 to 40 units");
+  it("copy the package's intensity table exactly", () => {
+    expect(INTENSITY).toEqual(TABLE);
   });
 });
 
-describe("the snippets", () => {
-  it.each(FIGURES)("name an export that exists: $name", (doc) => {
-    expect(components).toHaveProperty(doc.name);
-    expect(figures).toHaveProperty(doc.id);
-    expect(react(doc, 7)).toContain(`<${doc.name} ${doc.option}={7}`);
-    expect(vanilla(doc, 7)).toContain(`${doc.id}(document.getElementById("figure")!, { ${doc.option}: 7 })`);
+describe("the options table", () => {
+  it("has the four keys of HairlineOptions, in that order", () => {
+    expect(OPTIONS.map((r) => r.name)).toEqual(Object.keys(KEYS));
   });
 
-  it("install from the address the site is built for", () => {
+  it("gives intensity's default as 0.5", () => {
+    expect(OPTIONS[0]).toMatchObject({ name: "intensity", type: "number", default: "0.5" });
+  });
+});
+
+describe("the inspector's snippet", () => {
+  it("is the bare component at the defaults", () => {
+    expect(snippet("Terrain", { intensity: 0.5, theme: "auto" })).toContain("<Terrain />");
+  });
+
+  it("leaves out an intensity that reads as 0.5 at the slider's precision", () => {
+    expect(snippet("Terrain", { intensity: 0.1 + 0.4, theme: "auto" })).toContain("<Terrain />");
+    expect(snippet("Terrain", { intensity: 0.5000001, theme: "auto" })).toContain("<Terrain />");
+  });
+
+  it("shows an intensity of 0, which is not the default", () => {
+    expect(snippet("Riffle", { intensity: 0, theme: "auto" })).toContain("<Riffle intensity={0} />");
+  });
+
+  it("shows what differs, intensity first, at two decimals", () => {
+    expect(snippet("Slow", { intensity: 0.1 + 0.2, theme: "dark" })).toContain('<Slow intensity={0.3} theme="dark" />');
+    expect(snippet("Slow", { intensity: 0.55, theme: "light" })).toContain('<Slow intensity={0.55} theme="light" />');
+    expect(snippet("Slow", { intensity: 1, theme: "auto" })).toContain("<Slow intensity={1} />");
+  });
+
+  it("imports what it renders", () => {
+    expect(snippet("Exploded", { intensity: 0.5, theme: "auto" })).toMatch(/^import \{ Exploded \} from "@lucasmarkes\/hairline\/react";/);
+  });
+});
+
+describe("the install commands", () => {
+  it("put npm first and install from the address the site is built for", () => {
     const commands = install("https://example.test");
-    expect(commands.map((c) => c.label)).toEqual(["pnpm", "npm", "yarn", "bun", "shadcn"]);
+    expect(commands.map((c) => c.label)).toEqual(["npm", "pnpm", "yarn", "bun", "shadcn"]);
+    expect(commands[0].code).toBe("npm i @lucasmarkes/hairline");
     expect(commands[4].code).toBe("npx shadcn@latest add https://example.test/r/hairline.json");
   });
+});
 
-  it("cover the five frameworks", () => {
-    expect(FRAMEWORKS.map((f) => f.label)).toEqual(["Next.js", "Vue", "Svelte", "Astro", "CDN"]);
+describe("the quick start", () => {
+  it("pastes React, Vanilla and CDN, each under a file name, and none of them sets an option the package dropped", () => {
+    expect(QUICKSTART.map((q) => [q.label, q.file])).toEqual([["React", "app/page.tsx"], ["Vanilla", "main.ts"], ["CDN", "index.html"]]);
+    expect(QUICKSTART.map((q) => q.code)).toEqual([REACT, VANILLA, CDN]);
+    for (const q of QUICKSTART) expect(q.code).not.toMatch(/stagger|radius|afterglow|coast|bands|labels|ranges|className/);
+  });
+});
+
+describe("the theme's CSS", () => {
+  it("sets all six theme properties", () => {
+    for (const key of ["plate", "hi", "edge", "mid", "lo", "stroke"]) expect(CSS).toContain(`--hairline-${key}:`);
+  });
+});
+
+describe("the signatures", () => {
+  it("list the component's four options with their types, read from the options table", () => {
+    expect(REACT_SIGNATURE).toBe(`<Terrain
+  intensity?: number
+  theme?: "auto" | "light" | "dark"
+  label?: string
+  onRead?: (text: string) => void
+  {...divProps}
+/>
+`);
+  });
+
+  it("give the function's handle its two methods", () => {
+    expect(VANILLA_SIGNATURE).toBe(`terrain(element: HTMLElement, options?: HairlineOptions): {
+  update(options: HairlineOptions): void
+  destroy(): void
+}
+`);
+  });
+});
+
+describe("the Install note's size", () => {
+  it("is the gzip size of the vanilla entry, to a tenth of a kB", () => {
+    const bytes = gzipSync(readFileSync(new URL("../../../packages/hairline/dist/index.js", import.meta.url))).length;
+    expect(tiny()).toBe(`${(bytes / 1000).toFixed(1)} kB`);
+    expect(tiny()).toMatch(/^\d+\.\d kB$/);
+  });
+});
+
+describe("the docs' sections", () => {
+  it("are nine, in three groups in order, with unique ids that work as fragments", () => {
+    expect(SECTIONS.map((s) => s.id)).toEqual(["install", "quick-start", "options", "react", "vanilla", "cdn", "figures", "theme", "accessibility"]);
+    expect(new Set(SECTIONS.map((s) => s.id)).size).toBe(9);
+    for (const s of SECTIONS) expect(s.id).toMatch(/^[a-z-]+$/);
+    expect(SECTIONS.map((s) => s.group)).toEqual([
+      "Getting started", "Getting started", "Getting started",
+      "API", "API", "API",
+      "Reference", "Reference", "Reference",
+    ]);
+  });
+
+  it("share their headings with /llms.txt", () => {
+    const text = llms("https://example.test");
+    for (const title of ["Install", "Options", "Figures", "Theme", "Accessibility"]) {
+      expect(SECTIONS.map((s) => s.title)).toContain(title);
+      expect(text).toContain(`\n## ${title}\n`);
+    }
+  });
+});
+
+describe("the intensity table", () => {
+  it("writes each number with its unit, as /llms.txt does", () => {
+    expect(measure(40, "ms")).toBe("40 ms");
+    expect(measure(0.2, "× normal speed")).toBe("0.2× normal speed");
+    for (const doc of FIGURES) {
+      const [lo, mid, hi] = INTENSITY[doc.id].map((n) => measure(n, doc.parameter.unit));
+      expect(scale(doc.id, doc.parameter)).toBe(`${doc.parameter.name} ${lo} at 0, ${mid} at 0.5, ${hi} at 1`);
+    }
   });
 });
 
 describe("/llms.txt", () => {
   const text = llms("https://example.test");
 
-  it.each(FIGURES)("documents $name with its range and both snippets", (doc) => {
+  it.each(FIGURES)("names $name with its row of the intensity table", (doc) => {
     expect(text).toContain(`### ${doc.name}`);
-    expect(text).toContain(span(doc.range));
-    expect(text).toContain(react(doc, doc.range.default).trimEnd());
-    expect(text).toContain(vanilla(doc, doc.range.default).trimEnd());
+    expect(text).toContain(doc.stronger);
+    expect(text).toContain(scale(doc.id, doc.parameter));
+    for (const n of INTENSITY[doc.id]) expect(scale(doc.id, doc.parameter)).toContain(String(n));
   });
 
-  it("names every theme property and the registry item", () => {
+  it("documents the four options, every theme property and the registry item", () => {
+    for (const row of OPTIONS) expect(text).toContain(`- \`${row.name}\``);
     for (const key of ["plate", "hi", "edge", "mid", "lo", "stroke"]) expect(text).toContain(`--hairline-${key}`);
     expect(text).toContain("https://example.test/r/hairline.json");
   });
 
+  it("mentions no option the package dropped", () => {
+    expect(text).not.toMatch(/stagger=|radius=|\bbands\b|\blabels\b|\branges\b/);
+  });
+
   it("has no hole in it", () => {
     // outside the code blocks, where `undefined` is a word TypeScript uses
-    const prose = text.replace(/```[\s\S]*?```/g, "");
+    const prose = text.replace(/```[\s\S]*?```/g, "").replace(/`undefined`/g, "");
     expect(prose).not.toMatch(/undefined|NaN|\[object/);
+  });
+});
+
+/** Every snippet the docs highlight, with its language. */
+const SAMPLES: [code: string, lang: string][] = [[REACT, "tsx"], [VANILLA, "ts"], [CDN, "html"], [CSS, "css"], [REACT_SIGNATURE, "tsx"], [VANILLA_SIGNATURE, "ts"]];
+
+describe("highlighting", () => {
+  it("colours tokens with the --code- variables only, and leaves the block one tab stop", async () => {
+    for (const [code, lang] of SAMPLES) {
+      const html = await highlight(code, lang);
+      expect(html).toContain("var(--code-");
+      // the CSS sample holds #ffffff as text, so only colours set in a style count
+      expect(html).not.toMatch(/(?:color|background-color):\s*#/i);
+      expect(html).not.toContain("tabindex");
+    }
+  });
+
+  it("writes only variables globals.css defines", async () => {
+    const css = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8");
+    const used = new Set<string>();
+    for (const [code, lang] of SAMPLES) for (const m of (await highlight(code, lang)).matchAll(/var\((--code-[a-z-]+)\)/g)) used.add(m[1]);
+    expect(used.size).toBeGreaterThan(3);
+    for (const name of used) expect(css).toContain(`${name}:`);
   });
 });

@@ -9,8 +9,8 @@ import { Vanilla } from "./vanilla";
 export default function Page() {
   return (
     <main style={{ display: "grid", gap: 24, width: 400, margin: "40px auto" }}>
-      <Riffle id="riffle" labels={["Radial menu", "Drum"]} />
-      <Slow id="slow" rate={0.4} theme="dark" />
+      <Riffle id="riffle" intensity={0.8} />
+      <Slow id="slow" intensity={0.25} theme="dark" />
       <Vanilla />
     </main>
   );

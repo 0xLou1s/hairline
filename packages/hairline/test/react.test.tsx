@@ -2,12 +2,18 @@
 import { StrictMode, createRef } from "react";
 import { cleanup, render } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { observers, pending } from "./dom";
+import { frames, observers, pending } from "./dom";
 import { Exploded, Phosphor, Riffle, Slow, Terrain, Turntable } from "../src/react";
 
 afterEach(cleanup);
 
 const key = (el: Element, k: string) => el.dispatchEvent(new KeyboardEvent("keydown", { key: k, bubbles: true, cancelable: true }));
+/** The rendered div, sized as dom.ts's host() is, so a client point is a viewBox point. */
+const sized = (el: Element) => {
+  el.getBoundingClientRect = () => ({ left: 0, top: 0, width: 400, height: 320, right: 400, bottom: 320, x: 0, y: 0, toJSON() {} });
+  return el;
+};
+const svg = (el: Element) => el.querySelector("svg")!.innerHTML.replace(/hl-fd\d+/g, "hl-fd");
 
 describe("components", () => {
   it("renders each figure into one div", () => {
@@ -19,7 +25,7 @@ describe("components", () => {
 
   it("passes div attributes through, forwards the ref, and keeps the options off the DOM", () => {
     const ref = createRef<HTMLDivElement>();
-    const { container } = render(<Riffle ref={ref} id="cards" className="w-80" data-x="1" style={{ width: 320 }} stagger={60} bands labels={["a"]} theme="dark" />);
+    const { container } = render(<Riffle ref={ref} id="cards" className="w-80" data-x="1" style={{ width: 320 }} intensity={0.8} theme="dark" label="Cards" onRead={() => {}} />);
     const el = container.firstElementChild as HTMLDivElement;
     expect(ref.current).toBe(el);
     expect(el.id).toBe("cards");
@@ -27,9 +33,9 @@ describe("components", () => {
     expect(el.getAttribute("data-x")).toBe("1");
     expect(el.style.width).toBe("320px");
     expect(el.style.aspectRatio).toBe("5 / 4");
-    for (const name of ["stagger", "bands", "labels", "theme", "onread"]) expect(el.hasAttribute(name)).toBe(false);
+    for (const name of ["intensity", "theme", "label", "onread"]) expect(el.hasAttribute(name)).toBe(false);
     expect(el.getAttribute("data-hairline-theme")).toBe("dark");
-    expect(el.querySelector(".bands")!.classList.contains("show")).toBe(true);
+    expect(el.getAttribute("aria-label")).toBe("Cards");
   });
 
   it("lets the style prop override the aspect ratio", () => {
@@ -47,33 +53,42 @@ describe("components", () => {
 
   it("updates the running figure when a prop changes, without remounting", () => {
     const { container, rerender } = render(<Riffle theme="dark" />);
-    const el = container.firstElementChild!, svg = el.querySelector("svg");
-    rerender(<Riffle theme="light" bands />);
+    const el = container.firstElementChild!, drawing = el.querySelector("svg");
+    rerender(<Riffle theme="light" />);
     expect(el.getAttribute("data-hairline-theme")).toBe("light");
-    expect(el.querySelector(".bands")!.classList.contains("show")).toBe(true);
     rerender(<Riffle />);
     expect(el.hasAttribute("data-hairline-theme")).toBe(false);
-    expect(el.querySelector(".bands")!.classList.contains("show")).toBe(false);
-    expect(el.querySelector("svg")).toBe(svg);
+    expect(el.querySelector("svg")).toBe(drawing);
   });
 
-  // Review Focus 4: a function or an array written inline is new on every render
-  it("does not remount, and does not loop, on an inline onRead and inline labels", () => {
+  // Review Focus 2: a prop that is removed goes back to its default
+  it("puts intensity back to 0.5 when the prop is removed", () => {
+    const { container, rerender } = render(<><Terrain intensity={1} /><Terrain /><Terrain intensity={1} /></>);
+    const [gone, standard, strong] = [...container.children].map(sized);
+    rerender(<><Terrain /><Terrain /><Terrain intensity={1} /></>);
+    for (const el of [gone, standard, strong]) el.dispatchEvent(new MouseEvent("pointermove", { clientX: 200, clientY: 160, bubbles: true }));
+    frames(20);
+    expect(svg(gone)).toBe(svg(standard));
+    expect(svg(gone)).not.toBe(svg(strong));
+  });
+
+  // Review Focus 4: a function written inline is new on every render
+  it("does not remount, and does not loop, on an inline onRead", () => {
     const seen: string[] = [];
     let renders = 0;
     function App({ n }: { n: number }) {
       renders++;
-      return <Riffle data-n={n} labels={["Radial menu", "Drum"]} onRead={(t) => seen.push(`${n}:${t}`)} />;
+      return <Riffle data-n={n} onRead={(t) => seen.push(`${n}:${t}`)} />;
     }
     const { container, rerender } = render(<App n={1} />);
-    const el = container.firstElementChild!, svg = el.querySelector("svg");
+    const el = container.firstElementChild!, drawing = el.querySelector("svg");
     rerender(<App n={2} />);
     rerender(<App n={3} />);
     expect(renders).toBe(3);
-    expect(el.querySelector("svg")).toBe(svg);
+    expect(el.querySelector("svg")).toBe(drawing);
     key(el, "ArrowLeft");
     // one call at mount, and the latest function is the one called afterwards
-    expect(seen).toEqual(["1:rest", "3:01 · Radial menu"]);
+    expect(seen).toEqual(["1:rest", "3:01"]);
   });
 
   it("calls a state setter from onRead without looping", () => {
