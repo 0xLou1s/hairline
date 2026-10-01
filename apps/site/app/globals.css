@@ -47,17 +47,18 @@ em { font-style: italic; }
   backdrop-filter: blur(12px);
 }
 
+/* the top bar's items, alike: muted 13px text, or a 16px icon, each 10px clear of its neighbours */
+.topbar-link { display: inline-flex; align-items: center; height: 30px; padding: 0 10px; border-radius: 8px; font-size: 13px; line-height: 1; color: var(--color-muted); }
+:is(a, button).topbar-link:hover { color: var(--color-ink); }
+
 .btn {
   display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 14px;
   border-radius: 9px; font-size: 14px; font-weight: 500;
   background: #fff; box-shadow: inset 0 0 0 1px var(--color-stone), var(--lift);
 }
 .btn-primary { background: var(--color-ink); color: #fff; box-shadow: var(--lift); }
-.btn-quiet { height: 30px; padding: 0 10px; font-size: 13px; line-height: 1; color: var(--color-muted); }
 .press { transition: transform 160ms var(--ease-out); }
 .press:active { transform: scale(0.96); }
-.btn-quiet:hover, .icon-link:hover { color: var(--color-ink); }
-.icon-link { display: inline-grid; place-items: center; width: 30px; height: 30px; border-radius: 8px; color: var(--color-muted); }
 
 .pill {
   display: flex; align-items: center; gap: 10px; height: 48px; padding: 0 6px 0 16px;

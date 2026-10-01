@@ -41,7 +41,7 @@ export function useCopy(): [copied: boolean, copy: (text: string, fallback?: Ele
  * at, or opens `open` for a button with no text of its own on the page. `text`
  * can be a function, read at the click, for text the button does not own.
  */
-export function CopyButton({ text, select, open, label = "Copy", className = "btn btn-quiet" }: { text: string | (() => string); select?: RefObject<Element | null>; open?: string; label?: string; className?: string }) {
+export function CopyButton({ text, select, open, label = "Copy", className = "btn" }: { text: string | (() => string); select?: RefObject<Element | null>; open?: string; label?: string; className?: string }) {
   const [copied, copy] = useCopy();
   const click = async () => {
     if (!(await copy(typeof text === "function" ? text() : text, select?.current)) && open) window.location.assign(open);

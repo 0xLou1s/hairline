@@ -17,11 +17,11 @@ export function Topbar() {
   return (
     <header className="topbar">
       <a href="/" className="text-[15px] font-medium tracking-[-0.02em]">hairline</a>
-      <nav className="flex items-center gap-1">
-        <a className="btn-quiet inline-flex items-center" href="/docs">Docs</a>
-        <span className="px-2 text-[13px] text-muted tabular-nums" data-version>v{pkg.version}</span>
-        <a className="icon-link" href={LINKS.github} aria-label="GitHub"><GitHub /></a>
-        <CopyButton text={`${SITE}/llms.txt`} open="/llms.txt" label="llms.txt" className="btn btn-quiet" />
+      <nav className="flex items-center">
+        <a className="topbar-link" href="/docs">Docs</a>
+        <span className="topbar-link tabular-nums" data-version>v{pkg.version}</span>
+        <a className="topbar-link" href={LINKS.github} aria-label="GitHub"><GitHub /></a>
+        <CopyButton text={`${SITE}/llms.txt`} open="/llms.txt" label="llms.txt" className="topbar-link" />
       </nav>
     </header>
   );

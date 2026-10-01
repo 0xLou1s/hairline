@@ -39,6 +39,25 @@ test("the home prerenders an empty box, then draws the inspector's figure with a
   expect(noise).toEqual([]);
 });
 
+test("the top bar's links sit as one row: one height, one centre line, one type, even spaces between them", async ({ page }) => {
+  await page.goto("/");
+  const items = await page.locator(".topbar nav > *").evaluateAll((els) => els.map((el) => {
+    const box = el.getBoundingClientRect();
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    // what the eye reads as the item: its text, or its icon
+    const ink = (el.querySelector("svg") ?? range).getBoundingClientRect();
+    const style = getComputedStyle(el);
+    return { height: box.height, middle: box.top + box.height / 2, left: ink.left, right: ink.right, type: [style.fontSize, style.fontWeight, style.color, style.backgroundColor].join(" ") };
+  }));
+  expect(items).toHaveLength(4);
+  expect(new Set(items.map((i) => i.height)).size).toBe(1);
+  for (const i of items) expect(Math.abs(i.middle - items[0].middle)).toBeLessThan(0.5);
+  expect(new Set(items.map((i) => i.type)).size).toBe(1);
+  const spaces = items.slice(1).map((i, n) => i.left - items[n].right);
+  for (const s of spaces) expect(Math.abs(s - spaces[0])).toBeLessThan(1.5);
+});
+
 test("the docs prerender six empty boxes, then draw one figure per row with a clean console", async ({ page, request }) => {
   const html = await (await request.get("/docs")).text();
   expect(html.match(/<div style="aspect-ratio:5 \/ 4"><\/div>/g)).toHaveLength(6);
