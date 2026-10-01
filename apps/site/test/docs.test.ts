@@ -9,6 +9,7 @@ import { SECTIONS } from "@/lib/docs";
 import { FIGURES, INTENSITY, OPTIONS, measure } from "@/lib/figures";
 import { llms, scale } from "@/lib/llms";
 import { tiny } from "@/lib/size";
+import { COMMAND, EXAMPLES, INSTALL } from "@/lib/skill";
 import { highlight } from "@/lib/highlight";
 import { CDN, CSS, QUICKSTART, REACT, REACT_SIGNATURE, VANILLA, VANILLA_SIGNATURE, install, snippet } from "@/lib/snippets";
 
@@ -149,6 +150,17 @@ describe("the intensity table", () => {
 
 describe("/llms.txt", () => {
   const text = llms("https://example.test");
+
+  it("says how to install the skill and links each example, with its follow-up, to the page it produced", () => {
+    expect(text).toContain("## Make your own");
+    expect(text).toContain(INSTALL);
+    for (const e of EXAMPLES) expect(text).toContain(`- \`${COMMAND} ${e.idea}\`${e.followUp ? `, then "${e.followUp}"` : ""}: https://example.test/skill/${e.file}`);
+    // the two pages a follow-up made say so
+    expect(text).toContain(`- \`${COMMAND} git branches\`, then "The rails almost disappear`);
+    expect(text).toContain(`- \`${COMMAND} weather over a city\`, then "The cloud looks like a stack of cylinders`);
+    expect(text).toContain("https://example.test/skill\n");
+    expect(text.indexOf("## Make your own")).toBeLessThan(text.indexOf("## Links"));
+  });
 
   it.each(FIGURES)("names $name with its row of the intensity table", (doc) => {
     expect(text).toContain(`### ${doc.name}`);

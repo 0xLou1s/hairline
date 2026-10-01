@@ -39,9 +39,11 @@ test("the home prerenders an empty box, then draws the inspector's figure with a
   expect(noise).toEqual([]);
 });
 
-test("the top bar holds the docs, the story, the version and GitHub, and no llms.txt button", async ({ page }) => {
+test("the top bar holds the skill, the docs, the story, the version and GitHub, and no llms.txt button", async ({ page }) => {
   await page.goto("/");
-  await expect(page.locator(".topbar nav > *")).toHaveCount(4);
+  await expect(page.locator(".topbar nav > *")).toHaveCount(5);
+  await expect(page.locator(".topbar nav > a").nth(0)).toHaveText("Skill");
+  await expect(page.locator(".topbar nav > a").nth(1)).toHaveText("Docs");
   await expect(page.locator(".topbar")).not.toContainText("llms.txt");
 });
 
@@ -56,7 +58,7 @@ test("the top bar's links sit as one row: one height, one centre line, one type,
     const style = getComputedStyle(el);
     return { height: box.height, middle: box.top + box.height / 2, left: ink.left, right: ink.right, type: [style.fontSize, style.fontWeight, style.color, style.backgroundColor].join(" ") };
   }));
-  expect(items).toHaveLength(4);
+  expect(items).toHaveLength(5);
   expect(new Set(items.map((i) => i.height)).size).toBe(1);
   for (const i of items) expect(Math.abs(i.middle - items[0].middle)).toBeLessThan(0.5);
   expect(new Set(items.map((i) => i.type)).size).toBe(1);
@@ -211,7 +213,7 @@ test("the home's entrance settles within 1.4s, with its hero blocks 70ms apart",
     const end = Math.max(...[...document.querySelectorAll(".hero-rise > *, .enter")].flatMap((el) => of(el).map((t) => Number(t.endTime))));
     return { gaps: hero.slice(1).map((d, n) => d - hero[n]), end };
   });
-  expect(timing.gaps).toEqual([70, 70, 70]);
+  expect(timing.gaps).toEqual([70, 70, 70, 70]);
   expect(timing.end).toBeLessThanOrEqual(1400);
 });
 

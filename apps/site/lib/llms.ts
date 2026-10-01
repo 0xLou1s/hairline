@@ -1,5 +1,6 @@
 import { FIGURES, INTENSITY, LINKS, OPTIONS, THEME, measure, type Row } from "./figures";
 import { CDN, PACKAGE, REACT, VANILLA, install } from "./snippets";
+import { COMMAND, EXAMPLES, INSTALL, SUMMARY } from "./skill";
 
 /** The page as plain text, for a model to read: the same data, the same copy. */
 
@@ -55,6 +56,12 @@ export function llms(base: string): string {
     "", THEME.map((t) => `- \`${t.property}\` (light: ${t.light}): ${t.role}`).join("\n"),
     "", "## Accessibility", "",
     "A figure is an image with a description you can replace with `label`. Riffle is a focusable group: the arrow keys walk its cards and a live region reads out the card's number. Under prefers-reduced-motion, Phosphor and Slow hold still, and every figure still answers the pointer.",
+    "", "## Make your own", "",
+    SUMMARY,
+    "", fence("sh", INSTALL),
+    "", `Then type \`${COMMAND} <idea>\` in the agent. Four ideas, each with the page the skill wrote for it, and the change asked for next where there was one:`,
+    "", EXAMPLES.map((e) => `- \`${COMMAND} ${e.idea}\`${e.followUp ? `, then "${e.followUp}"` : ""}: ${base}/skill/${e.file}`).join("\n"),
+    "", `More: ${base}/skill`,
     "", "## Links", "",
     `- Site: ${base}`, `- Source: ${LINKS.github}`, `- npm: ${LINKS.npm}`, `- The essay the figures come from: ${LINKS.essay}`, `- shadcn registry item: ${base}/r/hairline.json`, "",
   );

@@ -58,6 +58,8 @@ a.topbar-link::after { content: ""; position: absolute; inset: -5px 0; }
 footer a { position: relative; text-decoration: underline; text-decoration-color: transparent; text-underline-offset: 4px; transition: text-decoration-color 150ms ease; }
 @media (hover: hover) { footer a:hover { text-decoration-color: currentColor; } }
 footer a::after { content: ""; position: absolute; inset: -12px -8px; }
+/* under 360px the name and the first link would run together: the version, the item least needed there, goes */
+@media (max-width: 359px) { .topbar [data-version] { display: none; } }
 
 .btn {
   display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 14px;
@@ -344,4 +346,36 @@ footer a::after { content: ""; position: absolute; inset: -12px -8px; }
   .slide[data-ready] .slide-hl, .slide[data-ready] .slide-hl::before { transition: none; }
   .icopy-b, .icopy[data-copied] .icopy-a { transform: none; filter: none; }
   [data-live] > .doc-dot, [data-live] .doc-link > span { transition: none; }
+}
+
+/* /skill: the pitch, then each prompt beside the page it produced, then how it works and how to use it. */
+.skill { display: grid; gap: 72px; max-width: 1080px; margin: 0 auto; padding: 64px clamp(18px, 5vw, 28px) 96px; }
+.skill > * { min-width: 0; }
+.skill-install { margin-top: 28px; max-width: 460px; }
+.example { display: grid; gap: 16px; padding: 28px 0; border-top: 1px solid var(--color-line); }
+.example:last-child { border-bottom: 1px solid var(--color-line); }
+.example > * { min-width: 0; }
+.example-prompt { position: relative; z-index: 1; display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; align-content: start; }
+.example-figure { container-type: inline-size; }
+/* the prompt and its follow-up, one exchange: the follow-up is marked as the next turn */
+.example-turns { display: grid; gap: 8px; }
+.example-then { padding: 2px 16px 0; font-size: 12px; font-weight: 500; line-height: 1; color: var(--color-muted); }
+/* a prompt is read, not run: it wraps in its pill when it must, and the copy icon stays by its first line. Only the
+   install command, a shell line, keeps to one line and scrolls. */
+.pill:is([data-command="prompt"], [data-command="follow-up"], [data-command="usage"]) { height: auto; min-height: 48px; padding-block: 6px; align-items: start; }
+.pill:is([data-command="prompt"], [data-command="follow-up"], [data-command="usage"]) .pill-line { padding-block: 8px; line-height: 20px; white-space: normal; overflow: visible; text-wrap: pretty; }
+/* The generated page pads its column by 24px above and below and 16px at the sides. The frame bleeds by that much,
+   so the plate meets the column: its edges on the column's, its top on the prompt's. Stacked, the frame's top padding
+   runs under the prompt above it, which is drawn over the frame, so the plate sits one gap under the prompt. The height is the one the page takes before it is measured: its plate, as
+   wide as the column up to 640px, a 5:4 stage, and the 148px of controls and lines under it, which wrap onto more
+   lines in a column narrower than 360px. */
+.example-frame { display: block; width: calc(100% + 32px); margin: -24px -16px; height: calc(min(100cqw, 640px) * 0.8 + 148px + max(0px, 360px - 100cqw) * 0.75); border: 0; }
+.skill-steps { display: grid; gap: 12px; max-width: 64ch; counter-reset: step; }
+.skill-steps > li { display: grid; grid-template-columns: 2.2em minmax(0, 1fr); align-items: baseline; font-size: 15px; line-height: 1.55; color: var(--color-muted); counter-increment: step; }
+.skill-steps > li::before { content: counter(step, decimal-leading-zero); font: 400 12px/1 var(--font-mono); font-variant-numeric: tabular-nums; color: var(--color-faint); }
+.skill-steps strong { font-weight: 500; color: var(--color-ink); }
+
+@media (min-width: 900px) {
+  .example { grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); gap: 40px; align-items: start; }
+  .example-prompt { position: sticky; top: calc(var(--topbar) + 24px); }
 }
