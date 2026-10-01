@@ -173,3 +173,39 @@ test("the page fits a phone, with the longest install command and every control"
   await expect(inspector.locator("[data-snippet] .code-panel")).toContainText('<Turntable intensity={0.85} theme="dark" />');
   expect(await width()).toBeLessThanOrEqual(390);
 });
+
+test("without a clipboard at all, the top bar's llms.txt button opens the file", async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, "clipboard", { value: undefined });
+  });
+  const noise = watch(page);
+  await page.goto("/");
+  await page.locator(".topbar").getByRole("button", { name: "llms.txt" }).click();
+  await expect(page).toHaveURL(/\/llms\.txt$/);
+  // the text file has no icon, so Chrome's own request for /favicon.ico 404s there
+  expect(noise.filter((line) => line.startsWith("pageerror"))).toEqual([]);
+});
+
+test("each figure row names its figure in italic serif", async ({ page }) => {
+  await page.goto("/");
+  for (const id of IDS) await expect(page.locator(`[data-row="${id}"] h3`)).toHaveCSS("font-style", "italic");
+});
+
+test("a command wider than the pill fades at the edge until it is scrolled to its end, and shows itself whole on hover", async ({ page }) => {
+  await page.setViewportSize({ width: 1200, height: 800 });
+  await page.goto("/");
+  const pill = page.locator("[data-install]").first();
+  const line = pill.locator("code");
+  await expect(line).not.toHaveAttribute("data-more");
+  await expect(line).toHaveCSS("mask-image", "none");
+
+  for (let i = 0; i < 4; i++) await pill.getByRole("button", { name: /: switch to/ }).click();
+  const [, shadcn] = MANAGERS[4];
+  await expect(line).toHaveAttribute("title", shadcn);
+  await expect(line).toHaveAttribute("data-more", "");
+  await expect(line).toHaveCSS("mask-image", /gradient/);
+
+  await line.evaluate((el) => el.scrollTo({ left: el.scrollWidth }));
+  await expect(line).not.toHaveAttribute("data-more");
+  await expect(line).toHaveCSS("mask-image", "none");
+});

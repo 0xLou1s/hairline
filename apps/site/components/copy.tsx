@@ -5,9 +5,10 @@ import { useCallback, useEffect, useState, type RefObject } from "react";
 /**
  * Copies text, and says so for a moment. Without clipboard permission, or on
  * a page served without a secure context where there is no clipboard at all,
- * it selects the text instead, so the keyboard can copy it.
+ * it selects the text instead, so the keyboard can copy it. Resolves whether
+ * the text reached the clipboard.
  */
-export function useCopy(): [copied: boolean, copy: (text: string, fallback?: Element | null) => void] {
+export function useCopy(): [copied: boolean, copy: (text: string, fallback?: Element | null) => Promise<boolean>] {
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
@@ -20,13 +21,15 @@ export function useCopy(): [copied: boolean, copy: (text: string, fallback?: Ele
     try {
       await navigator.clipboard.writeText(text);
       setCopied(true);
+      return true;
     } catch {
-      if (!fallback) return;
+      if (!fallback) return false;
       const range = document.createRange();
       range.selectNodeContents(fallback);
       const selection = window.getSelection();
       selection?.removeAllRanges();
       selection?.addRange(range);
+      return false;
     }
   }, []);
 
@@ -34,14 +37,17 @@ export function useCopy(): [copied: boolean, copy: (text: string, fallback?: Ele
 }
 
 /**
- * A button that copies `text`, or selects what `select` points at when it
- * cannot. `text` can be a function, read at the click, for text the button
- * does not own.
+ * A button that copies `text`, or when it cannot, selects what `select` points
+ * at, or opens `open` for a button with no text of its own on the page. `text`
+ * can be a function, read at the click, for text the button does not own.
  */
-export function CopyButton({ text, select, label = "Copy", className = "copy" }: { text: string | (() => string); select?: RefObject<Element | null>; label?: string; className?: string }) {
+export function CopyButton({ text, select, open, label = "Copy", className = "copy" }: { text: string | (() => string); select?: RefObject<Element | null>; open?: string; label?: string; className?: string }) {
   const [copied, copy] = useCopy();
+  const click = async () => {
+    if (!(await copy(typeof text === "function" ? text() : text, select?.current)) && open) window.location.assign(open);
+  };
   return (
-    <button type="button" className={className} onClick={() => copy(typeof text === "function" ? text() : text, select?.current)} aria-live="polite">
+    <button type="button" className={className} onClick={click} aria-live="polite">
       {copied ? "Copied" : label}
     </button>
   );

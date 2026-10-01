@@ -46,7 +46,7 @@ export default async function Page() {
         <nav className="flex items-center gap-1">
           <span className="px-2 font-mono text-[12px] text-muted" data-version>v{pkg.version}</span>
           <a className="icon-link" href={LINKS.github} aria-label="GitHub"><GitHub /></a>
-          <CopyButton text={`${SITE}/llms.txt`} label="llms.txt" className="btn btn-quiet" />
+          <CopyButton text={`${SITE}/llms.txt`} open="/llms.txt" label="llms.txt" className="btn btn-quiet" />
         </nav>
       </header>
 
@@ -79,7 +79,7 @@ export default async function Page() {
               return (
                 <li key={doc.id} className="figure-row" data-row={doc.id}>
                   <div>
-                    <h3 className="font-serif text-[30px] leading-none">{doc.name}</h3>
+                    <h3 className="font-serif text-[30px] italic leading-none">{doc.name}</h3>
                     <p className="mt-3 text-[16px] leading-[1.5]">{doc.stronger}</p>
                     <p className="mt-1 max-w-[52ch] text-[14px] leading-[1.55] text-muted">{doc.summary}</p>
                   </div>
