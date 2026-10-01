@@ -31,7 +31,7 @@ One figure, one idea. A concept that needs a label to be understood is not a con
    - `name`: lowercase, one word or hyphenated.
    - `means`: one sentence, 140 characters at most, saying what the figure shows. It is the line under the stage.
    - `rules`: the numbers of the rules this figure leans on most.
-   - `range`: the one number the slider drives, at intensity 0, 0.5 and 1. The middle one is the default, and the three move one way.
+   - `range`: the one number the slider drives, at intensity 0, 0.5 and 1. The middle one is the default, and the three move one way. `mount`'s `value`, and the `value` that `set(value)` gets when the slider moves, is this number: the figure's own, read on `range`, not 0 to 1.
 5. Assemble it: `node build.mjs <name>.js` writes `hairline-<name>.html`. Without Node, copy `bench.html` and put the contents of `kernel.js` where `/*KERNEL*/` is and your figure where `/*FIGURE*/` is, by file operation, changing nothing else.
 
 ## 3. Check
