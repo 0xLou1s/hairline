@@ -38,9 +38,15 @@ it("rules.md has the ten rules, named as the bench names them", () => {
 it("look.md and SKILL.md name the validator's checks and the bench's parameters as they are", () => {
   expect(text("look.md")).toContain("?w=240");
   expect(text("look.md")).toContain("at=");
+  for (const param of ["?intensity=0", "?intensity=1", "?theme=dark", "?theme=light"]) expect(text("look.md"), param).toContain(param);
+  for (const param of ["intensity", "theme"]) expect(text("bench.html"), param).toContain(`params.get("${param}")`);
   for (const id of ["kernel", "bench", "text", "paint", "outside", "clock", "hit", "readout", "handle", "declare", "length"]) {
     expect(text("validate.mjs"), id).toMatch(new RegExp(`^ \\* {3}${id} `, "m"));
   }
+});
+
+it("look.md asks for a point of the agent's own figure, not a fixed one", () => {
+  expect(text("look.md")).not.toContain("200,160");
 });
 
 it("look.md runs build.mjs by its path in the skill folder, as SKILL.md says, so the command resolves from the working directory", () => {

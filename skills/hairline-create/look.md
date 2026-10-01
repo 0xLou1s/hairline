@@ -2,21 +2,31 @@
 
 The validator reads text. This is what only eyes can check. Do it every time the figure changes.
 
-## Four pictures
+## Pictures
 
-Open `hairline-<name>.html` in a browser and take four pictures. Two parameters in the address help:
+Open `hairline-<name>.html` in a browser and take the four base pictures, then the four for items 9 and 10. Four parameters in the address help; join two with `&`:
 
 - `?w=240` narrows the page to 240px, the size of a thumbnail.
-- `&at=x,y` holds the pointer at a point of the figure's 400 × 320 viewBox, for tools that cannot hover. Choose a point that is on your figure.
+- `?at=x,y` holds the pointer at a point of the 400 × 320 viewBox, for tools that cannot hover. x runs to the right and y down, from the viewBox's top-left corner. Take the point from your own figure: the screen point `P(x, y, z)` of the part you want answered, rounded.
+- `?intensity=` sets the slider, from 0 to 1, before the figure mounts.
+- `?theme=light` or `?theme=dark` sets the theme, as pressing its button does.
 
 | Picture | Address |
 | --- | --- |
 | full size, at rest | `hairline-<name>.html` |
-| full size, answering | `hairline-<name>.html?at=200,160` |
+| full size, answering | `hairline-<name>.html?at=<x>,<y>` |
 | 240px, at rest | `hairline-<name>.html?w=240` |
-| 240px, answering | `hairline-<name>.html?w=240&at=200,160` |
+| 240px, answering | `hairline-<name>.html?w=240&at=<x>,<y>` |
+| slider at 0, pointer at the figure's edge (item 9) | `hairline-<name>.html?intensity=0&at=<x>,<y>` |
+| slider at 1, pointer at the figure's edge (item 9) | `hairline-<name>.html?intensity=1&at=<x>,<y>` |
+| dark theme, answering (item 10) | `hairline-<name>.html?theme=dark&at=<x>,<y>` |
+| light theme, answering (item 10) | `hairline-<name>.html?theme=light&at=<x>,<y>` |
 
-Wait a second after loading before the answering pictures, so springs and tweens have landed.
+Keep the window at least 800 × 900 for every picture. `?w=240` narrows the page, not the window. A headless Chrome window narrower than 500px still lays the page out 500px wide and keeps only its left part, so the small picture comes out cropped.
+
+Wait 1.5 seconds after loading before each picture. Strokes fade over 260ms, tweens take 700ms and springs about a second, so a picture taken sooner catches the figure mid-way. In a browser you drive, wait in your script. Chrome's command line (`--screenshot`) fires at load and does not land the motion, with `--virtual-time-budget` or without. Playwright's command line does, with the window and the wait in one command:
+
+`npx playwright screenshot --channel chrome --viewport-size "800, 900" --wait-for-timeout 1500 "file:///<path>/hairline-<name>.html?at=<x>,<y>" shot.png`
 
 ## What to see
 
@@ -30,8 +40,8 @@ Answer each with yes or no. A no is fixed in the figure before anything is hande
 6. **Nothing shows through** (rule 06). No far edge crosses a near solid; no guide crosses its own plate.
 7. **One highlight** (rule 04). What is bright is what the pointer chose, and it is a stroke.
 8. **The read-out names what is under the pointer**, in a few characters, and says `rest` at rest.
-9. **Nothing leaves the frame.** With the slider at each end and the pointer at the figure's edges, every part stays inside the plate.
-10. **Both themes.** Press the theme button: nothing vanishes and nothing is left the wrong colour.
+9. **Nothing leaves the frame.** With the slider at each end (`?intensity=0`, `?intensity=1`) and the pointer at the figure's edges, every part stays inside the plate.
+10. **Both themes.** In `?theme=dark` and `?theme=light`, nothing vanishes and nothing is left the wrong colour.
 11. **No words** (rule 10). Nothing in the drawing is a letter, a digit, an arrow or an icon.
 12. **The page is clean.** No line under the stage reporting an error, and nothing on the console.
 
