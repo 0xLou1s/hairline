@@ -8,7 +8,7 @@
  *   kernel    the kernel in the page is this folder's kernel.js, untouched
  *   bench     nothing but the figure differs from bench.html
  *   text      no words inside the figure (rule 10)
- *   paint     no stroke width, colour, fill, filter or shadow of its own (rule 04)
+ *   paint     no stroke width, colour, fill, opacity, filter or shadow of its own (rule 04)
  *   outside   nothing loaded or reached outside the file; every node from HL.mk
  *   clock     no timers, frames or SMIL animation of its own; it joins HL.register (rule 07)
  *   hit       input only through HL.pointer; nothing measured on screen (rule 01)
@@ -79,8 +79,8 @@ function bare(src, words = true) {
 const BAD = [
   ["text", /<\s*(?:text|tspan|textPath|foreignObject)\b|["'`](?:text|tspan|textPath|foreignObject)["'`]|\b(?:innerHTML|outerHTML|insertAdjacentHTML|innerText)\b/,
     "rule 10. No words inside the figure, and no markup written as a string. Say it with geometry (a punch, a dot code, a bright edge); names go to read.textContent."],
-  ["paint", /stroke-width|strokeWidth|stroke-dasharray|["'`](?:fill|stroke|filter|style|color|stop-color)["'`]|\b(?:fill|stroke|filter|style)\s*:|\.style\b|(["'`])#(?:[0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})\1|\b(?:rgba?|hsla?|oklch|oklab|color-mix)\(|drop-shadow|box-shadow|feDropShadow|feGaussianBlur|[Ll]inearGradient|[Rr]adialGradient|(?:linear|radial|conic)-gradient/,
-    "rule 04. The figure sets a stroke width, colour, fill, filter, gradient or shadow of its own. Use the kernel's classes and nothing else: sil, hi, lo, nf, fo, dash, dot, dot m, dot off."],
+  ["paint", /stroke-width|strokeWidth|stroke-dasharray|-opacity|(?:fill|stroke)Opacity|["'`](?:fill|stroke|filter|style|color|stop-color|opacity)["'`]|\b(?:fill|stroke|filter|style|opacity)\s*:|\.style\b|(["'`])#(?:[0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})\1|\b(?:rgba?|hsla?|oklch|oklab|color-mix)\(|drop-shadow|box-shadow|feDropShadow|feGaussianBlur|[Ll]inearGradient|[Rr]adialGradient|(?:linear|radial|conic)-gradient/,
+    "rule 04. The figure sets a stroke width, colour, fill, opacity, filter, gradient or shadow of its own. Use the kernel's classes and nothing else: sil, hi, lo, nf, fo, dash, dot, dot m, dot off."],
   ["outside", /\bfetch\s*\(|XMLHttpRequest|WebSocket|EventSource|sendBeacon|https?:\/\/|\burl\(|<\/?script|<(?:link|img|iframe|style)\b|new\s+Image\b|createElement|\beval\s*\(|new\s+Function\b|localStorage|sessionStorage|\.cookie\b/,
     "the figure reaches outside the file or makes nodes by hand. One self-contained file: no fetch, import, URL, script tag or storage, and every node comes from HL.mk.",
     // The keyword ends where the binding starts, so `important` or `imported` is a name, not an import.
