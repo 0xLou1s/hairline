@@ -725,25 +725,26 @@ var HL = (() => {
  * head, which takes the bright edge. At rest that is the trunk. The pointer
  * checks out the track it is over: those wagons rise and the others settle,
  * staggered outwards from the wagon under the pointer. Each siding's head
- * carries its number in dots on the lid. The slider is the rise, in world units.
+ * carries its number in dots on the lid. Wagons ride on wheeled underframes,
+ * close-coupled; rails sit on sleepers and end at buffer stops. The slider is the rise, in world units.
  *
  * The pattern: discrete items. Tweens, a stagger by distance, and a hit test
  * on a fixed plane, so a wagon rising under the pointer cannot flip the choice.
  */
 const {
-  Cam, clamp, facing, fit, hull, open, prism, proj, ringAt, rings, unproj,
+  Cam, clamp, facing, fit, hull, open, poly, seg, prism, proj, ringAt, rings, unproj,
   tween, tset, tval, tdone, flatDot, mk, place, pointer, put, register, disposer, solid,
 } = HL;
 
-const PITCH = 17, WL = 13, WW = 9, GAUGE = 5, G = 17, LEAD = 24, BASE = 5.5, STEP = 45, PB = 5, TOP = 22;
-const BX0 = -10, BX1 = 114, BY0 = -11, BY1 = 3 * G + 11;
+const PITCH = 16, WL = 14, WW = 8, CH = 3.4, GAUGE = 5, G = 17, LEAD = 24, BASE = 7, STEP = 45, PB = 5, TOP = 22;
+const BX0 = -10, BX1 = 117, BY0 = -11, BY1 = 3 * G + 11;
 // Each track: its read-out, its line (y), the track it leaves (-1 for the trunk) and where (xf),
-// the first wagon (x0), how many wagons, and where the rails end.
+// the first wagon (x0), how many wagons, and where the rails end at a buffer stop.
 const TRACKS = [
   { tag: "main", y: 0, from: -1, xf: -6, x0: 34, n: 4, xe: 106 },
   { tag: "br 1", y: G, from: 0, xf: 2, x0: 46, n: 3, xe: 100 },
-  { tag: "br 2", y: 2 * G, from: 1, xf: 24, x0: 58, n: 3, xe: 108 },
-  { tag: "br 3", y: 3 * G, from: 2, xf: 46, x0: 78, n: 2, xe: 110 },
+  { tag: "br 2", y: 2 * G, from: 1, xf: 24, x0: 58, n: 3, xe: 111 },
+  { tag: "br 3", y: 3 * G, from: 2, xf: 46, x0: 76, n: 2, xe: 112 },
 ];
 
 /** The track's centre line at x: straight, or easing off its parent's line through the switch. */
@@ -759,6 +760,19 @@ function rails(P, t) {
   for (let x = t.xf; x < t.xf + LEAD; x += 3) xs.push(x);
   xs.push(t.xf + LEAD, t.xe);
   return [-1, 1].map((s) => open(xs.map((x) => P(x, lineY(t, x) + (s * GAUGE) / 2, 0)))).join("");
+}
+
+/** A wheel, upright on the wagon's near side at y, centred over x. */
+const wheel = (P, x, y) => poly(Array.from({ length: 12 }, (_, k) => P(x + 1.5 * Math.cos((k * Math.PI) / 6), y, 1.6 + 1.5 * Math.sin((k * Math.PI) / 6))));
+
+/** The sleepers under the rails: short ties across the track, every 4.5 units. */
+function sleepers(P, t) {
+  let d = "";
+  for (let x = t.xf + 2; x < t.xe; x += 4.5) {
+    const y = lineY(t, x);
+    d += seg(P(x, y - GAUGE / 2 - 2, 0), P(x, y + GAUGE / 2 + 2, 0));
+  }
+  return d;
 }
 
 function mount({ stage, svg, read }, value) {
@@ -781,15 +795,22 @@ function mount({ stage, svg, read }, value) {
   const g = mk("g", {}, svg);
   const [br, bi] = rings(BX0, BY0, BX1, BY1, 10, 2.2);
   put(solid(g), prism(P, front, br, bi, -PB, 0));
-  // Rails lie flat on the board, so they go down before any wagon.
-  for (const t of TRACKS) mk("path", { d: rails(P, t), class: "nf" }, g);
+  // Sleepers, then rails on them: flat on the board, so they go down before anything that stands.
+  for (const t of TRACKS) mk("path", { d: sleepers(P, t), class: "nf lo" }, g);
+  for (const t of TRACKS) mk("path", { d: rails(P, t), class: "nf sil" }, g);
 
-  // Wagons back to front: by x + y of the centre, which holds while tracks sit further apart than a wagon is long.
-  wag.sort((a, b) => a.x0 + a.y0 - (b.x0 + b.y0));
+  // Everything standing, back to front by x + y of its corner, which holds while tracks sit further apart than a wagon is long.
+  const stops = TRACKS.map((t) => ({ stop: true, x0: t.xe - 3, y0: t.y - 4 }));
+  const parts = wag.concat(stops).sort((a, b) => a.x0 + a.y0 - (b.x0 + b.y0));
   for (const t of TRACKS) t.cars = [];
-  for (const w of wag) {
+  for (const w of parts) {
+    if (w.stop) { const [r, ri] = rings(w.x0, w.y0, w.x0 + 3, w.y0 + 8, 1.2, 0.6); put(solid(g), prism(P, front, r, ri, 0, 4.5)); continue; }
     const t = TRACKS[w.k];
-    [w.ring, w.inner] = rings(w.x0, w.y0, w.x0 + WL, w.y0 + WW, 2.6, 1);
+    // a low underframe the body rides on, and two wheels on the side that faces the viewer
+    const [ur, ui] = rings(w.x0 + 2.5, w.y0 + 1.6, w.x0 + WL - 2.5, w.y0 + WW - 1.6, 1.2, 0.6);
+    put(solid(g), prism(P, front, ur, ui, 0, CH));
+    for (const wx of [w.x0 + 4.2, w.x0 + WL - 4.2]) mk("path", { d: wheel(P, wx, w.y0 + WW - 1.6), class: "" }, g);
+    [w.ring, w.inner] = rings(w.x0, w.y0, w.x0 + WL, w.y0 + WW, 2.4, 1);
     w.el = solid(g);
     w.tw = tween(w.k === 0 ? up(t, w.i) : 0);
     w.drawn = NaN;
@@ -800,7 +821,7 @@ function mount({ stage, svg, read }, value) {
   }
 
   function draw(w, h) {
-    put(w.el, prism(P, front, w.ring, w.inner, 0, h));
+    put(w.el, prism(P, front, w.ring, w.inner, CH, h));
     const cx = w.x0 + WL / 2, cy = w.y0 + WW / 2, n = w.dots.length;
     w.dots.forEach((d, j) => place(d, P(cx + (j - (n - 1) / 2) * 2.8, cy, h)));
   }

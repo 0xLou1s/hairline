@@ -34,6 +34,15 @@ describe("the skill's examples", () => {
     }
   });
 
+  it("carry a follow-up only where the page shown came out of one", () => {
+    expect(Object.fromEntries(EXAMPLES.map((e) => [e.idea, e.followUp]))).toEqual({
+      "a sales funnel": undefined,
+      "a rate limiter": undefined,
+      "git branches": "The rails almost disappear and the trains read as loose blocks. Make it read as a railway at a glance.",
+      "weather over a city": "The cloud looks like a stack of cylinders. Make it read as a cloud at a glance.",
+    });
+  });
+
   it("read the meaning out of the page, escapes undone", () => {
     const page = '<script type="module" id="hl-figure">\nconst tray = { name: "other", means: "not this" };\nhairline({ name: "tiers", means: "A \\"funnel\\" as trays.", rules: [1], range: [0, 1, 2], mount });\n</script>';
     expect(declared(page, "x.html")).toEqual({ name: "tiers", means: 'A "funnel" as trays.' });

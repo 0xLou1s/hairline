@@ -732,24 +732,30 @@ var HL = (() => {
  * the rain.
  */
 const {
-  Cam, clamp, facing, fit, prism, proj, rings, rrect, unproj, spring, stepS, seg,
+  Cam, clamp, facing, fit, prism, proj, rings, rrect, unproj, spring, stepS, seg, poly,
   mk, pointer, put, register, disposer, solid,
 } = HL;
 
 const N = 5, CELL = 14, FOOT = 10, EXT = N * CELL, PB = 5, ZC = 46, RMAX = 24;
 const IN = (CELL - FOOT) / 2, LO = CELL * 0.8, HI = EXT - CELL * 0.8;
 const REST = [1.3 * CELL, 3.4 * CELL];
-/** The cloud's puffs on its base, in radii: centre, radius, height; ordered back to front. */
-const PUFFS = [[-0.32, -0.1, 0.42, 0.42], [0.15, -0.22, 0.34, 0.32], [0, 0.26, 0.3, 0.2], [0.5, 0.1, 0.3, 0.26]];
 /**
- * Drops in cloud radii, with the share of the fall each one makes: one in the
- * middle and five near it reach the roofs; seven at the rim give out half way.
+ * The cloud is a cumulus: domes on one flat underside, the tallest at the back.
+ * In cloud radii, across the screen (a) and towards the viewer (b), with each
+ * dome's radius; ordered back to front.
+ */
+const DOMES = [[0.05, -0.12, 0.56], [-0.62, 0, 0.36], [0.62, -0.04, 0.4], [-0.24, 0.3, 0.34], [0.3, 0.32, 0.3]];
+const SQ = Math.SQRT1_2, ARC = 24;
+/**
+ * Drops in cloud radii, across and towards as the domes are, with the share
+ * of the fall each one makes: one in the middle and five near it reach the
+ * roofs; seven at the rim give out half way.
  */
 const DROPS = [[0, 0, 1]];
 [[0.42, 5, 0.3, 1], [0.8, 7, 0.1, 0.5]].forEach(([f, n, a, reach]) => {
   for (let k = 0; k < n; k++) {
     const t = a + (k / n) * Math.PI * 2;
-    DROPS.push([f * 0.9 * Math.cos(t), f * 0.55 * Math.sin(t), reach]);
+    DROPS.push([f * 0.85 * Math.cos(t), f * 0.3 * Math.sin(t), reach]);
   }
 });
 
@@ -758,7 +764,7 @@ function mount({ stage, svg, read }, value) {
   const C = Cam(45, 0.5, 2.15);
   const ext = [[-6, -6, -PB], [EXT + 6, EXT + 6, -PB], [EXT + 6, -6, -PB], [-6, EXT + 6, -PB]];
   for (const x of [LO, HI]) for (const y of [LO, HI]) {
-    ext.push([x - RMAX, y, ZC + RMAX * 0.6], [x + RMAX, y, ZC], [x, y - RMAX, ZC + RMAX * 0.6], [x, y + RMAX, ZC]);
+    ext.push([x - RMAX * 0.7, y + RMAX * 0.7, ZC], [x + RMAX * 0.7, y - RMAX * 0.7, ZC], [x, y, ZC + RMAX * 0.7], [x + RMAX * 0.3, y + RMAX * 0.3, ZC]);
   }
   fit(C, ext, 200, 166);
   const P = proj(C), front = facing(C);
@@ -784,9 +790,9 @@ function mount({ stage, svg, read }, value) {
 
   // The rain: one dashed line per drop, moved in the paint order as the cloud moves.
   const drops = DROPS.map(() => ({ el: mk("path", { class: "dash" }, g), at: null }));
-  // The cloud: a flat base and two puffs on it, above every tower, so it is painted last.
+  // The cloud: above every tower, so it is painted last.
   const cloud = mk("g", {}, svg);
-  const base = solid(cloud), puffs = PUFFS.map(() => solid(cloud));
+  const domes = DOMES.map(() => solid(cloud));
 
   const sx = spring(REST[0]), sy = spring(REST[1]), sr = spring(value);
   let lit = null, drawn = "";
@@ -805,27 +811,42 @@ function mount({ stage, svg, read }, value) {
     return i < 0 || j < 0 ? plinth : c;
   }
 
-  /** A rounded footprint sampled finely enough that the cloud's long curves stay round. */
+  /** A rounded footprint sampled finely enough that the plinth's long curves stay round. */
   function lobe(el, x0, y0, x1, y1, r, b, z0, z1) {
     const ring = rrect(x0, y0, x1, y1, r, 14), inner = rrect(x0 + b, y0 + b, x1 - b, y1 - b, r - b, 14);
     put(el, prism(P, front, ring, inner, z0, z1));
+  }
+
+  /**
+   * A dome of radius q standing on the cloud's underside at (x, y). The camera
+   * is orthographic, so its outline is a half circle over the front half of
+   * its base ellipse. A dome has no crease: a ring drawn on it reads as a lip.
+   */
+  function dome(el, x, y, q) {
+    const c = P(x, y, ZC), rho = P(x + q * SQ, y - q * SQ, ZC)[0] - c[0];
+    const ks = (P(x + q * SQ, y + q * SQ, ZC)[1] - c[1]) / rho;
+    const out = [];
+    for (let k = 0; k <= ARC; k++) {
+      const t = (Math.PI * k) / ARC;
+      out.push([c[0] + rho * Math.cos(t), c[1] - rho * Math.sin(t)]);
+    }
+    for (let k = 1; k < ARC; k++) {
+      const t = Math.PI + (Math.PI * k) / ARC;
+      out.push([c[0] + rho * Math.cos(t), c[1] - rho * ks * Math.sin(t)]);
+    }
+    put(el, { sil: poly(out), crease: "" });
   }
 
   function draw() {
     const cx = sx.x, cy = sy.x, R = sr.x, key = `${cx.toFixed(2)},${cy.toFixed(2)},${R.toFixed(2)}`;
     if (key === drawn) return;
     drawn = key;
-    const zb = ZC + R * 0.14;
-    lobe(base, cx - R, cy - R * 0.65, cx + R, cy + R * 0.65, R * 0.65, 1.2, ZC, zb);
-    PUFFS.forEach(([u, v, r, h], k) => {
-      const x = cx + u * R, y = cy + v * R, q = r * R;
-      lobe(puffs[k], x - q, y - q, x + q, y + q, q, 1, zb, zb + h * R);
-    });
-    DROPS.forEach(([u, v, reach], k) => {
-      const d = drops[k], x = cx + u * R, y = cy + v * R, z = roofAt(x, y);
+    DOMES.forEach(([a, b, r], k) => dome(domes[k], cx + (a + b) * SQ * R, cy + (b - a) * SQ * R, r * R));
+    DROPS.forEach(([a, b, reach], k) => {
+      const d = drops[k], x = cx + (a + b) * SQ * R, y = cy + (b - a) * SQ * R, z = roofAt(x, y);
       d.el.setAttribute("d", seg(P(x, y, ZC), P(x, y, ZC - (ZC - z) * reach)));
-      const b = behind(x, y);
-      if (b !== d.at) { d.at = b; (b.el ? b.el.g : b.g).after(d.el); }
+      const back = behind(x, y);
+      if (back !== d.at) { d.at = back; (back.el ? back.el.g : back.g).after(d.el); }
     });
   }
 

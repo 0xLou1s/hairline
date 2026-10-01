@@ -160,3 +160,27 @@ test("the home's hero points to the skill in one quiet line under its two button
   await expect(page).toHaveURL(/\/skill$/);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Make your own figure");
 });
+
+const FOLLOW_UPS: Record<string, string | undefined> = {
+  funnel: undefined,
+  clearance: undefined,
+  sidings: "The rails almost disappear and the trains read as loose blocks. Make it read as a railway at a glance.",
+  storm: "The cloud looks like a stack of cylinders. Make it read as a cloud at a glance.",
+};
+
+test("a follow-up sits under its prompt as a second line that wraps instead of scrolling, and copies on its own", async ({ page, context }) => {
+  await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+  await page.setViewportSize({ width: 320, height: 800 });
+  await page.goto("/skill");
+  for (const [name, text] of Object.entries(FOLLOW_UPS)) {
+    const row = page.locator(`[data-example="${name}"]`);
+    const line = row.locator('[data-command="follow-up"]');
+    if (!text) { await expect(line).toHaveCount(0); continue; }
+    await expect(line).toHaveText(text);
+    const prompt = (await row.locator('[data-command="prompt"]').boundingBox())!;
+    expect((await line.boundingBox())!.y).toBeGreaterThanOrEqual(prompt.y + prompt.height);
+    expect(await line.locator(".pill-line").evaluate((el) => el.scrollWidth - el.clientWidth)).toBeLessThanOrEqual(0);
+    await line.locator(".icopy").click();
+    expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(text);
+  }
+});

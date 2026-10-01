@@ -17,8 +17,8 @@ export type Example = { idea: string; file: string; followUp?: string };
 export const EXAMPLES: Example[] = [
   { idea: "a sales funnel", file: "hairline-funnel.html" },
   { idea: "a rate limiter", file: "hairline-clearance.html" },
-  { idea: "git branches", file: "hairline-sidings.html" },
-  { idea: "weather over a city", file: "hairline-storm.html" },
+  { idea: "git branches", file: "hairline-sidings.html", followUp: "The rails almost disappear and the trains read as loose blocks. Make it read as a railway at a glance." },
+  { idea: "weather over a city", file: "hairline-storm.html", followUp: "The cloud looks like a stack of cylinders. Make it read as a cloud at a glance." },
 ];
 
 export type Shown = Example & { name: string; means: string; prompt: string; href: string };

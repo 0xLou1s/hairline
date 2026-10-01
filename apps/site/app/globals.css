@@ -355,6 +355,9 @@ footer a::after { content: ""; position: absolute; inset: -12px -8px; }
 .example > * { min-width: 0; }
 .example-prompt { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; align-content: start; }
 .example-figure { container-type: inline-size; }
+/* a follow-up is a sentence: it wraps in its pill, and the copy icon stays by its first line */
+.pill[data-command="follow-up"] { height: auto; min-height: 48px; padding-block: 6px; align-items: start; }
+.pill[data-command="follow-up"] .pill-line { padding-block: 8px; line-height: 20px; white-space: normal; overflow: visible; text-wrap: pretty; }
 /* the height the generated page takes before it is measured: its 5:4 stage, at most 640px wide, and the lines under it */
 .example-frame { display: block; width: 100%; height: calc(min(100cqw - 32px, 640px) * 0.8 + 190px); border: 0; }
 .skill-steps { display: grid; gap: 12px; max-width: 64ch; counter-reset: step; }
