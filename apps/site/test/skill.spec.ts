@@ -140,3 +140,23 @@ test("the top bar fits a 320px screen with its five items on one row", async ({ 
   const last = (await page.locator(".topbar nav > *").last().boundingBox())!;
   expect(last.x + last.width).toBeLessThanOrEqual(bar.x + bar.width);
 });
+
+test("the home's hero points to the skill in one quiet line under its two buttons, and the line reaches /skill", async ({ page }) => {
+  for (const width of [1200, 320]) {
+    await page.setViewportSize({ width, height: 800 });
+    await page.goto("/");
+    const link = page.locator(".hero-rise").getByRole("link", { name: "Or make your own with the skill →" });
+    await expect(link).toHaveAttribute("href", "/skill");
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBe(0);
+    const actions = (await page.locator(".hero-actions").boundingBox())!;
+    const line = (await link.boundingBox())!;
+    // under the buttons, clear of them, and on one line
+    expect(line.y).toBeGreaterThanOrEqual(actions.y + actions.height);
+    expect(line.height).toBeLessThan(28);
+    // not a third button
+    expect(await link.evaluate((a) => a.classList.contains("btn"))).toBe(false);
+  }
+  await page.locator(".hero-rise").getByRole("link", { name: "Or make your own with the skill →" }).click();
+  await expect(page).toHaveURL(/\/skill$/);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Make your own figure");
+});

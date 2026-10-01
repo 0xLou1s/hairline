@@ -31,6 +31,10 @@ export default function Page() {
             <a className="btn btn-primary press" href="/docs">Get started</a>
             <a className="btn press" href={LINKS.github}><GitHub /> GitHub</a>
           </div>
+          {/* a quiet line, not a third button: the two above stay the way in */}
+          <p className="mt-5 text-[14px] text-muted" style={at(4)}>
+            <a className="hover:text-ink" href="/skill">Or make your own with the skill →</a>
+          </p>
         </section>
 
         <section id="try" aria-label="Try it" className="scroll-mt-[calc(var(--topbar)+24px)]">

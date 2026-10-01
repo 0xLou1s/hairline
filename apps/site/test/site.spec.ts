@@ -213,7 +213,7 @@ test("the home's entrance settles within 1.4s, with its hero blocks 70ms apart",
     const end = Math.max(...[...document.querySelectorAll(".hero-rise > *, .enter")].flatMap((el) => of(el).map((t) => Number(t.endTime))));
     return { gaps: hero.slice(1).map((d, n) => d - hero[n]), end };
   });
-  expect(timing.gaps).toEqual([70, 70, 70]);
+  expect(timing.gaps).toEqual([70, 70, 70, 70]);
   expect(timing.end).toBeLessThanOrEqual(1400);
 });
 
