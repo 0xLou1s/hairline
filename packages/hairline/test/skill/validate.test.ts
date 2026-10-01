@@ -55,20 +55,27 @@ describe("pages that pass", () => {
   });
 });
 
-/** Honest code that only looks like a broken rule: a good figure with any of these added still passes. */
-const HONEST: [why: string, code: string][] = [
-  ["an identifier named gradient, for a slope", "const gradient = 0.5;"],
-  ["a read-out with a number sign", 'const label = "pillar #101";'],
-  ["the word import in a string", 'const note = "import";'],
-  ["the word import inside a longer name", "const important = true;"],
-  ["a name that starts with import, before a comma", "const [important, b] = [1, 2];"],
-  ["a name that starts with import, as an argument", "f(imported, 1);"],
+/** Honest code that only looks like a broken rule: a good figure with any of these changes still passes. */
+const HONEST: [why: string, figure: string][] = [
+  ["an identifier named gradient, for a slope", plus("const gradient = 0.5;")],
+  ["a read-out with a number sign", plus('const label = "pillar #101";')],
+  ["the word import in a string", plus('const note = "import";')],
+  ["the word import inside a longer name", plus("const important = true;")],
+  ["a name that starts with import, before a comma", plus("const [important, b] = [1, 2];")],
+  ["a name that starts with import, as an argument", plus("f(imported, 1);")],
+  ["a handle returned in shorthand, { set, destroy }", terrain.replace(
+    /return \{\n {4}set: (\(v\) => \{[^\n]*\}),\n {4}destroy: bag\.dispose,\n {2}\};/,
+    (_, set) => `const set = ${set};\n  const destroy = bag.dispose;\n  return { set, destroy };`,
+  )],
 ];
 
-describe("honest additions that pass", () => {
-  for (const [why, code] of HONEST) {
+describe("honest changes that pass", () => {
+  it("each change is made", () => {
+    for (const [why, figure] of HONEST) expect(figure, why).not.toBe(terrain);
+  });
+  for (const [why, figure] of HONEST) {
     it(why, () => {
-      const run = check(plus(code));
+      const run = check(figure);
       expect(run.err).toBe("");
       expect(run.status).toBe(0);
     });

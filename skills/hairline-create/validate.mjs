@@ -92,13 +92,17 @@ const BAD = [
     "rule 01. The figure listens to the pointer itself or measures what is on screen. Take the pointer from HL.pointer(stage, { move, leave }) and test it against the rest or target pose, in world units."],
 ];
 
-/** What a figure must contain. A call on something else, such as `map.set(k, v)`, is not the handle's `set`. */
+/**
+ * What a figure must contain. The handle's keys may be written `set(v)`, `set: f`
+ * or, shorthand, `{ set, destroy }`. A call on something else, such as
+ * `map.set(k, v)`, is not the handle's `set`.
+ */
 const NEED = [
   ["clock", /\bregister\s*\(/, "rule 07. The figure never joins the kernel's loop. Draw inside HL.register(stage, tick), and give its unregister to destroy."],
   ["hit", /\bpointer\s*\(/, "the figure never listens to the pointer. Call HL.pointer(stage, { move, leave }) and answer it."],
   ["readout", /\bread\.textContent\s*=/, 'the figure never writes the read-out. Set read.textContent to what is under the pointer, and to "rest" when nothing is.'],
-  ["handle", /(?<![.\w$])set\s*[:(]/, "mount must return { set(value), destroy() }, and set is missing. It takes the slider's number."],
-  ["handle", /(?<![.\w$])destroy\s*[:(]/, "mount must return { set(value), destroy() }, and destroy is missing. It undoes everything mount did: bag.dispose."],
+  ["handle", /(?<![.\w$])set\s*[:(,}]/, "mount must return { set(value), destroy() }, and set is missing. It takes the slider's number."],
+  ["handle", /(?<![.\w$])destroy\s*[:(,}]/, "mount must return { set(value), destroy() }, and destroy is missing. It undoes everything mount did: bag.dispose."],
 ];
 
 /** The declaration at the end of the file, read as text. */
