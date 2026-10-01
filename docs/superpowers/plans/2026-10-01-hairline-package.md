@@ -63,7 +63,7 @@ A number outside its range is clamped.
 - Repository: `lucasmarkes/hairline`. Site: `hairline.lucasmarkes.com`. Vercel project: `hairline`, in the same team as motes (`lucasmarkes-team-projects`), with root directory `apps/site`.
 
 **Process**
-- **confirm** marks a step that is public or hard to undo. Stop and wait for Lucas before running it. Lucas creates the npm token himself.
+- **confirm** marks a step that is public or hard to undo. Stop and wait for Lucas before running it. Lucas creates the npm token themselves.
 - Every commit message ends with `Co-Authored-By: Claude <noreply@anthropic.com>`.
 
 **Repository and tools**
