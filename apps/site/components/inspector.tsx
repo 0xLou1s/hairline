@@ -40,12 +40,12 @@ export function Inspector() {
   return (
     <div className="s-inspector" data-inspector>
       {/* off dark, the figure's plate is the page, so it stands without a box */}
-      <div className="s-stage enter" style={vars({ "--d": "520ms", ...(dark ? {} : { "--hairline-plate": "var(--color-canvas)" }) })} data-figure={id} data-dark={dark || undefined}>
+      <div className="s-stage enter" style={vars({ "--d": "400ms", ...(dark ? {} : { "--hairline-plate": "var(--color-canvas)" }) })} data-figure={id} data-dark={dark || undefined}>
         <Figure key={id} intensity={intensity} theme={theme} />
       </div>
 
-      <div className="s-dock enter" style={vars({ "--d": "640ms" })}>
-        <Slide label="Figure" options={FIGURE_OPTIONS} value={id} onChange={setId} className="s-figures" />
+      <div className="s-dock enter" style={vars({ "--d": "460ms" })}>
+        <Slide label="Figure" options={FIGURE_OPTIONS} value={id} onChange={setId} clip className="s-figures" />
         <div className="s-row">
           <div className="s-range">
             <label htmlFor={slider} className="s-range-label">Intensity</label>
@@ -57,7 +57,7 @@ export function Inspector() {
       </div>
       <p key={id} className="s-hint enter-hint">{doc.stronger}</p>
 
-      <div className="s-code enter" style={vars({ "--d": "760ms" })} data-snippet>
+      <div className="s-code enter" style={vars({ "--d": "520ms" })} data-snippet>
         <Code text={text} codeRef={code} />
         <CopyIcon text={text} select={code} label="Copy snippet" className="s-copy" />
       </div>

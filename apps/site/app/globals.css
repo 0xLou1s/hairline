@@ -57,7 +57,8 @@ a.topbar-link:hover { color: var(--color-ink); }
   background: #fff; box-shadow: inset 0 0 0 1px var(--color-stone), var(--lift);
 }
 .btn-primary { background: var(--color-ink); color: #fff; box-shadow: var(--lift); }
-.press { transition: transform 160ms var(--ease-out); }
+/* on its own layer from the start, so the press scales the text as drawn instead of redrawing it as the layer comes and goes */
+.press { transition: transform 160ms var(--ease-out); will-change: transform; }
 .press:active { transform: scale(0.96); }
 
 .pill {
@@ -160,7 +161,7 @@ a.topbar-link:hover { color: var(--color-ink); }
 /* Rise, blur and fade end in that order. The rise and the blur end in steps: moving text is drawn on whole device
    pixels, so the last pixel of travel lands as a hop, and Chrome draws no blur under 0.4px, so the last of it goes
    in one frame. The hop comes under the blur, the blur goes while the block still fades in, and the fade ends it. */
-.hero-rise > * { animation: fade 750ms var(--ease-out) both, unblur 560ms var(--ease-out) both, rise 380ms var(--ease-out) both; animation-delay: calc(var(--i) * 90ms + 60ms); }
+.hero-rise > * { animation: fade 750ms var(--ease-out) both, unblur 560ms var(--ease-out) both, rise 380ms var(--ease-out) both; animation-delay: calc(var(--i) * 70ms + 60ms); }
 .enter { animation: fade 850ms var(--ease-out) both, unblur 640ms var(--ease-out) both, rise 440ms var(--ease-out) both; animation-delay: var(--d, 0ms); }
 .enter-hint { animation: hint 220ms var(--ease-out) both; }
 @keyframes unblur { from { filter: blur(6px); } to { filter: none; } }
@@ -171,7 +172,9 @@ a.topbar-link:hover { color: var(--color-ink); }
 /* A single choice whose highlight slides to the checked option. */
 .slide { position: relative; display: flex; isolation: isolate; }
 .slide-hl { position: absolute; top: 0; left: 0; z-index: -1; pointer-events: none; }
-.slide[data-ready] .slide-hl { transition: transform 240ms var(--ease-out), width 240ms var(--ease-out), height 240ms var(--ease-out); }
+.slide[data-ready] .slide-hl { transition: transform 200ms var(--ease-out), clip-path 200ms var(--ease-out); }
+/* a choice made with the keyboard lands at once */
+.slide[data-keyed] .slide-hl { transition: none; }
 .slide-item { position: relative; display: inline-flex; flex: none; align-items: center; justify-content: center; white-space: nowrap; color: var(--color-muted); transition: color 150ms ease; }
 .slide-item:hover, .slide-item[aria-checked="true"] { color: var(--color-ink); }
 
@@ -195,14 +198,15 @@ a.topbar-link:hover { color: var(--color-ink); }
 
 /* The inspector: the figure on the page itself, one dock under it for every control. */
 .s-inspector { display: grid; grid-template-columns: minmax(0, 1fr); justify-items: center; }
-.s-stage { position: relative; display: grid; place-items: center; width: 100%; max-width: 760px; padding: clamp(8px, 4vw, 40px); border-radius: 28px; transition: background-color 300ms ease; }
+.s-stage { position: relative; display: grid; place-items: center; width: 100%; max-width: 760px; padding: clamp(8px, 4vw, 40px); border-radius: 28px; }
 .s-stage > [data-hairline] { width: 100%; max-width: 560px; }
 .s-stage[data-dark] { background: #08090a; }
 .s-dock { margin-top: 8px; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px; max-width: 100%; padding: 6px; border-radius: 16px; background: #fff; box-shadow: inset 0 0 0 1px var(--color-stone), var(--lift-lg); }
 .s-figures { min-width: 0; max-width: 100%; overflow-x: auto; scrollbar-width: none; }
 .s-figures::-webkit-scrollbar { display: none; }
 .s-figures .slide-item { height: 36px; padding: 0 12px; font-size: 14px; }
-.s-figures .slide-hl { border-radius: 10px; background: var(--color-stone); }
+.s-figures { --slide-radius: 10px; }
+.s-figures .slide-hl { background: var(--color-stone); }
 .s-row { display: flex; align-items: center; gap: 12px; padding-left: 12px; border-left: 1px solid var(--color-line); }
 .s-range { display: flex; align-items: center; gap: 10px; width: 230px; }
 .s-range-label { font-size: 13px; color: var(--color-muted); }

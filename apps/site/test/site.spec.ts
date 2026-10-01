@@ -147,6 +147,121 @@ test("the inspector's theme switch repaints the figure", async ({ page }) => {
   await expect.poll(plate).toBe("rgb(255, 255, 255)");
 });
 
+/** Waits for every transition and entrance on the page to finish. */
+const settled = (page: Page) => expect.poll(() => page.evaluate(() => document.getAnimations().filter((a) => a.playState === "running").length)).toBe(0);
+
+/** Where a picker's highlight shows: its box, less what its clip-path cuts from each side. */
+const lit = (page: Page, name: string) =>
+  page.getByRole("radiogroup", { name }).evaluate((group) => {
+    const hl = group.querySelector<HTMLElement>(".slide-hl")!;
+    const box = hl.getBoundingClientRect();
+    const inset = getComputedStyle(hl).clipPath.match(/^inset\((.*?)(?: round .*)?\)$/)?.[1].split(" ").map(parseFloat) ?? [0];
+    const [t, r = t, b = t, l = r] = inset;
+    return { left: box.left + l, right: box.right - r, top: box.top + t, bottom: box.bottom - b };
+  });
+const checked = (page: Page, name: string) =>
+  page.getByRole("radiogroup", { name }).locator('[aria-checked="true"]').evaluate((el) => {
+    const box = el.getBoundingClientRect();
+    return { left: box.left, right: box.right, top: box.top, bottom: box.bottom };
+  });
+const near = (a: Record<string, number>, b: Record<string, number>) => {
+  for (const k of Object.keys(b)) expect(Math.abs(a[k] - b[k]), k).toBeLessThan(0.75);
+};
+
+test("a picker's highlight lands on the checked option by moving and clipping, never by animating its size", async ({ page }) => {
+  await page.goto("/");
+  await settled(page);
+  for (const name of ["Figure", "Theme"]) {
+    const group = page.getByRole("radiogroup", { name });
+    expect(await group.locator(".slide-hl").evaluate((el) => getComputedStyle(el).transitionProperty)).not.toMatch(/width|height/);
+    for (const radio of await group.getByRole("radio").all()) {
+      await radio.click();
+      await settled(page);
+      near(await lit(page, name), await checked(page, name));
+    }
+  }
+});
+
+test("the arrow keys move a picker's highlight at once, and a click still slides it", async ({ page }) => {
+  await page.goto("/");
+  await settled(page);
+  const figures = page.getByRole("radiogroup", { name: "Figure" });
+  const hl = figures.locator(".slide-hl");
+  await figures.getByRole("radio", { name: "Terrain" }).press("ArrowRight");
+  expect(await hl.evaluate((el) => el.getAnimations().length)).toBe(0);
+  near(await lit(page, "Figure"), await checked(page, "Figure"));
+  await figures.getByRole("radio", { name: "Riffle" }).click();
+  expect(await hl.evaluate((el) => el.getAnimations().length)).toBeGreaterThan(0);
+});
+
+test("the theme switch repaints the plate in the same frame as the figure", async ({ page }) => {
+  await page.goto("/");
+  await settled(page);
+  const inspector = page.locator("[data-inspector]");
+  await inspector.getByRole("radio", { name: "Dark" }).click();
+  // the stage's own entrance has finished; what is left would be a transition
+  expect(await inspector.locator(".s-stage").evaluate((el) => el.getAnimations().filter((a) => a instanceof CSSTransition).length)).toBe(0);
+});
+
+test("the home's entrance settles within 1.4s, with its hero blocks 70ms apart", async ({ page }) => {
+  await page.goto("/");
+  const timing = await page.evaluate(() => {
+    const of = (el: Element) => el.getAnimations().map((a) => a.effect!.getComputedTiming());
+    const hero = [...document.querySelectorAll(".hero-rise > *")].map((el) => Math.min(...of(el).map((t) => Number(t.delay))));
+    const end = Math.max(...[...document.querySelectorAll(".hero-rise > *, .enter")].flatMap((el) => of(el).map((t) => Number(t.endTime))));
+    return { gaps: hero.slice(1).map((d, n) => d - hero[n]), end };
+  });
+  expect(timing.gaps).toEqual([70, 70, 70]);
+  expect(timing.end).toBeLessThanOrEqual(1400);
+});
+
+test("a hero button's text holds still through a press: no jump when its layer comes and goes", async ({ page }) => {
+  await page.goto("/");
+  await settled(page);
+  // the press is what is watched; following the link would end the recording
+  await page.evaluate(() => document.addEventListener("click", (e) => e.preventDefault(), true));
+  for (const name of ["Get started", "GitHub"]) {
+    const button = page.locator(".hero-actions").getByRole("link", { name });
+    const box = (await button.boundingBox())!;
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.waitForTimeout(100);
+    // what the compositor draws, frame by frame, which a screenshot would redraw from scratch
+    const cdp = await page.context().newCDPSession(page);
+    const frames: { at: number; data: string }[] = [];
+    cdp.on("Page.screencastFrame", (f) => {
+      frames.push({ at: Date.now(), data: f.data });
+      cdp.send("Page.screencastFrameAck", { sessionId: f.sessionId }).catch(() => {});
+    });
+    await cdp.send("Page.startScreencast", { format: "png" });
+    await page.mouse.down();
+    await page.waitForTimeout(400);
+    await page.mouse.up();
+    const up = Date.now();
+    await page.waitForTimeout(600);
+    await cdp.send("Page.stopScreencast");
+    await cdp.detach();
+    const viewport = page.viewportSize()!.width;
+    // the release eases out, so its last frame moves the text least; a jump there is the text being redrawn
+    const release = frames.filter((f) => f.at > up).map((f) => f.data);
+    expect(release.length).toBeGreaterThan(2);
+    const worst = await page.evaluate(async ({ frames, box, viewport }) => {
+      const text = async (data: string) => {
+        const bitmap = await createImageBitmap(await (await fetch(`data:image/png;base64,${data}`)).blob());
+        const s = bitmap.width / viewport;
+        const [x, y, w, h] = [box.x + 12, box.y + 8, box.width - 24, box.height - 16].map((v) => Math.round(v * s));
+        const canvas = new OffscreenCanvas(w, h);
+        canvas.getContext("2d")!.drawImage(bitmap, x, y, w, h, 0, 0, w, h);
+        return canvas.getContext("2d")!.getImageData(0, 0, w, h).data;
+      };
+      const [before, after] = await Promise.all(frames.map(text));
+      let worst = 0;
+      for (let k = 0; k < before.length; k += 4) worst = Math.max(worst, Math.abs(before[k] - after[k]));
+      return worst;
+    }, { frames: release.slice(-2), box, viewport });
+    expect(worst, name).toBeLessThan(64);
+  }
+});
+
 test("the install pill copies every manager's command", async ({ page, context }) => {
   await context.grantPermissions(["clipboard-read", "clipboard-write"]);
   await page.goto("/");
