@@ -7,7 +7,8 @@ They come from the study behind the package (lucasmarkes.com/lab/hairline). Each
 Test the pointer against the rest pose, or the target pose, never the pose on screen. Otherwise the geometry lifts out from under the pointer, the hover drops, the geometry falls back, and the hover returns: a flicker loop.
 
 - **Keep it:** `unproj(C, sx, sy, 0)` puts the pointer on the ground plane, which never moves; pick by world coordinates (Terrain). For items, test static bands along their resting edges (Riffle). When a choice depends on a moving value, read the spring's target (`.t`), not its position (`.x`).
-- **Rejected when:** the pointer held still on a moving edge makes the figure oscillate; picking reads a spring's current value; the figure measures the DOM (`getBoundingClientRect`, `elementFromPoint`, `:hover`) or adds its own pointer listeners.
+- **Keep it, when parts stand at different heights or rise when chosen:** one fixed plane is not enough. The pointer over a raised top lands on that plane behind the part, and between parts at different heights it finds no part at all. Test each part's rest pose instead, as Riffle's bands do. For a single row, take the part whose rest centre, `P(…)[0]`, is nearest the pointer's screen x. For stepped parts, `unproj` onto each part's own rest top, `z` its height, and take the part that puts the pointer nearest its middle.
+- **Rejected when:** the pointer held still on a moving edge makes the figure oscillate; picking reads a spring's current value; one fixed plane picks the part behind a raised one, or reads `rest` in the gap between parts at different heights; the figure measures the DOM (`getBoundingClientRect`, `elementFromPoint`, `:hover`) or adds its own pointer listeners.
 
 ## 02 · order: stagger by distance
 
