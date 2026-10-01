@@ -45,7 +45,7 @@ export function CopyIcon({ text, select, label = "Copy", className = "" }: { tex
   const [copied, copy] = useCopy();
   return (
     <button type="button" className={`icopy ${className}`} data-copied={copied || undefined} aria-label={label} title={label} onClick={() => copy(typeof text === "function" ? text() : text, select?.current)}>
-      <svg className="icopy-a" viewBox="0 0 16 16" width="15" height="15" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round">
+      <svg className="icopy-a" viewBox="0 0 16 16" width="15" height="15" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round">
         <rect x="5.25" y="5.25" width="8.5" height="8.5" rx="2" />
         <path d="M10.75 5.25V4.25a2 2 0 0 0-2-2h-4.5a2 2 0 0 0-2 2v4.5a2 2 0 0 0 2 2h1" />
       </svg>

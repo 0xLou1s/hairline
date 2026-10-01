@@ -34,7 +34,7 @@ export default async function Docs() {
         <Sidebar />
         <main className="docs-main">
           <header className="max-w-[64ch]">
-            <h1 className="text-[36px] font-medium leading-[1.05] tracking-[-0.035em] md:text-[44px]">Six figures, one set of options.</h1>
+            <h1 className="text-[36px] font-medium leading-[1.05] tracking-[-0.035em] text-balance md:text-[44px]">Six figures, one set of options.</h1>
             <p className="mt-4 text-[16px] leading-[1.55] text-muted">
               Every figure takes the same four options and draws itself in SVG, with no dependencies. Install the package, paste a figure, and turn <code className="doc-code">intensity</code> up or down.
             </p>
