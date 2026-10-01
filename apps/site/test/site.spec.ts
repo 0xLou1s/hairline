@@ -209,3 +209,11 @@ test("a command wider than the pill fades at the edge until it is scrolled to it
   await expect(line).not.toHaveAttribute("data-more");
   await expect(line).toHaveCSS("mask-image", "none");
 });
+
+test("the footer links the author's site and X, and no longer the essay", async ({ page }) => {
+  await page.goto("/");
+  const footer = page.locator("footer");
+  await expect(footer.getByRole("link", { name: "Lucas Marques" })).toHaveAttribute("href", "https://lucasmarkes.com");
+  await expect(footer.getByRole("link", { name: "X", exact: true })).toHaveAttribute("href", "https://x.com/lucasmarkes__");
+  await expect(footer.getByRole("link")).toHaveText(["Lucas Marques", "Linear", "npm", "GitHub", "llms.txt", "X"]);
+});

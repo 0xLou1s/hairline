@@ -131,13 +131,13 @@ export default async function Page() {
 
         <footer className="flex flex-wrap items-baseline gap-x-6 gap-y-3 border-t border-line pt-8 text-[13px] text-muted">
           <p>
-            MIT licensed. Built by Lucas Marques. After <a className="text-ink" href={LINKS.linear}>Linear</a>&rsquo;s figures.
+            MIT licensed. Built by <a className="text-ink" href={LINKS.author}>Lucas Marques</a>. After <a className="text-ink" href={LINKS.linear}>Linear</a>&rsquo;s figures.
           </p>
           <nav className="flex gap-5 md:ml-auto">
             <a className="text-ink" href={LINKS.npm}>npm</a>
             <a className="text-ink" href={LINKS.github}>GitHub</a>
             <a className="text-ink" href="/llms.txt">llms.txt</a>
-            <a className="text-ink" href={LINKS.essay}>The essay</a>
+            <a className="text-ink" href={LINKS.x}>X</a>
           </nav>
         </footer>
       </main>

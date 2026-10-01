@@ -107,4 +107,6 @@ export const LINKS = {
   npm: "https://www.npmjs.com/package/@lucasmarkes/hairline",
   essay: "https://lucasmarkes.com/lab/hairline",
   linear: "https://linear.app",
+  author: "https://lucasmarkes.com",
+  x: "https://x.com/lucasmarkes__",
 } as const;
