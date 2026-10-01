@@ -42,15 +42,15 @@ export default function Skill() {
           <p className="doc-p">Each figure below is the page the skill wrote for the line next to it. Move the pointer over one.</p>
           <div>
             {shown.map((e) => (
-              <article key={e.file} className="example" data-example={e.name}>
+              <article key={e.file} className="example" data-example={e.name} aria-label={e.prompt}>
                 <div className="example-prompt">
                   {/* one exchange: the prompt, and the change asked for next */}
                   <div className="example-turns">
-                    <Command code={e.prompt} kind="prompt" label="Copy prompt" />
+                    <Command code={e.prompt} kind="prompt" label={`Copy prompt: ${e.idea}`} />
                     {e.followUp && (
                       <>
                         <p className="example-then">then</p>
-                        <Command code={e.followUp} kind="follow-up" label="Copy follow-up" />
+                        <Command code={e.followUp} kind="follow-up" label={`Copy follow-up: ${e.idea}`} />
                       </>
                     )}
                   </div>

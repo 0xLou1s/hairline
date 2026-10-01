@@ -96,6 +96,17 @@ test("each example shows the figure, its controls and what it means, without the
   }
 });
 
+test("each example is named by its prompt, and each copy button says which line it copies", async ({ page }) => {
+  await page.goto("/skill");
+  for (const idea of IDEAS) {
+    const row = page.getByRole("article", { name: `/hairline-create ${idea}`, exact: true });
+    await expect(row).toHaveCount(1);
+    await expect(row.getByRole("button", { name: `Copy prompt: ${idea}`, exact: true })).toHaveCount(1);
+  }
+  await expect(page.getByRole("button", { name: "Copy follow-up: git branches", exact: true })).toHaveCount(1);
+  await expect(page.getByRole("button", { name: "Copy follow-up: weather over a city", exact: true })).toHaveCount(1);
+});
+
 test("the install command and a prompt copy as they are written", async ({ page, context }) => {
   await context.grantPermissions(["clipboard-read", "clipboard-write"]);
   await page.goto("/skill");
