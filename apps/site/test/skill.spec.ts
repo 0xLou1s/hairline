@@ -122,3 +122,21 @@ test.describe("without JavaScript", () => {
     await expect(page.getByRole("link", { name: "Open the page" })).toHaveCount(4);
   });
 });
+
+test("the top bar's Skill link opens /skill", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("banner").getByRole("link", { name: "Skill" }).click();
+  await expect(page).toHaveURL(/\/skill$/);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Make your own figure");
+});
+
+test("the top bar fits a 320px screen with its five items on one row", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 700 });
+  await page.goto("/skill");
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBe(0);
+  const tops = await page.locator(".topbar nav > *").evaluateAll((els) => els.filter((el) => getComputedStyle(el).display !== "none").map((el) => Math.round(el.getBoundingClientRect().top)));
+  expect(new Set(tops).size).toBe(1);
+  const bar = (await page.locator(".topbar").boundingBox())!;
+  const last = (await page.locator(".topbar nav > *").last().boundingBox())!;
+  expect(last.x + last.width).toBeLessThanOrEqual(bar.x + bar.width);
+});
