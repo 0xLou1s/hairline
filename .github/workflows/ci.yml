@@ -45,3 +45,8 @@ jobs:
       - name: Browser tests
         run: pnpm test:browser
 
+      # The release gate without the network: publint, attw, size budgets, pack
+      # and tarball inspection. Its build, typecheck and unit tests replay from
+      # the turbo cache the steps above filled.
+      - name: Release gate (static)
+        run: pnpm run release --static
