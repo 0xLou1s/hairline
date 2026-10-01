@@ -6,6 +6,14 @@ import { ExampleFrame } from "@/components/example-frame";
 import { LINKS } from "@/lib/figures";
 import { COMMAND, FOLDER, INSTALL, STEPS, SUMMARY, USE, examples } from "@/lib/skill";
 
+/** The file the skill writes, set as code where a line names it. USE stays plain text for llms.txt. */
+const FILE = "hairline-<name>.html";
+const named = (line: string) => {
+  const i = line.indexOf(FILE);
+  if (i < 0) return line;
+  return <>{line.slice(0, i)}<code className="doc-code">{FILE}</code>{line.slice(i + FILE.length)}</>;
+};
+
 /** A block's place in the header's entrance. */
 const at = (i: number) => ({ "--i": i }) as CSSProperties;
 
@@ -24,7 +32,7 @@ export default function Skill() {
       <main className="skill">
         {/* the home's hero sends people here, and the header arrives as the hero does */}
         <header className="hero-rise">
-          <h1 className="max-w-[16ch] text-[36px] font-medium leading-[1.05] tracking-[-0.035em] md:text-[44px]" style={at(0)}>Make your own figure</h1>
+          <h1 className="max-w-[16ch] text-[36px] font-medium leading-[1.05] tracking-[-0.035em] text-balance md:text-[44px]" style={at(0)}>Make your own figure</h1>
           <p className="mt-4 max-w-[64ch] text-[16px] leading-[1.55] text-muted" style={at(1)}>{SUMMARY}</p>
           <div className="skill-install" style={at(2)}><Command code={INSTALL} kind="install" label="Copy install command" /></div>
         </header>
@@ -69,7 +77,7 @@ export default function Skill() {
         <section aria-labelledby="use-title" className="doc-section">
           <h2 id="use-title" className="doc-h2">How to use it</h2>
           <div className="max-w-[460px]"><Command code={`${COMMAND} <idea>`} kind="usage" label="Copy command" /></div>
-          {USE.map((line) => <p key={line} className="doc-p">{line}</p>)}
+          {USE.map((line) => <p key={line} className="doc-p">{named(line)}</p>)}
           <p className="doc-note">
             The six figures and their options are in <a className="doc-more" href="/docs">the docs</a>. The skill&rsquo;s files are in <a className="doc-more" href={`${LINKS.github}/tree/main/skills/hairline-create`}>its folder on GitHub</a>.
           </p>

@@ -369,8 +369,8 @@ footer a::after { content: ""; position: absolute; inset: -12px -8px; }
    lines in a column narrower than 360px. */
 .example-frame { display: block; width: calc(100% + 32px); margin: -16px -16px -24px; height: calc(min(100cqw, 640px) * 0.8 + 171px + max(0px, 360px - 100cqw) * 0.75); border: 0; }
 .skill-steps { display: grid; gap: 12px; max-width: 64ch; counter-reset: step; }
-.skill-steps > li { display: grid; grid-template-columns: 2.2em minmax(0, 1fr); font-size: 15px; line-height: 1.55; color: var(--color-muted); counter-increment: step; }
-.skill-steps > li::before { content: counter(step, decimal-leading-zero); font: 400 12px/1.95 var(--font-mono); color: var(--color-faint); }
+.skill-steps > li { display: grid; grid-template-columns: 2.2em minmax(0, 1fr); align-items: baseline; font-size: 15px; line-height: 1.55; color: var(--color-muted); counter-increment: step; }
+.skill-steps > li::before { content: counter(step, decimal-leading-zero); font: 400 12px/1 var(--font-mono); font-variant-numeric: tabular-nums; color: var(--color-faint); }
 .skill-steps strong { font-weight: 500; color: var(--color-ink); }
 
 @media (min-width: 900px) {
