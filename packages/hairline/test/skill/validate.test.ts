@@ -61,6 +61,8 @@ const HONEST: [why: string, code: string][] = [
   ["a read-out with a number sign", 'const label = "pillar #101";'],
   ["the word import in a string", 'const note = "import";'],
   ["the word import inside a longer name", "const important = true;"],
+  ["a name that starts with import, before a comma", "const [important, b] = [1, 2];"],
+  ["a name that starts with import, as an argument", "f(imported, 1);"],
 ];
 
 describe("honest additions that pass", () => {
@@ -87,6 +89,8 @@ const BROKEN: [id: string, why: string, figure: string, change?: (page: string) 
   ["outside", "a node made by hand", plus('document.createElementNS("http://www.w3.org/2000/svg", "path");')],
   ["outside", "a script tag in a string", plus('const s = "</script>";')],
   ["outside", "an import statement", plus('import { x } from "./x.js";')],
+  ["outside", "a default import", plus('import x from "./x.js";')],
+  ["outside", "a namespace import", plus('import * as x from "./x.js";')],
   ["outside", "a dynamic import", plus('import("./x.js");')],
   ["outside", "a URL in a string", plus('const u = "https://example.com/a.json";')],
   ["clock", "its own frame", plus("requestAnimationFrame(() => {});")],

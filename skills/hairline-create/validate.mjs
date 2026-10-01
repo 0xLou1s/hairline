@@ -83,7 +83,9 @@ const BAD = [
     "rule 04. The figure sets a stroke width, colour, fill, filter, gradient or shadow of its own. Use the kernel's classes and nothing else: sil, hi, lo, nf, fo, dash, dot, dot m, dot off."],
   ["outside", /\bfetch\s*\(|XMLHttpRequest|WebSocket|EventSource|sendBeacon|https?:\/\/|\burl\(|<\/?script|<(?:link|img|iframe|style)\b|new\s+Image\b|createElement|\beval\s*\(|new\s+Function\b|localStorage|sessionStorage|\.cookie\b/,
     "the figure reaches outside the file or makes nodes by hand. One self-contained file: no fetch, import, URL, script tag or storage, and every node comes from HL.mk.",
-    /\bimport\s*(?:\(|["'`{*]|[\w$]+\s*(?:,|from\b))/],
+    // The keyword ends where the binding starts, so `important` or `imported` is a name, not an import.
+    // `import.meta` is left alone on purpose: by itself it reaches nothing outside the file.
+    /\bimport(?:\s*["'`({*]|\s+[\w$]+\s*(?:,|from\b))/],
   ["clock", /\bsetInterval\b|\bsetTimeout\b|\brequestAnimationFrame\b|\.animate\s*\(|<animate|IntersectionObserver|\bmatchMedia\b/,
     "rule 07. The figure runs a clock of its own. Move inside HL.register(stage, tick), with springs (stepS) or tweens (tset, tval); a delay is a tween's delay. The loop sleeps offscreen and honours reduced motion for you."],
   ["hit", /getBoundingClientRect|elementFromPoint|elementsFromPoint|:hover|(?:addEventListener|\.on)\s*\(\s*(?:\w+\s*,\s*)?["'`](?:mouse|pointer|touch|click)|\bon(?:mouse|pointer|touch|click)\w*\s*=/,
