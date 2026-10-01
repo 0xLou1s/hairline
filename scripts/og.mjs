@@ -24,8 +24,8 @@ try {
   await browser.close();
   process.exit(1);
 }
-await page.waitForFunction(() => document.querySelectorAll("[data-hairline] > svg > *").length >= 6 && document.fonts.status === "loaded");
-// Phosphor and Slow play on their own: give them a moment to be mid-loop.
+await page.waitForFunction(() => document.querySelectorAll("[data-hairline] > svg > *").length >= 1 && document.fonts.status === "loaded");
+// let the figure finish its first frames
 await page.waitForTimeout(1200);
 const out = join(SITE, "public/og.png");
 await page.screenshot({ path: out, clip: { x: 0, y: 0, width: 1200, height: 630 } });
