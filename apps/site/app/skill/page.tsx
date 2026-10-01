@@ -1,9 +1,13 @@
 import type { Metadata } from "next";
+import type { CSSProperties } from "react";
 import { Footer, Topbar } from "@/components/chrome";
 import { Command } from "@/components/command";
 import { ExampleFrame } from "@/components/example-frame";
 import { LINKS } from "@/lib/figures";
 import { COMMAND, FOLDER, INSTALL, STEPS, SUMMARY, USE, examples } from "@/lib/skill";
+
+/** A block's place in the header's entrance. */
+const at = (i: number) => ({ "--i": i }) as CSSProperties;
 
 export const metadata: Metadata = { title: "Make your own figure · hairline", description: SUMMARY, alternates: { canonical: "/skill" } };
 
@@ -18,10 +22,11 @@ export default function Skill() {
     <>
       <Topbar />
       <main className="skill">
-        <header>
-          <h1 className="max-w-[16ch] text-[36px] font-medium leading-[1.05] tracking-[-0.035em] md:text-[44px]">Make your own figure</h1>
-          <p className="mt-4 max-w-[64ch] text-[16px] leading-[1.55] text-muted">{SUMMARY}</p>
-          <div className="skill-install"><Command code={INSTALL} kind="install" label="Copy install command" /></div>
+        {/* the home's hero sends people here, and the header arrives as the hero does */}
+        <header className="hero-rise">
+          <h1 className="max-w-[16ch] text-[36px] font-medium leading-[1.05] tracking-[-0.035em] md:text-[44px]" style={at(0)}>Make your own figure</h1>
+          <p className="mt-4 max-w-[64ch] text-[16px] leading-[1.55] text-muted" style={at(1)}>{SUMMARY}</p>
+          <div className="skill-install" style={at(2)}><Command code={INSTALL} kind="install" label="Copy install command" /></div>
         </header>
 
         <section aria-labelledby="examples-title" className="doc-section">
