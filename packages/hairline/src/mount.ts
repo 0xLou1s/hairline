@@ -1,6 +1,6 @@
 import { inject } from "./core/styles";
-import type { FigureEls, FigureHandle, Readout } from "./core/stage";
-import { number, type Range } from "./ranges";
+import type { FigureMount, Readout } from "./core/stage";
+import { parameter, type FigureId } from "./intensity";
 
 /**
  * Hairline — the public wrapper around an engine. An engine draws into an svg
@@ -11,39 +11,35 @@ import { number, type Range } from "./ranges";
  * attributes the host did not already have.
  */
 
-export type Theme = "auto" | "light" | "dark";
-
-export type BaseOptions = {
+/** What every figure takes. */
+export type HairlineOptions = {
+  /** How strongly the figure answers the pointer, from 0 (subtle) to 1 (strong). Default 0.5. */
+  intensity?: number;
   /** `"auto"` follows the page: an ancestor with class `dark` or `data-theme="dark"`, then the page's `color-scheme`. Default `"auto"`. */
-  theme?: Theme;
+  theme?: "auto" | "light" | "dark";
   /** The accessible name. Each figure has a default description in English. */
   label?: string;
   /** The figure's caption, each time it changes. Called once at mount with the rest caption. */
   onRead?: (text: string) => void;
 };
 
-export type Figure<O> = {
-  /** Changes options on the running figure. A key set to `undefined` goes back to its default. */
-  update(options: Partial<O>): void;
+export type Figure = {
+  /** Changes options on the running figure. A key set to `undefined` goes back to its default; a key left out stays as it was. */
+  update(options: HairlineOptions): void;
   /** Stops the figure and removes what it added to the element. Safe to call twice. */
   destroy(): void;
 };
 
-/** What a figure is: its engine, the one number it takes, and what it says about itself. */
-export type Spec<O extends BaseOptions, H extends FigureHandle> = {
-  id: string;
+/** What a figure is: its engine, and what it says about itself. */
+export type Spec = {
+  id: FigureId;
   /** The default accessible name. */
   label: string;
   /** The caption at rest, for an engine that writes none until it is touched. */
   rest: string;
-  /** The numeric option, and its range. */
-  key: keyof O & string;
-  range: Range;
-  engine: (els: FigureEls, value: number) => H;
+  engine: FigureMount;
   /** Operable from the keyboard: a focusable group with a live region, not an image. */
   focusable?: boolean;
-  /** Options beyond the number. Runs at mount and after every update; must be safe to repeat. */
-  apply?: (engine: H, options: O) => void;
 };
 
 const NS = "http://www.w3.org/2000/svg";
@@ -55,7 +51,7 @@ const report = (err: unknown) => {
   else setTimeout(() => { throw err; });
 };
 
-export function create<O extends BaseOptions, H extends FigureHandle>(spec: Spec<O, H>, el: HTMLElement, options?: O): Figure<O> {
+export function create(spec: Spec, el: HTMLElement, options?: HairlineOptions): Figure {
   if (typeof document === "undefined") {
     throw new Error(`hairline: ${spec.id}() needs a DOM. Call it in the browser, once the element exists: in an effect, in onMount, or in a script after the element.`);
   }
@@ -64,7 +60,7 @@ export function create<O extends BaseOptions, H extends FigureHandle>(spec: Spec
   }
   mounted.get(el)?.();
 
-  const opts = { ...options } as O;
+  const opts: HairlineOptions = { ...options };
   const doc = el.ownerDocument;
   const root = el.getRootNode();
   inject(root.nodeType === 9 || "host" in root ? (root as Document | ShadowRoot) : doc);
@@ -111,9 +107,8 @@ export function create<O extends BaseOptions, H extends FigureHandle>(spec: Spec
     },
   };
 
-  let value = number(opts[spec.key], spec.range);
+  let value = parameter(spec.id, opts.intensity);
   const engine = spec.engine({ stage: el, svg, read }, value);
-  spec.apply?.(engine, opts);
   if (text === null) read.textContent = spec.rest;
 
   let dead = false;
@@ -132,14 +127,15 @@ export function create<O extends BaseOptions, H extends FigureHandle>(spec: Spec
   return {
     update(next) {
       if (dead || !next) return;
-      for (const k in next) {
-        if (next[k] === undefined) delete opts[k];
-        else opts[k] = next[k] as O[typeof k];
+      /* a caller without types may send keys that are not options; they are kept and never read */
+      const own = opts as Record<string, unknown>, given = next as Record<string, unknown>;
+      for (const k in given) {
+        if (given[k] === undefined) delete own[k];
+        else own[k] = given[k];
       }
-      const v = number(opts[spec.key], spec.range);
+      const v = parameter(spec.id, opts.intensity);
       if (v !== value) { value = v; engine.set(v); }
       dress();
-      spec.apply?.(engine, opts);
     },
     destroy,
   };
