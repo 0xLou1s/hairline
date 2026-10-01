@@ -35,7 +35,7 @@ Answer each with yes or no. A no is fixed in the figure before anything is hande
 11. **No words** (rule 10). Nothing in the drawing is a letter, a digit, an arrow or an icon.
 12. **The page is clean.** No line under the stage reporting an error, and nothing on the console.
 
-If you are unsure whether the figure's weight is right, build an example the same way and put the two side by side: `node build.mjs examples/terrain.js`.
+If you are unsure whether the figure's weight is right, build an example the same way and put the two side by side: `node <skill folder>/build.mjs <skill folder>/examples/terrain.js`.
 
 ## Without a browser
 

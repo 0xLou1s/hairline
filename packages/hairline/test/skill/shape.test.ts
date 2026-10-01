@@ -42,3 +42,8 @@ it("look.md and SKILL.md name the validator's checks and the bench's parameters 
     expect(text("validate.mjs"), id).toMatch(new RegExp(`^ \\* {3}${id} `, "m"));
   }
 });
+
+it("look.md runs build.mjs by its path in the skill folder, as SKILL.md says, so the command resolves from the working directory", () => {
+  expect(text("look.md")).toContain("`node <skill folder>/build.mjs <skill folder>/examples/terrain.js`");
+  expect(text("look.md")).not.toMatch(/`node build\.mjs /);
+});
