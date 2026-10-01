@@ -6,7 +6,7 @@ import { Instrument_Serif } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
-/** The headline's one serif word, and the figure names. */
+/** The headline's one serif word. */
 const serif = Instrument_Serif({ weight: "400", style: ["normal", "italic"], subsets: ["latin"], variable: "--font-instrument-serif" });
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL!;

@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { CopyButton } from "./copy";
+import { CopyIcon } from "./copy";
 
 /**
  * The install command in a pill. The command's first word is a button that
- * moves to the next package manager; the copy button copies the whole line.
+ * moves to the next package manager; the copy icon copies the whole line.
  * A line wider than the pill scrolls, fades at the edge while more of it is
  * hidden, and shows itself whole on hover.
  */
@@ -35,12 +35,12 @@ export function Install({ commands }: { commands: { label: string; code: string 
     <div className="pill" data-install={label}>
       <span aria-hidden="true" className="select-none text-faint">$</span>
       <code ref={line} className="pill-line" title={code} data-more={more ? "" : undefined}>
-        <button type="button" className="pill-manager" onClick={() => setAt((at + 1) % commands.length)} aria-label={`${label}: switch to ${next}`} title={`Switch to ${next}`}>
+        <button type="button" className="pill-manager" onClick={() => setAt((at + 1) % commands.length)} aria-label={`${head} (${label}): switch to ${next}`} title={`Switch to ${next}`}>
           {head}
         </button>
         {code.slice(head.length)}
       </code>
-      <CopyButton text={code} select={line} />
+      <CopyIcon text={code} select={line} label="Copy install command" />
     </div>
   );
 }

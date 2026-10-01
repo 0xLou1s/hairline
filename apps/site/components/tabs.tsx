@@ -1,11 +1,11 @@
 "use client";
 
 import { useId, useRef, useState, type KeyboardEvent } from "react";
-import { CopyButton } from "./copy";
+import { CopyIcon } from "./copy";
 
 export type Tab = { label: string; html: string };
 
-/** Code behind tabs, with a copy button. The HTML is highlighted at build. */
+/** Code behind tabs, with a copy icon. The HTML is highlighted at build. */
 export function Tabs({ tabs, label }: { tabs: Tab[]; label: string }) {
   const [at, setAt] = useState(0);
   const panel = useRef<HTMLDivElement>(null);
@@ -32,7 +32,7 @@ export function Tabs({ tabs, label }: { tabs: Tab[]; label: string }) {
           ))}
         </div>
         {/* read at the click, so it is always the tab on screen */}
-        <CopyButton text={() => panel.current?.textContent ?? ""} select={panel} />
+        <CopyIcon text={() => panel.current?.textContent ?? ""} select={panel} label="Copy code" />
       </div>
       <div ref={panel} role="tabpanel" id={`${id}-panel`} aria-labelledby={`${id}-tab-${at}`} tabIndex={0} className="code-panel" dangerouslySetInnerHTML={{ __html: tabs[at].html }} />
     </div>
