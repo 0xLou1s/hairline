@@ -410,6 +410,34 @@ test("on a phone the sidebar is one strip under the top bar, and it follows the 
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
 });
 
+test.describe("on a 2x screen", () => {
+  test.use({ deviceScaleFactor: 2 });
+
+  // Both of the rise's last changes come in steps. Text is drawn on whole device pixels as it moves, so its last pixel of
+  // travel is a hop; and Chrome draws no blur under 0.4px, so the blur goes from soft to sharp in one frame. Each reads as
+  // a twitch on a block that looks settled, so both happen while the block is still fading in.
+  test("the home's blocks come home before their blur clears, and clear it while still fading in", async ({ page }) => {
+    await page.goto("/");
+    const blocks = page.locator(".hero-rise > *, .enter");
+    expect(await blocks.count()).toBeGreaterThanOrEqual(7);
+    const late = await blocks.evaluateAll((els) => els.flatMap((el) => {
+      const anims = el.getAnimations();
+      anims.forEach((a) => a.pause());
+      const end = Math.max(...anims.map((a) => Number(a.effect!.getComputedTiming().endTime)));
+      for (let t = 0; t <= end; t += 1000 / 120) {
+        anims.forEach((a) => (a.currentTime = t));
+        const style = getComputedStyle(el);
+        const blur = parseFloat(style.filter.match(/blur\(([\d.]+)px\)/)?.[1] ?? "0");
+        const away = Math.abs(new DOMMatrixReadOnly(style.transform === "none" ? undefined : style.transform).m42) * devicePixelRatio;
+        if (blur < 0.4 && away >= 0.5) return [`${el.className} moves sharp at ${Math.round(t)}ms`];
+        if (Number(style.opacity) >= 0.9 && blur >= 0.4) return [`${el.className} is still blurred at ${Math.round(t)}ms`];
+      }
+      return [];
+    }));
+    expect(late).toEqual([]);
+  });
+});
+
 test.describe("without JavaScript", () => {
   test.use({ javaScriptEnabled: false });
 

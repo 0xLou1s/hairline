@@ -147,10 +147,14 @@ em { font-style: italic; }
 .hero-actions { margin-top: 20px; display: flex; gap: 8px; }
 @media (min-width: 768px) { .hero-title { font-size: 64px; } }
 
-.hero-rise > * { animation: rise 750ms var(--ease-out) both; animation-delay: calc(var(--i) * 90ms + 60ms); }
-.enter { animation: rise 850ms var(--ease-out) both; animation-delay: var(--d, 0ms); }
+/* Rise, blur and fade end in that order. The rise and the blur end in steps: moving text is drawn on whole device
+   pixels, so the last pixel of travel lands as a hop, and Chrome draws no blur under 0.4px, so the last of it goes
+   in one frame. The hop comes under the blur, the blur goes while the block still fades in, and the fade ends it. */
+.hero-rise > * { animation: fade 750ms var(--ease-out) both, unblur 560ms var(--ease-out) both, rise 380ms var(--ease-out) both; animation-delay: calc(var(--i) * 90ms + 60ms); }
+.enter { animation: fade 850ms var(--ease-out) both, unblur 640ms var(--ease-out) both, rise 440ms var(--ease-out) both; animation-delay: var(--d, 0ms); }
 .enter-hint { animation: hint 220ms var(--ease-out) both; }
-@keyframes rise { from { opacity: 0; transform: translateY(12px); filter: blur(6px); } to { opacity: 1; transform: none; filter: none; } }
+@keyframes unblur { from { filter: blur(6px); } to { filter: none; } }
+@keyframes rise { from { transform: translateY(12px); } to { transform: none; } }
 @keyframes hint { from { opacity: 0; transform: translateY(2px); filter: blur(2px); } to { opacity: 1; transform: none; filter: none; } }
 @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
 
