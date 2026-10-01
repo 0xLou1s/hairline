@@ -355,6 +355,9 @@ footer a::after { content: ""; position: absolute; inset: -12px -8px; }
 .example > * { min-width: 0; }
 .example-prompt { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; align-content: start; }
 .example-figure { container-type: inline-size; }
+/* the prompt and its follow-up, one exchange: the follow-up is marked as the next turn */
+.example-turns { display: grid; gap: 8px; }
+.example-then { padding: 2px 16px 0; font-size: 12px; font-weight: 500; line-height: 1; color: var(--color-muted); }
 /* a prompt is read, not run: it wraps in its pill when it must, and the copy icon stays by its first line. Only the
    install command, a shell line, keeps to one line and scrolls. */
 .pill:is([data-command="prompt"], [data-command="follow-up"], [data-command="usage"]) { height: auto; min-height: 48px; padding-block: 6px; align-items: start; }
