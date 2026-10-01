@@ -14,10 +14,12 @@
     "test": "turbo run test",
     "test:browser": "turbo run test:browser",
     "clean": "turbo run clean",
-    "release": "node scripts/release.mjs"
+    "release": "node scripts/release.mjs",
+    "kernel": "node scripts/kernel.mjs"
   },
   "devDependencies": {
     "ajv": "8.20.0",
+    "esbuild": "0.28.2",
     "turbo": "^2.10.5",
     "typescript": "5.9.3"
   },
