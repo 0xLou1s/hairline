@@ -345,3 +345,24 @@ footer a::after { content: ""; position: absolute; inset: -12px -8px; }
   .icopy-b, .icopy[data-copied] .icopy-a { transform: none; filter: none; }
   [data-live] > .doc-dot, [data-live] .doc-link > span { transition: none; }
 }
+
+/* /skill: the pitch, then each prompt beside the page it produced, then how it works and how to use it. */
+.skill { display: grid; gap: 72px; max-width: 1080px; margin: 0 auto; padding: 64px clamp(18px, 5vw, 28px) 96px; }
+.skill > * { min-width: 0; }
+.skill-install { margin-top: 28px; max-width: 460px; }
+.example { display: grid; gap: 16px; padding: 28px 0; border-top: 1px solid var(--color-line); }
+.example:last-child { border-bottom: 1px solid var(--color-line); }
+.example > * { min-width: 0; }
+.example-prompt { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; align-content: start; }
+.example-figure { container-type: inline-size; }
+/* the height the generated page takes before it is measured: its 5:4 stage, at most 640px wide, and the lines under it */
+.example-frame { display: block; width: 100%; height: calc(min(100cqw - 32px, 640px) * 0.8 + 190px); border: 0; }
+.skill-steps { display: grid; gap: 12px; max-width: 64ch; counter-reset: step; }
+.skill-steps > li { display: grid; grid-template-columns: 2.2em minmax(0, 1fr); font-size: 15px; line-height: 1.55; color: var(--color-muted); counter-increment: step; }
+.skill-steps > li::before { content: counter(step, decimal-leading-zero); font: 400 12px/1.95 var(--font-mono); color: var(--color-faint); }
+.skill-steps strong { font-weight: 500; color: var(--color-ink); }
+
+@media (min-width: 900px) {
+  .example { grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); gap: 40px; align-items: start; }
+  .example-prompt { position: sticky; top: calc(var(--topbar) + 24px); }
+}

@@ -10,7 +10,8 @@ import { join } from "node:path";
 export const INSTALL = "npx skills add lucasmarkes/hairline";
 export const COMMAND = "/hairline-create";
 
-export type Example = { idea: string; file: string };
+/** `followUp` is a change asked for after the first prompt, when the page shown is the one that came out of it. */
+export type Example = { idea: string; file: string; followUp?: string };
 
 /** What was typed after the command, and the page the skill wrote for it. The pages are never edited. */
 export const EXAMPLES: Example[] = [
