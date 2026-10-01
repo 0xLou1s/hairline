@@ -49,6 +49,10 @@ it("look.md asks for a point of the agent's own figure, not a fixed one", () => 
   expect(text("look.md")).not.toContain("200,160");
 });
 
+it("concepts.md's worked example is not one of the ideas the site offers to try", () => {
+  expect(text("concepts.md")).not.toMatch(/sales funnel/i);
+});
+
 it("look.md runs build.mjs by its path in the skill folder, as SKILL.md says, so the command resolves from the working directory", () => {
   expect(text("look.md")).toContain("`node <skill folder>/build.mjs <skill folder>/examples/terrain.js`");
   expect(text("look.md")).not.toMatch(/`node build\.mjs /);

@@ -4,11 +4,11 @@ A concept is three things: **an object**, **what the pointer does to it**, and *
 
 ## Finding it
 
-1. **Find the object.** Something you could put on a desk: a tray, a belt, a platter, a stack, a board of pegs. Not a diagram. "A sales funnel" is not boxes and arrows; it might be a rack of sieves, each finer than the last.
+1. **Find the object.** Something you could put on a desk: a tray, a belt, a platter, a stack, a board of pegs. Not a diagram. A deploy pipeline is not boxes and arrows; it might be a flight of canal locks.
 2. **Find the variable.** Every idea has one number or one choice that matters: how far, which one, how fast, how long. That is what the pointer gets.
 3. **Give the pointer that variable.** Where it is sets a position (continuous); what it is over sets a choice (discrete). The answer should be what a hand would expect from the object.
 4. **Design the rest.** What does the object look like when nobody touches it? It must already be a composition, and already say what the figure is about.
-5. **Choose the read-out's words.** A few characters naming what is under the pointer: `cell 4·2`, `08`, `sieve 3`. And `rest`.
+5. **Choose the read-out's words.** A few characters naming what is under the pointer: `cell 4·2`, `08`, `lock 3`. And `rest`.
 6. **Choose the slider's number.** One number that makes the answer weaker or stronger: a radius, a stagger, a gap, a rate. Its three values go in `range`.
 
 ## Six answers already proven
@@ -41,12 +41,12 @@ Drop it, or fix it before building, when:
 
 ## An example
 
-For "a sales funnel":
+For "a deploy pipeline":
 
-> **Sieves.** Five trays stacked on a rack, each with a finer grid of holes. The pointer's height picks a tray, which slides out and takes the bright edge; the ones above it lift clear. The read-out names the stage: `sieve 3`.
+> **Locks.** A flight of canal locks stepping down, each a basin. The pointer picks a lock; its gates open and its water drops to the next, staggered from the pointer. The read-out names the stage: `lock 3`.
 >
-> **Chute.** Beads ride a belt that narrows through four gates, fewer passing each. Hovering slows the belt; the gate nearest the pointer brightens as a bead passes. The read-out says how many reached it: `gate 2 · 31`.
+> **Dominoes.** A run of twenty dominoes on a plank, the first eight already down. The pointer's x scrubs how far the push has run: behind it they lie on each other, ahead they stand, and the one falling takes the bright edge. The read-out says how far: `12/20`.
 >
-> **Basin.** A field of pegs sloping to one drain. The pointer raises a ridge that splits the slope, and the pegs behind it stand taller the nearer they are. The read-out names the cell: `cell 6·2`.
+> **Cabinet.** A server cabinet of twelve blades, a few half out where the last update stopped. The pointer's height sets where the update is; the blades near it slide out, the farther the less, and the one under it is bright. The read-out names the slot: `blade 7`.
 
 Each has an object, a gesture and a read-out; each is one idea; each is something at rest.
