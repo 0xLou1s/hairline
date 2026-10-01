@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
+import { same } from "../../../../skills/hairline-create/validate.mjs";
 
 /**
  * validate.mjs passes the two examples and fails a page broken in one way,
@@ -144,4 +145,11 @@ it("says how to call it when it is given nothing, and when the file is not there
   const gone = spawnSync("node", [SKILL + "validate.mjs", join(dir, "nope.html")], { encoding: "utf8" });
   expect(gone.status).toBe(2);
   expect(gone.stderr).toContain("cannot read");
+});
+
+it("knows a path that differs only in the case of its drive letter is the same path on Windows, and only there", () => {
+  expect(same("C:\\x\\validate.mjs", "c:\\x\\validate.mjs", "win32")).toBe(true);
+  expect(same("C:\\x\\validate.mjs", "c:\\x\\validate.mjs", "darwin")).toBe(false);
+  expect(same("/x/validate.mjs", "/x/validate.mjs", "darwin")).toBe(true);
+  expect(same("C:\\x\\validate.mjs", "C:\\x\\validate.mjs", "win32")).toBe(true);
 });

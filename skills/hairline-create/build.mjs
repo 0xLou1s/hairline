@@ -22,8 +22,11 @@ export function assemble(figure) {
 /** The figure's name, read from its declaration. */
 export const nameOf = (figure) => /\bname:\s*["'`]([a-z][a-z0-9-]*)["'`]/.exec(figure)?.[1] ?? null;
 
+/** Whether two resolved paths are one file. Windows paths ignore case, and the drive letter's case can differ between the two. */
+export const same = (a, b, platform = process.platform) => platform === "win32" ? a.toLowerCase() === b.toLowerCase() : a === b;
+
 /* The skill is often installed as a symlink, so the path Node was given is resolved before it is compared. */
-if (process.argv[1] && realpathSync(process.argv[1]) === realpathSync(here("./build.mjs"))) {
+if (process.argv[1] && same(realpathSync(process.argv[1]), realpathSync(here("./build.mjs")))) {
   const [src, out] = process.argv.slice(2);
   if (!src) {
     console.error("usage: node build.mjs <figure.js> [out.html]");

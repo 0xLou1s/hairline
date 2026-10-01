@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { expect, it } from "vitest";
+import { same } from "../../../../skills/hairline-create/build.mjs";
 
 /** build.mjs puts a figure on the bench: the page is the bench, the kernel and the figure, and nothing else. */
 const SKILL = fileURLToPath(new URL("../../../../skills/hairline-create/", import.meta.url));
@@ -52,4 +53,11 @@ it("says how to call it when it is given nothing", () => {
   const run = node([SKILL + "build.mjs"]);
   expect(run.status).toBe(2);
   expect(run.stderr).toContain("usage: node build.mjs <figure.js> [out.html]");
+});
+
+it("knows a path that differs only in the case of its drive letter is the same path on Windows, and only there", () => {
+  expect(same("C:\\x\\build.mjs", "c:\\x\\build.mjs", "win32")).toBe(true);
+  expect(same("C:\\x\\build.mjs", "c:\\x\\build.mjs", "darwin")).toBe(false);
+  expect(same("/x/build.mjs", "/x/build.mjs", "darwin")).toBe(true);
+  expect(same("C:\\x\\build.mjs", "C:\\x\\build.mjs", "win32")).toBe(true);
 });

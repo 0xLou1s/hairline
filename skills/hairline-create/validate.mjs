@@ -153,8 +153,11 @@ export function validate(input) {
   return out;
 }
 
+/** Whether two resolved paths are one file. Windows paths ignore case, and the drive letter's case can differ between the two. */
+export const same = (a, b, platform = process.platform) => platform === "win32" ? a.toLowerCase() === b.toLowerCase() : a === b;
+
 /* The skill is often installed as a symlink, so the path Node was given is resolved before it is compared. */
-if (process.argv[1] && realpathSync(process.argv[1]) === realpathSync(here("./validate.mjs"))) {
+if (process.argv[1] && same(realpathSync(process.argv[1]), realpathSync(here("./validate.mjs")))) {
   const file = process.argv[2];
   if (!file) {
     console.error("usage: node validate.mjs <page.html>");
