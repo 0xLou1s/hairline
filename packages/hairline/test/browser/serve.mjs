@@ -20,6 +20,7 @@ const routes = {
   "/": ["text/html", readFileSync(here("./harness.html"))],
   "/entry.js": ["text/javascript", bundle.outputFiles[0].contents],
   "/bench/terrain": ["text/html", example("terrain")],
+  "/bench/riffle": ["text/html", example("riffle")],
   "/bench/throws": ["text/html", assemble(THROWS)],
 };
 

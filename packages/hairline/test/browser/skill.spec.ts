@@ -21,6 +21,11 @@ type Checkpoint = { at: string; read: string; svg: string };
 /** Each example: a viewBox point that is on the figure, what the slider shows at its two ends, and how much of the package's script it can play. */
 const EXAMPLES = {
   terrain: { at: [200, 160], ends: ["1.5", "5"], steps: (SCRIPTS as Record<string, Step[]>).terrain },
+  /* Riffle on the bench has no keyboard, so its script stops where the package's reaches for it */
+  riffle: {
+    at: [150, 120], ends: ["0", "90"],
+    steps: (SCRIPTS as Record<string, Step[]>).riffle.slice(0, (SCRIPTS as Record<string, Step[]>).riffle.findIndex((s) => "focus" in s)),
+  },
 } as Record<string, { at: [number, number]; ends: [string, string]; steps: Step[] }>;
 
 const svg = (page: Page) => page.locator("#stage > svg").evaluate((el) => el.innerHTML);
