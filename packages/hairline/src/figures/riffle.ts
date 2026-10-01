@@ -1,4 +1,4 @@
-import { clamp, poly, rad, type Vec2 } from "../core/iso";
+import { clamp, rad, type Vec2 } from "../core/iso";
 import { tdone, tset, tval, tween, type Tween } from "../core/motion";
 import { BACK, FWD, G, H, LIFT, N, REST, W, card, pose, scene, tray } from "./riffle-geometry";
 import { disposer, mk, place, pointer, reflect, register, type FigureEls, type FigureHandle } from "../core/stage";
@@ -10,20 +10,13 @@ import { disposer, mk, place, pointer, reflect, register, type FigureEls, type F
  *
  * Selection never reads the posed cards: it comes from static oblique bands
  * along the resting top edges, so a card moving out from under the pointer
- * can't flip the choice back and forth. `bands(true)` shows them. The stage
- * is a focusable group; the arrow keys walk the cards and the read-out names
- * the one pulled: its number, and its name when `labels` gave it one.
+ * can't flip the choice back and forth. The bands are geometry only; nothing
+ * draws them. The stage is a focusable group; the arrow keys walk the cards
+ * and the read-out names the one pulled by its number.
  *
  * The drawing itself — camera, tray, a card in any pose — is pure and lives in
  * riffle-geometry.ts; this file is the DOM, the tweens and the input.
  */
-
-export type RiffleHandle = FigureHandle & {
-  /** Shows or hides the hit bands. */
-  bands(on: boolean): void;
-  /** Names for the cards, card 01 first. A card without a name is read out by its number alone. */
-  labels(list: readonly string[]): void;
-};
 
 type Card = {
   n: number; t0: number; shape: Vec2[];
@@ -33,10 +26,9 @@ type Card = {
   a: Tween; z: Tween;
 };
 
-export const mount = ({ stage, svg, read }: FigureEls, value: number): RiffleHandle => {
+export const mount = ({ stage, svg, read }: FigureEls, value: number): FigureHandle => {
   const bag = disposer();
   let stag = value;
-  let names: readonly string[] = [];
 
   const { P, front, outer, inner } = scene();
   const paths = tray(P, front, outer, inner);
@@ -64,9 +56,6 @@ export const mount = ({ stage, svg, read }: FigureEls, value: number): RiffleHan
   const c0 = top(0), c1 = top(1), d = [c1[0] - c0[0], c1[1] - c0[1]];
   const px0 = P(0, 0, 0), px1 = P(1, 0, 0), ex = [px1[0] - px0[0], px1[1] - px0[1]];
   const HALF = W / 2 + 6, det = d[0] * ex[1] - d[1] * ex[0];
-  const bandG = mk("g", { class: "bands" }, g), bands: SVGPathElement[] = [];
-  const at = (s: number, r: number): Vec2 => [c0[0] + s * d[0] + r * ex[0], c0[1] + s * d[1] + r * ex[1]];
-  for (let i = 0; i < N; i++) bands.push(mk("path", { d: poly([at(i - 0.5, -HALF), at(i - 0.5, HALF), at(i + 0.5, HALF), at(i + 0.5, -HALF)]) }, bandG));
 
   /** The card whose band holds the point, in the band's own (s, r) coordinates; -1 outside. */
   function hit([x, y]: Vec2) {
@@ -93,11 +82,7 @@ export const mount = ({ stage, svg, read }: FigureEls, value: number): RiffleHan
   bag.add(B.unregister);
 
   let act = -1;
-  const caption = (a: number) => {
-    if (a < 0) return "rest";
-    const n = N - a, name = names[n - 1];
-    return String(n).padStart(2, "0") + (name ? ` · ${name}` : "");
-  };
+  const caption = (a: number) => (a < 0 ? "rest" : String(N - a).padStart(2, "0"));
   /** Pulls card a (-1 puts them all back). The stagger spreads out from the card pulled, or the one let go. */
   function setActive(a: number) {
     if (a === act) return;
@@ -109,7 +94,6 @@ export const mount = ({ stage, svg, read }: FigureEls, value: number): RiffleHan
       tset(cd.a, th, now, delay); tset(cd.z, a === i ? LIFT : 0, now, delay);
       cd.face.classList.toggle("hi", i === a); cd.head.classList.toggle("hi", i === a); cd.punch[cd.n - 1].classList.toggle("m", i !== a);
     });
-    bands.forEach((b, i) => b.classList.toggle("on", i === a));
     read.textContent = caption(a);
     B.wake();
   }
@@ -126,8 +110,6 @@ export const mount = ({ stage, svg, read }: FigureEls, value: number): RiffleHan
 
   return {
     set: (v) => { stag = v; },
-    bands: (on) => { bandG.classList.toggle("show", on); },
-    labels: (list) => { names = list; if (act >= 0) read.textContent = caption(act); },
     destroy: bag.dispose,
   };
 };

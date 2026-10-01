@@ -2,6 +2,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { frames, host, observers, pending } from "./dom";
 import { exploded, phosphor, riffle, slow, terrain, turntable } from "../src/index";
+import { css } from "../src/core/styles";
 
 const ALL = { riffle, terrain, exploded, phosphor, slow, turntable };
 const key = (el: Element, k: string) => el.dispatchEvent(new KeyboardEvent("keydown", { key: k, bubbles: true, cancelable: true }));
@@ -77,6 +78,13 @@ describe("mount", () => {
     expect(el.getAttribute("role")).toBe("img");
     expect(el.hasAttribute("tabindex")).toBe(false);
     expect(el.querySelector("[data-hairline-live]")).toBeNull();
+  });
+
+  it("draws no hit bands on Riffle, and the stylesheet has no rules for them", () => {
+    const el = host();
+    riffle(el);
+    expect(el.querySelector(".bands")).toBeNull();
+    expect(css(true) + css(false)).not.toMatch(/bands/);
   });
 
   it("puts the stylesheet in the document once, however many figures mount", () => {

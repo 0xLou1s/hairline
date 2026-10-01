@@ -47,10 +47,6 @@ export function css(lightDark: boolean): string {
     `${SVG} :where(.dot.m){fill:var(--hl-edge)}`,
     `${SVG} :where(.dot.off){fill:var(--hl-lo)}`,
     `${SVG} :where(.ghost path){fill:none;stroke:var(--hl-mid)}`,
-    `${SVG} :where(.bands){opacity:0;transition:opacity 240ms ${EASE};pointer-events:none}`,
-    `${SVG} :where(.bands.show){opacity:1}`,
-    `${SVG} :where(.bands path){fill:none;stroke:var(--hl-mid);stroke-dasharray:2 3}`,
-    `${SVG} :where(.bands path.on){stroke:var(--hl-hi);stroke-dasharray:none}`,
   ].join("");
 }
 
