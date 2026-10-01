@@ -25,30 +25,78 @@ import { assemble } from "./build.mjs";
 const here = (p) => fileURLToPath(new URL(p, import.meta.url));
 const LIMIT = 200;
 const unix = (s) => s.replace(/\r\n/g, "\n");
-/** A figure's source without its comments, so its prose is never read as code. A `//` after a colon or inside a quote is kept: it is a URL. */
-const bare = (src) => src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:\\"'`])\/\/.*$/gm, "$1");
+/**
+ * A figure's source without its comments, so its prose is never read as code.
+ * It is read the way JavaScript reads it, so a `//` inside a string, a template
+ * or a regex is not taken for a comment, and what follows it is still checked.
+ * With `words` false the strings are emptied too, for a check that must not
+ * read a string's words as code.
+ */
+function bare(src, words = true) {
+  let out = "", i = 0, prev = "", depth = 0;
+  const open = []; // for each `${` still open, the brace depth it opened at
+  /** Reads from just past an opening quote to its close, or, in a template, to a `${`. */
+  const quoted = (q) => {
+    const from = i;
+    while (i < src.length && src[i] !== q && (q === "`" ? !(src[i] === "$" && src[i + 1] === "{") : src[i] !== "\n")) {
+      i += src[i] === "\\" ? 2 : 1;
+    }
+    if (words) out += src.slice(from, i);
+    if (q === "`" && src[i] === "$") { out += "${"; i += 2; open.push(depth++); prev = "{"; return; }
+    out += src[i] ?? ""; i++; prev = q;
+  };
+  while (i < src.length) {
+    const c = src[i], d = src[i + 1];
+    if (c === "/" && d === "/") { while (i < src.length && src[i] !== "\n") i++; }
+    else if (c === "/" && d === "*") { const end = src.indexOf("*/", i + 2); i = end < 0 ? src.length : end + 2; out += " "; }
+    else if (c === "/" && /^(?:|[(,=:[!&|?{};+\-*%<>~^])$/.test(prev)) {
+      // A regex: a slash where a value starts. A quote or a `//` inside it is the regex's own.
+      let j = i + 1, cls = false;
+      for (; j < src.length && src[j] !== "\n"; j++) {
+        if (src[j] === "\\") j++;
+        else if (src[j] === "[") cls = true;
+        else if (src[j] === "]") cls = false;
+        else if (src[j] === "/" && !cls) break;
+      }
+      out += src.slice(i, j + 1); i = j + 1; prev = ")";
+    } else if (c === '"' || c === "'" || c === "`") { out += c; i++; quoted(c); }
+    else if (c === "}" && open.length && depth - 1 === open[open.length - 1]) { depth--; open.pop(); out += c; i++; quoted("`"); }
+    else {
+      if (c === "{") depth++;
+      else if (c === "}") depth--;
+      out += c; i++;
+      if (!/\s/.test(c)) prev = c;
+    }
+  }
+  return out;
+}
 
-/** What a figure must not contain. */
+/**
+ * What a figure must not contain: a pattern read in the code with its strings,
+ * and, for an import, one read with its strings emptied, so the word in a
+ * string is not taken for the statement.
+ */
 const BAD = [
   ["text", /<\s*(?:text|tspan|textPath|foreignObject)\b|["'`](?:text|tspan|textPath|foreignObject)["'`]|\b(?:innerHTML|outerHTML|insertAdjacentHTML|innerText)\b/,
     "rule 10. No words inside the figure, and no markup written as a string. Say it with geometry (a punch, a dot code, a bright edge); names go to read.textContent."],
-  ["paint", /stroke-width|strokeWidth|stroke-dasharray|["'`](?:fill|stroke|filter|style|color|stop-color)["'`]|\b(?:fill|stroke|filter|style)\s*:|\.style\b|#[0-9a-fA-F]{3,8}\b|\b(?:rgba?|hsla?|oklch|oklab|color-mix)\(|drop-shadow|box-shadow|feDropShadow|feGaussianBlur|[Gg]radient/,
+  ["paint", /stroke-width|strokeWidth|stroke-dasharray|["'`](?:fill|stroke|filter|style|color|stop-color)["'`]|\b(?:fill|stroke|filter|style)\s*:|\.style\b|(["'`])#(?:[0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})\1|\b(?:rgba?|hsla?|oklch|oklab|color-mix)\(|drop-shadow|box-shadow|feDropShadow|feGaussianBlur|[Ll]inearGradient|[Rr]adialGradient|(?:linear|radial|conic)-gradient/,
     "rule 04. The figure sets a stroke width, colour, fill, filter, gradient or shadow of its own. Use the kernel's classes and nothing else: sil, hi, lo, nf, fo, dash, dot, dot m, dot off."],
-  ["outside", /\bfetch\s*\(|\bimport\b|XMLHttpRequest|WebSocket|EventSource|sendBeacon|https?:\/\/|\burl\(|<\/?script|<(?:link|img|iframe|style)\b|new\s+Image\b|createElement|\beval\s*\(|new\s+Function\b|localStorage|sessionStorage|\.cookie\b/,
-    "the figure reaches outside the file or makes nodes by hand. One self-contained file: no fetch, import, URL, script tag or storage, and every node comes from HL.mk."],
+  ["outside", /\bfetch\s*\(|XMLHttpRequest|WebSocket|EventSource|sendBeacon|https?:\/\/|\burl\(|<\/?script|<(?:link|img|iframe|style)\b|new\s+Image\b|createElement|\beval\s*\(|new\s+Function\b|localStorage|sessionStorage|\.cookie\b/,
+    "the figure reaches outside the file or makes nodes by hand. One self-contained file: no fetch, import, URL, script tag or storage, and every node comes from HL.mk.",
+    /\bimport\s*(?:\(|["'`{*]|[\w$]+\s*(?:,|from\b))/],
   ["clock", /\bsetInterval\b|\bsetTimeout\b|\brequestAnimationFrame\b|\.animate\s*\(|<animate|IntersectionObserver|\bmatchMedia\b/,
     "rule 07. The figure runs a clock of its own. Move inside HL.register(stage, tick), with springs (stepS) or tweens (tset, tval); a delay is a tween's delay. The loop sleeps offscreen and honours reduced motion for you."],
   ["hit", /getBoundingClientRect|elementFromPoint|elementsFromPoint|:hover|(?:addEventListener|\.on)\s*\(\s*(?:\w+\s*,\s*)?["'`](?:mouse|pointer|touch|click)|\bon(?:mouse|pointer|touch|click)\w*\s*=/,
     "rule 01. The figure listens to the pointer itself or measures what is on screen. Take the pointer from HL.pointer(stage, { move, leave }) and test it against the rest or target pose, in world units."],
 ];
 
-/** What a figure must contain. */
+/** What a figure must contain. A call on something else, such as `map.set(k, v)`, is not the handle's `set`. */
 const NEED = [
   ["clock", /\bregister\s*\(/, "rule 07. The figure never joins the kernel's loop. Draw inside HL.register(stage, tick), and give its unregister to destroy."],
   ["hit", /\bpointer\s*\(/, "the figure never listens to the pointer. Call HL.pointer(stage, { move, leave }) and answer it."],
   ["readout", /\bread\.textContent\s*=/, 'the figure never writes the read-out. Set read.textContent to what is under the pointer, and to "rest" when nothing is.'],
-  ["handle", /\bset\s*[:(]/, "mount must return { set(value), destroy() }, and set is missing. It takes the slider's number."],
-  ["handle", /\bdestroy\s*[:(]/, "mount must return { set(value), destroy() }, and destroy is missing. It undoes everything mount did: bag.dispose."],
+  ["handle", /(?<![.\w$])set\s*[:(]/, "mount must return { set(value), destroy() }, and set is missing. It takes the slider's number."],
+  ["handle", /(?<![.\w$])destroy\s*[:(]/, "mount must return { set(value), destroy() }, and destroy is missing. It undoes everything mount did: bag.dispose."],
 ];
 
 /** The declaration at the end of the file, read as text. */
@@ -90,8 +138,8 @@ export function validate(input) {
     out.push("bench: the page differs from bench.html outside the figure. Build again with `node build.mjs`; the bench is fixed, and a change belongs in the figure.");
   }
 
-  const src = fig[1], code = bare(src);
-  for (const [id, re, say] of BAD) if (re.test(code)) out.push(`${id}: ${say}`);
+  const src = fig[1], code = bare(src), shape = bare(src, false);
+  for (const [id, re, say, empty] of BAD) if (re.test(code) || empty?.test(shape)) out.push(`${id}: ${say}`);
   for (const [id, re, say] of NEED) if (!re.test(code)) out.push(`${id}: ${say}`);
   out.push(...declared(code));
   const lines = src.split("\n").length;

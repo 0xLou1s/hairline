@@ -55,6 +55,24 @@ describe("pages that pass", () => {
   });
 });
 
+/** Honest code that only looks like a broken rule: a good figure with any of these added still passes. */
+const HONEST: [why: string, code: string][] = [
+  ["an identifier named gradient, for a slope", "const gradient = 0.5;"],
+  ["a read-out with a number sign", 'const label = "pillar #101";'],
+  ["the word import in a string", 'const note = "import";'],
+  ["the word import inside a longer name", "const important = true;"],
+];
+
+describe("honest additions that pass", () => {
+  for (const [why, code] of HONEST) {
+    it(why, () => {
+      const run = check(plus(code));
+      expect(run.err).toBe("");
+      expect(run.status).toBe(0);
+    });
+  }
+});
+
 const BROKEN: [id: string, why: string, figure: string, change?: (page: string) => string][] = [
   ["kernel", "the kernel was edited", terrain, (page) => page.replace("var HL = ", "var HL = /* mine */ ")],
   ["bench", "the bench was edited", terrain, (page) => page.replace("</main>", "<p>better</p></main>")],
@@ -63,16 +81,23 @@ const BROKEN: [id: string, why: string, figure: string, change?: (page: string) 
   ["paint", "a fill of its own", plus('mk("path", { fill: "red" });')],
   ["paint", "a stroke width of its own", plus('mk("path", { "stroke-width": 2 });')],
   ["paint", "an inline style", plus('document.body.style.background = "#000";')],
+  ["paint", "a colour in hex", plus('const ink = "#a1b2c3";')],
+  ["paint", "a gradient element", plus('mk("linearGradient", {});')],
   ["outside", "a fetch", plus('fetch("https://example.com/data.json");')],
   ["outside", "a node made by hand", plus('document.createElementNS("http://www.w3.org/2000/svg", "path");')],
   ["outside", "a script tag in a string", plus('const s = "</script>";')],
+  ["outside", "an import statement", plus('import { x } from "./x.js";')],
+  ["outside", "a dynamic import", plus('import("./x.js");')],
+  ["outside", "a URL in a string", plus('const u = "https://example.com/a.json";')],
   ["clock", "its own frame", plus("requestAnimationFrame(() => {});")],
   ["clock", "its own timer", plus("setTimeout(() => {}, 100);")],
+  ["clock", "a timer after a // in a string", plus('const s = "a // b"; setTimeout(() => {}, 1);')],
   ["clock", "no kernel loop", terrain.replace("register(stage,", "((s, t) => ({ wake() {}, unregister() {} }))(stage,")],
   ["hit", "a box measured on screen", plus("stage.getBoundingClientRect();")],
   ["hit", "its own listener", plus('stage.addEventListener("pointermove", () => {});')],
   ["hit", "no pointer", terrain.replace("bag.add(pointer(stage,", "bag.add(((s, h) => () => {})(stage,")],
   ["readout", "no read-out", terrain.replace(/read\.textContent = [^;]+;/g, "")],
+  ["handle", "no set, beside a Map's set", plus("new Map().set(1, 2);").replace("set: (v) =>", "put: (v) =>")],
   ["handle", "no destroy", terrain.replace("destroy: bag.dispose", "stop: bag.dispose")],
   ["declare", "no means", terrain.replace(/\n {2}means: .*\n/, "\n")],
   ["declare", "a range that turns back", terrain.replace("range: [1.5, 3, 5]", "range: [1.5, 5, 3]")],
