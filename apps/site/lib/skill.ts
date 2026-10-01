@@ -10,15 +10,18 @@ import { join } from "node:path";
 export const INSTALL = "npx skills add lucasmarkes/hairline";
 export const COMMAND = "/hairline-create";
 
-/** `followUp` is a change asked for after the first prompt, when the page shown is the one that came out of it. */
-export type Example = { idea: string; file: string; followUp?: string };
+/**
+ * `followUp` is a change asked for after the first prompt, when the page shown is the one that came out of it.
+ * `sha256` is the page's hash as the skill wrote it: any change to the page is a change to this line.
+ */
+export type Example = { idea: string; file: string; sha256: string; followUp?: string };
 
 /** What was typed after the command, and the page the skill wrote for it. The pages are never edited. */
 export const EXAMPLES: Example[] = [
-  { idea: "a sales funnel", file: "hairline-funnel.html" },
-  { idea: "a rate limiter", file: "hairline-clearance.html" },
-  { idea: "git branches", file: "hairline-sidings.html", followUp: "The rails almost disappear and the trains read as loose blocks. Make it read as a railway at a glance." },
-  { idea: "weather over a city", file: "hairline-storm.html", followUp: "The cloud looks like a stack of cylinders. Make it read as a cloud at a glance." },
+  { idea: "a sales funnel", file: "hairline-funnel.html", sha256: "0cc23d6ae3e40a7d424e56b25f5c318760e8ae5abe82a0cafb7631c86391d982" },
+  { idea: "a rate limiter", file: "hairline-clearance.html", sha256: "bcad4048389d9049880263ad113900cc6728f6bc5770880c7524a8836728bdce" },
+  { idea: "git branches", file: "hairline-sidings.html", sha256: "de5ad4411e1b7a97049c6b74e9f4ffdb8a9dfc32b0c5367dddd585cd7dac5bf7", followUp: "The rails almost disappear and the trains read as loose blocks. Make it read as a railway at a glance." },
+  { idea: "weather over a city", file: "hairline-storm.html", sha256: "af8e3e85414d2a38421cf98b858ce1a4c1f9138cc5ba7bbf6c5b42b0205c0e60", followUp: "The cloud looks like a stack of cylinders. Make it read as a cloud at a glance." },
 ];
 
 export type Shown = Example & { name: string; means: string; prompt: string; href: string };

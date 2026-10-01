@@ -1,10 +1,14 @@
 import { spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import { readdirSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { COMMAND, EXAMPLES, INSTALL, declared, examples } from "@/lib/skill";
 
-/** The showcase is the skill's own output: these fail if an example was edited, renamed, dropped, or left behind by the kernel. */
+/**
+ * The showcase is the skill's own output: these fail if an example was edited (its hash is pinned in lib/skill.ts),
+ * renamed, dropped, or left behind by the kernel (the skill's validator).
+ */
 
 const PUBLIC = fileURLToPath(new URL("../public/skill/", import.meta.url));
 const VALIDATE = fileURLToPath(new URL("../../../skills/hairline-create/validate.mjs", import.meta.url));
@@ -16,6 +20,10 @@ describe("the skill's examples", () => {
 
   it("are exactly the files in public/skill", () => {
     expect(EXAMPLES.map((e) => e.file).sort()).toEqual(readdirSync(PUBLIC).sort());
+  });
+
+  it.each(EXAMPLES)("$file is byte for byte the page the skill wrote", ({ file, sha256 }) => {
+    expect(createHash("sha256").update(readFileSync(PUBLIC + file)).digest("hex")).toBe(sha256);
   });
 
   it.each(EXAMPLES)("$file passes the skill's validator untouched", ({ file }) => {
