@@ -74,7 +74,8 @@ test("the docs prerender six empty boxes, then draw one figure per row with a cl
 test("the docs' code is in greys: every token's colour has equal red, green and blue", async ({ page }) => {
   await page.goto("/docs");
   const colours = await page.locator("main pre span").evaluateAll((spans) => spans.map((s) => getComputedStyle(s).color));
-  expect(colours.length).toBeGreaterThan(10);
+  // seven blocks of highlighted code, nearly two hundred spans: a page that lost its highlighting falls far short
+  expect(colours.length).toBeGreaterThan(150);
   const tinted = colours.filter((c) => {
     const [r, g, b] = c.match(/\d+(\.\d+)?/g)!.map(Number);
     return !(r === g && g === b);
@@ -410,6 +411,143 @@ test("on a phone the sidebar is one strip under the top bar, and it follows the 
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
 });
 
+test("the sidebar marks its section with one black dot before its ink text, and no pill", async ({ page }) => {
+  await page.goto("/docs");
+  const nav = page.locator(".doc-sidebar");
+  await nav.getByRole("link", { name: "Theme" }).click();
+  await expect(nav.getByRole("link", { name: "Theme" })).toHaveAttribute("aria-current", "location");
+  const read = () => nav.evaluate((nav) => {
+    const ink = (el: Element) => {
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      return range.getBoundingClientRect();
+    };
+    const on = nav.querySelector("a[aria-current]")!;
+    const off = nav.querySelector("a:not([aria-current])")!;
+    const dots = [...nav.querySelectorAll(".doc-dot")];
+    const dot = dots[0]?.getBoundingClientRect();
+    const box = on.getBoundingClientRect();
+    return {
+      dots: dots.length,
+      size: dot && [Math.round(dot.width), Math.round(dot.height)],
+      fill: dots[0] && getComputedStyle(dots[0]).backgroundColor,
+      round: dots[0] && getComputedStyle(dots[0]).borderRadius,
+      level: dot && Math.abs(dot.top + dot.height / 2 - (box.top + box.height / 2)),
+      clear: dot && ink(on).left - dot.right,
+      inside: dot && dot.left >= box.left,
+      // the text moves aside for the dot: its distance from the link's edge, against an unmarked link's
+      shift: Math.round(ink(on).left - box.left - (ink(off).left - off.getBoundingClientRect().left)),
+      on: [getComputedStyle(on).color, getComputedStyle(on).backgroundColor],
+      off: [getComputedStyle(off).color, getComputedStyle(off).backgroundColor],
+    };
+  });
+  await expect.poll(async () => (await read()).shift).toBe(12);
+  const r = await read();
+  expect(r.dots).toBe(1);
+  expect(r.size).toEqual([5, 5]);
+  expect(r.fill).toBe("rgb(10, 10, 10)");
+  expect(r.round).toBe("50%");
+  expect(r.level).toBeLessThan(1);
+  expect(r.clear).toBeGreaterThanOrEqual(4);
+  expect(r.inside).toBe(true);
+  expect(r.on).toEqual(["rgb(10, 10, 10)", "rgba(0, 0, 0, 0)"]);
+  expect(r.off).toEqual(["rgb(115, 115, 115)", "rgba(0, 0, 0, 0)"]);
+});
+
+test("the dot travels from section to section instead of jumping, and under reduced motion it jumps", async ({ page }) => {
+  await page.goto("/docs");
+  const nav = page.locator(".doc-sidebar");
+  await expect(nav.getByRole("link", { name: "Install" })).toHaveAttribute("aria-current", "location");
+  const flight = () => nav.evaluate((nav) => new Promise<number[]>((done) => {
+    const dot = nav.querySelector(".doc-dot")!;
+    const ys: number[] = [];
+    const t0 = performance.now();
+    const tick = () => {
+      // from the column's top: the column itself moves up as it sticks
+      const r = dot.getBoundingClientRect();
+      ys.push(r.top + r.height / 2 - nav.getBoundingClientRect().top);
+      if (performance.now() - t0 < 700) requestAnimationFrame(tick);
+      else done(ys);
+    };
+    requestAnimationFrame(tick);
+    // straight to Theme: no section passes through the band on the way, so the mark moves once
+    document.getElementById("theme")!.scrollIntoView({ behavior: "instant" });
+  }));
+  const centre = (name: string) => nav.getByRole("link", { name }).evaluate((a) => {
+    const r = a.getBoundingClientRect();
+    return r.top + r.height / 2 - a.closest("nav")!.getBoundingClientRect().top;
+  });
+  const from = await centre("Install");
+  const to = await centre("Theme");
+  const ys = await flight();
+  expect(ys.filter((y) => y > from + 2 && y < to - 2).length).toBeGreaterThanOrEqual(3);
+  expect(Math.abs(ys[ys.length - 1] - to)).toBeLessThan(1);
+
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
+  await expect(nav.getByRole("link", { name: "Install" })).toHaveAttribute("aria-current", "location");
+  await page.waitForTimeout(800);
+  const jump = await flight();
+  expect(jump.filter((y) => y > from + 2 && y < to - 2)).toEqual([]);
+});
+
+test("a deep link marks only its own section, with no other marked first", async ({ page }) => {
+  await page.addInitScript(() => {
+    const seen: string[] = [];
+    (window as unknown as { seen: string[] }).seen = seen;
+    const note = (el: Element) => el.matches(".doc-sidebar a[aria-current]") && seen.push(el.textContent!);
+    new MutationObserver((records) => {
+      for (const r of records) {
+        if (r.type === "attributes") note(r.target as Element);
+        for (const n of r.addedNodes) if (n instanceof Element) [n, ...n.querySelectorAll("*")].forEach(note);
+      }
+    }).observe(document, { subtree: true, childList: true, attributes: true, attributeFilter: ["aria-current"] });
+  });
+  await page.goto("/docs#theme");
+  const nav = page.locator(".doc-sidebar");
+  await expect(nav.getByRole("link", { name: "Theme" })).toHaveAttribute("aria-current", "location");
+  expect([...new Set(await page.evaluate(() => (window as unknown as { seen: string[] }).seen))]).toEqual(["Theme"]);
+});
+
+test("on a tall screen, a click on a section near the end marks that section, not the last", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1600 });
+  await page.goto("/docs");
+  const nav = page.locator(".doc-sidebar");
+  await nav.getByRole("link", { name: "Theme" }).click();
+  // the page cannot scroll Theme up to the top bar: it stops at its end, with Theme in view
+  await expect.poll(() => page.evaluate(() => innerHeight + scrollY >= document.documentElement.scrollHeight - 2)).toBe(true);
+  await page.waitForTimeout(300);
+  await expect(nav.getByRole("link", { name: "Theme" })).toHaveAttribute("aria-current", "location");
+});
+
+test("on a short screen the sidebar scrolls inside itself instead of running off the bottom", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 420 });
+  await page.goto("/docs");
+  const side = await page.locator(".doc-sidebar").evaluate((el) => ({ bottom: el.getBoundingClientRect().bottom, scrolls: el.scrollHeight > el.clientHeight, overflow: getComputedStyle(el).overflowY }));
+  expect(side.bottom).toBeLessThanOrEqual(420);
+  expect(side.scrolls).toBe(true);
+  expect(side.overflow).toBe("auto");
+});
+
+// the band starts under the sticky chrome, which is taller on a phone, where the strip sits under the top bar
+for (const [from, to, nav] of [[1280, 390, ".doc-strip"], [390, 1280, ".doc-sidebar"]] as const) {
+  test(`after the window goes from ${from} to ${to}px wide, a click marks the section it lands on`, async ({ page }) => {
+    await page.setViewportSize({ width: from, height: 800 });
+    await page.goto("/docs");
+    await page.setViewportSize({ width: to, height: 800 });
+    const links = page.locator(nav);
+    for (const name of ["Theme", "Options", "CDN"]) {
+      await links.getByRole("link", { name }).click();
+      // the smooth scroll has stopped: two reads 150ms apart agree
+      await expect.poll(() => page.evaluate(() => new Promise<number>((r) => {
+        const y = scrollY;
+        setTimeout(() => r(scrollY - y), 150);
+      }))).toBe(0);
+      await expect(links.getByRole("link", { name })).toHaveAttribute("aria-current", "location");
+    }
+  });
+}
+
 test.describe("on a 2x screen", () => {
   test.use({ deviceScaleFactor: 2 });
 
@@ -445,6 +583,9 @@ test.describe("without JavaScript", () => {
     await page.goto("/docs");
     const nav = page.getByRole("navigation", { name: "Docs" });
     await expect(nav.getByRole("link", { name: "Theme" })).toHaveAttribute("href", "#theme");
+    // the script marks the section in view; without it nothing is marked, rather than Install whatever the reader sees
+    await expect(page.locator("[aria-current]")).toHaveCount(0);
+    await expect(page.locator(".doc-dot")).toHaveCount(0);
     await nav.getByRole("link", { name: "Theme" }).click();
     await expect(page).toHaveURL(/\/docs#theme$/);
     const quick = page.locator("#quick-start");

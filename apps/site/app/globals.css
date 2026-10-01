@@ -120,15 +120,23 @@ em { font-style: italic; }
 .doc-more:hover { text-decoration-color: currentColor; }
 
 /* The sidebar: the same links twice, grouped in a column from 1024px, one sideways strip under the top bar below it. */
-.doc-link { display: flex; align-items: center; height: 32px; padding: 0 10px; border-radius: 8px; font-size: 14px; color: var(--color-muted); white-space: nowrap; transition: background-color 150ms ease, color 150ms ease; }
-.doc-link:hover { color: var(--color-ink); }
-.doc-link[aria-current] { color: var(--color-ink); background: var(--color-stone); }
+.doc-link { display: flex; align-items: center; height: 32px; padding: 0 10px; border-radius: 8px; font-size: 14px; color: var(--color-muted); white-space: nowrap; transition: color 200ms ease; }
+.doc-link:hover, .doc-link[aria-current] { color: var(--color-ink); }
+/* The marked link's text steps aside for a dot that flies in from the link marked before. The old text steps back at
+   once and the new one steps aside as the dot lands, so the two never meet. Nothing moves until the first mark is
+   drawn: the page opens with it in place. */
+.doc-link > span { display: inline-block; }
+.doc-link[aria-current] > span { transform: translateX(12px); }
+[data-live] .doc-link > span { transition: transform 250ms var(--ease-out); }
+[data-live] .doc-link[aria-current] > span { transition-duration: 300ms; transition-delay: 160ms; }
+.doc-dot { position: absolute; top: 0; left: 0; width: 5px; height: 5px; border-radius: 50%; background: var(--color-ink); pointer-events: none; }
+[data-live] > .doc-dot { transition: translate 350ms var(--ease-out); }
 .doc-sidebar { display: none; }
 .doc-group-label { margin-bottom: 4px; padding: 0 10px; font-size: 12px; font-weight: 500; color: var(--color-muted); }
 .doc-strip { position: sticky; top: var(--topbar); z-index: 9; margin: 0 calc(-1 * var(--gutter)); background: color-mix(in srgb, var(--color-canvas) 82%, transparent); backdrop-filter: blur(12px); }
-.doc-strip-scroll { overflow-x: auto; padding: 6px var(--gutter); scrollbar-width: none; }
+.doc-strip-scroll { position: relative; overflow-x: auto; padding: 6px var(--gutter); scrollbar-width: none; }
 .doc-strip-scroll::-webkit-scrollbar { display: none; }
-.doc-strip-scroll ul { display: flex; gap: 2px; width: max-content; }
+.doc-strip-scroll ul { display: flex; gap: 8px; width: max-content; }
 .doc-strip-scroll[data-start] { mask-image: linear-gradient(to right, transparent, #000 24px); }
 .doc-strip-scroll[data-end] { mask-image: linear-gradient(to right, #000 calc(100% - 24px), transparent); }
 .doc-strip-scroll[data-start][data-end] { mask-image: linear-gradient(to right, transparent, #000 24px, #000 calc(100% - 24px), transparent); }
@@ -136,7 +144,9 @@ em { font-style: italic; }
   .docs { --doc-offset: calc(var(--topbar) + 24px); display: grid; grid-template-columns: 220px minmax(0, 1fr); column-gap: 56px; padding-top: 64px; }
   .docs-main { padding-top: 0; }
   .doc-strip { display: none; }
-  .doc-sidebar { display: grid; gap: 24px; align-self: start; position: sticky; top: calc(var(--topbar) + 24px); }
+  /* short enough to fit the window from where it starts, 64px under the top bar, with 24px to spare; a shorter
+     window scrolls it */
+  .doc-sidebar { display: grid; gap: 24px; align-self: start; position: sticky; top: calc(var(--topbar) + 24px); max-height: calc(100vh - var(--topbar) - 88px); overflow-y: auto; scrollbar-width: thin; }
 }
 
 /* The hero: each block rises out of a blur, one after another. */
@@ -229,4 +239,5 @@ em { font-style: italic; }
   .hero-rise > *, .enter, .enter-hint { animation-name: fade; }
   .slide[data-ready] .slide-hl { transition: none; }
   .icopy-b, .icopy[data-copied] .icopy-a { transform: none; filter: none; }
+  [data-live] > .doc-dot, [data-live] .doc-link > span { transition: none; }
 }
