@@ -130,6 +130,49 @@ test("the theme switch changes the palette, and wins over the system's theme bot
   await expect(page.locator("body")).toHaveCSS("background-color", "rgb(255, 255, 255)");
 });
 
+test("?theme= in the address wins over the system's theme, as the switch does, and any other value is ignored", async ({ page }) => {
+  const ground = page.locator("body");
+  await page.emulateMedia({ colorScheme: "dark" });
+  await page.goto("/bench/terrain?theme=light");
+  await expect(ground).toHaveCSS("background-color", "rgb(255, 255, 255)");
+  await expect(page.locator("#theme")).toHaveText("light");
+
+  await page.emulateMedia({ colorScheme: "light" });
+  await page.goto("/bench/terrain?theme=dark");
+  await expect(ground).toHaveCSS("background-color", "rgb(8, 9, 10)");
+  await expect(page.locator("#theme")).toHaveText("dark");
+
+  await page.emulateMedia({ colorScheme: "dark" });
+  await page.goto("/bench/terrain?theme=blue");
+  await expect(ground).toHaveCSS("background-color", "rgb(8, 9, 10)");
+  await expect(page.locator("#theme")).toHaveText("dark");
+});
+
+for (const [id, ex] of Object.entries(EXAMPLES)) {
+  test(`${id}: ?intensity= in the address sets the slider before the figure mounts`, async ({ context, page }) => {
+    await context.addInitScript(clock);
+    /* the page at an address, answering the pointer: the slider's value, what it shows, and the drawing */
+    const load = async (query: string) => {
+      await page.goto(`/bench/${id}${query}`);
+      await page.locator("#stage svg > *").first().waitFor();
+      await settle(page);
+      const [cp] = await play(page, {
+        stage: page.locator("#stage"),
+        snap: async () => ({ svg: await svg(page), read: await read(page) }),
+        set: async () => {},
+      }, [{ move: ex.at }, { adv: 12 }, { cp: "answering" }]) as Checkpoint[];
+      return { svg: cp.svg, value: await page.locator("#value").innerText(), slider: await page.locator("#intensity").inputValue() };
+    };
+    const plain = await load(""), low = await load("?intensity=0"), high = await load("?intensity=1");
+    expect([low.value, high.value]).toEqual(ex.ends);
+    expect([low.slider, high.slider]).toEqual(["0", "1"]);
+    expect(low.svg).not.toBe(plain.svg);
+    expect(high.svg).not.toBe(plain.svg);
+    expect(await load("?intensity=abc")).toEqual(plain);
+    expect(plain.slider).toBe("0.5");
+  });
+}
+
 test("the page fits a 240px screen without scrolling sideways", async ({ page }) => {
   await page.setViewportSize({ width: 240, height: 700 });
   await page.goto("/bench/terrain");

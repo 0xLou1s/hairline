@@ -82,7 +82,13 @@
   const dark = () => (root.dataset.theme ? root.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches);
   const label = () => { $("theme").textContent = dark() ? "dark" : "light"; };
   $("theme").addEventListener("click", () => { root.dataset.theme = dark() ? "light" : "dark"; label(); });
+  /* ?theme=light or ?theme=dark wins over the system's, as pressing the switch does */
+  if (["light", "dark"].includes(params.get("theme"))) root.dataset.theme = params.get("theme");
   label();
+
+  /* ?intensity=0 sets the slider before the figure mounts, for a look at either end */
+  const i = (params.get("intensity") || "").trim();
+  if (i && Number.isFinite(Number(i))) $("intensity").value = String(Math.min(1, Math.max(0, Number(i))));
 
   /* ?w=240 narrows the page, for a look at the size of a thumbnail */
   const w = Number(params.get("w"));
@@ -123,7 +129,7 @@
     const show = () => { $("value").textContent = String(at(Number(slider.value))); };
     show();
 
-    const handle = figure.mount({ stage, svg, read }, at(0.5));
+    const handle = figure.mount({ stage, svg, read }, at(Number(slider.value)));
     if (text === null) read.textContent = "rest";
     slider.addEventListener("input", () => { show(); handle.set(at(Number(slider.value))); });
     window.hairline.figure = handle;
