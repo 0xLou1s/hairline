@@ -27,8 +27,14 @@ async function frames(page: Page): Promise<FrameLocator[]> {
   return out;
 }
 
-/** How tall the frame is, and how tall the page inside it needs to be. */
-const fit = (frame: FrameLocator) => frame.locator("main").evaluate((main) => ({ frame: window.innerHeight, page: (main as HTMLElement).offsetHeight + 48 }));
+/**
+ * Measured inside the frame, apart from how the frame is fitted: whether its page scrolls, and the band left under
+ * its column beyond the page's own 24px of padding.
+ */
+const fit = (frame: FrameLocator) => frame.locator("main").evaluate((main) => ({
+  scrolls: document.documentElement.scrollHeight > document.documentElement.clientHeight,
+  band: window.innerHeight - main.getBoundingClientRect().bottom - 24,
+}));
 
 test("/skill opens with the install command, four prompts and four live figures, and a clean console", async ({ page }) => {
   const noise = watch(page);
@@ -96,10 +102,27 @@ for (const width of [1200, 320]) {
     const list = await frames(page);
     expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBe(0);
     for (const frame of list) {
-      await expect.poll(async () => { const f = await fit(frame); return f.frame - f.page; }).toBe(0);
+      await expect.poll(async () => { const f = await fit(frame); return !f.scrolls && f.band < 1; }).toBe(true);
     }
   });
 }
+
+test("at 1200px each plate starts on its prompt's line and meets the column's edges", async ({ page }) => {
+  await page.goto("/skill");
+  await frames(page);
+  await page.evaluate(() => window.scrollTo(0, 0));
+  for (const row of await page.locator("[data-example]").all()) {
+    const m = await row.evaluate((el) => {
+      const frame = el.querySelector("iframe")!;
+      const at = frame.getBoundingClientRect();
+      const plate = frame.contentDocument!.querySelector(".plate")!.getBoundingClientRect();
+      const figure = el.querySelector(".example-figure")!.getBoundingClientRect();
+      const pill = el.querySelector('[data-command="prompt"]')!.getBoundingClientRect();
+      return { top: at.top + plate.top - pill.top, left: at.left + plate.left - figure.left, right: at.left + plate.right - figure.right };
+    });
+    for (const d of Object.values(m)) expect(Math.abs(d)).toBeLessThan(1);
+  }
+});
 
 test.describe("on a dark system", () => {
   test.use({ colorScheme: "dark" });
