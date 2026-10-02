@@ -18,22 +18,6 @@ export function install(base: string): { label: string; code: string }[] {
   ];
 }
 
-export type Theme = "auto" | "light" | "dark";
-
-/**
- * The inspector's snippet: the component with only the props that differ
- * from the default. The intensity is read to two decimals, the slider's
- * precision, so 0.5 and a float a hair away from it both leave it out.
- */
-export function snippet(name: string, state: { intensity: number; theme: Theme }): string {
-  const intensity = Math.round(state.intensity * 100) / 100;
-  const props = [
-    intensity !== 0.5 ? ` intensity={${intensity}}` : "",
-    state.theme !== "auto" ? ` theme="${state.theme}"` : "",
-  ].join("");
-  return `import { ${name} } from "${PACKAGE}/react";\n\n<${name}${props} />\n`;
-}
-
 export const REACT = `import { Terrain } from "${PACKAGE}/react";
 
 export default function Page() {

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image, { type StaticImageData } from "next/image";
 import type { CSSProperties, ReactNode } from "react";
 import { Footer, Topbar } from "@/components/chrome";
+import { Rail } from "@/components/rail";
 import craft from "@/public/inspo/craft.webp";
 import dissection from "@/public/inspo/dissection.webp";
 import figures from "@/public/inspo/figures.webp";
@@ -18,17 +19,18 @@ export const metadata: Metadata = {
   openGraph: { title: TITLE, description: DESCRIPTION, url: "/inspo", siteName: "hairline", type: "article", images: [{ url: "/og.png", width: 1200, height: 630, alt: "Line drawings that answer the pointer: the Terrain figure, its pillars rising." }] },
 };
 
-/** The story's parts, in order: the header lists them and each step takes its title from here. */
+/** The story's parts, in order: the rail lists them and each step takes its title from here. */
 const STEPS = ["A feeling, not a look", "The brief", "What came back", "Pushback", "The design pass", "Into a package", "What I’d keep"];
+const RAIL = [{ title: "How it was made", icon: "book" as const, color: "#f43f5e", items: STEPS.map((title, i) => ({ id: `step-${i + 1}`, title })) }];
 
 const two = (n: number) => String(n).padStart(2, "0");
 const at = (i: number) => ({ "--i": i }) as CSSProperties;
 
-/** One part of the story: under a hairline, a mono number over its title, then the prose. */
+/** One part of the story: a mono number before its title, then the prose. */
 function Step({ n, children }: { n: number; children: ReactNode }) {
   return (
-    <section data-step aria-labelledby={`step-${n}`} className="inspo-step">
-      <h2 id={`step-${n}`} className="inspo-h2">
+    <section id={`step-${n}`} data-step aria-labelledby={`step-${n}-title`} className="doc-section inspo-step">
+      <h2 id={`step-${n}-title`} className="doc-h2">
         <span className="inspo-n">{two(n)}</span>
         {STEPS[n - 1]}
       </h2>
@@ -40,7 +42,7 @@ function Step({ n, children }: { n: number; children: ReactNode }) {
 /** What I asked, in words close to the ones I used. A long prompt keeps its parts, each under a small label. */
 function Prompt({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <figure className="inspo-prompt">
+    <figure className="inspo-prompt card">
       <figcaption className="inspo-label">{label}</figcaption>
       <blockquote className="inspo-quote">{children}</blockquote>
     </figure>
@@ -54,7 +56,7 @@ const Part = ({ name, children }: { name: string; children: ReactNode }) => (
   </div>
 );
 
-/** A picture on the dark plate it was taken on. */
+/** A picture in the dark frame it was taken in. */
 function Shot({ src, alt, caption, priority }: { src: StaticImageData; alt: string; caption: string; priority?: boolean }) {
   return (
     <figure className="inspo-figure">
@@ -93,31 +95,20 @@ const PUSHBACK = [
 
 /**
  * The story behind the package, told in steps: a feeling worth explaining, a long brief, what came back, the arguing,
- * a pass of taste, then the package. Prose keeps to a reading measure; the pictures take the page's width.
+ * a pass of taste, then the package. One column at a reading measure, the rail of steps beside it.
  */
 export default function Inspo() {
   return (
     <>
       <Topbar />
-      <main className="inspo">
-        <header className="inspo-prose hero-rise">
+      <Rail label="Steps" groups={RAIL} />
+      <main className="col inspo">
+        <header className="hero-rise">
           <p className="inspo-label" style={at(0)}>Inspo</p>
-          <h1 className="inspo-title" style={at(1)}>How Hairline was <em>made</em></h1>
-          <p className="inspo-lede" style={at(2)}>
+          <h1 className="col-h1 mt-[6px]" style={at(1)}>How Hairline was <em>made</em></h1>
+          <p className="col-lede" style={at(2)}>
             Not with one prompt. With a long brief, a lot of questions, and every correction written down as a rule so it couldn&rsquo;t come back. Claude Opus did the building, a live Artifact was the bench, and the judgement stayed with me.
           </p>
-          <nav aria-label="Steps" className="inspo-toc" style={at(3)}>
-            <ol>
-              {STEPS.map((title, i) => (
-                <li key={title}>
-                  <a href={`#step-${i + 1}`}>
-                    <span className="inspo-n">{two(i + 1)}</span>
-                    {title}
-                  </a>
-                </li>
-              ))}
-            </ol>
-          </nav>
         </header>
 
         <Step n={1}>
@@ -169,23 +160,19 @@ export default function Inspo() {
           </p>
           <ol className="inspo-pushback" data-pushback>
             {PUSHBACK.map((p) => (
-              <li key={p.said}>
+              <li key={p.said} className="card">
                 <p className="inspo-said">&ldquo;{p.said}&rdquo;</p>
                 <p className="inspo-changed" data-changed>{p.changed}</p>
               </li>
             ))}
           </ol>
-          <div className="inspo-split">
-            <div className="inspo-split-text">
-              <p className="inspo-p">
-                Asking for sliders was the turn that paid most. Once the Artifact was a bench instead of a document, I stopped reading claims and started judging by hand: drag the knob, move the pointer, say exactly what feels off.
-              </p>
-              <p className="inspo-p">
-                Those knobs later collapsed into a single option, <code className="doc-code">intensity</code>.
-              </p>
-            </div>
-            <Shot src={tune} alt="The Terrain figure in the first Artifact, mid-hover: a few pillars raised bright near the pointer, a note on its radial falloff underneath, and a slider set to a radius of 3 cells." caption="Terrain on the bench, its radius on a slider." />
-          </div>
+          <p className="inspo-p">
+            Asking for sliders was the turn that paid most. Once the Artifact was a bench instead of a document, I stopped reading claims and started judging by hand: drag the knob, move the pointer, say exactly what feels off.
+          </p>
+          <p className="inspo-p">
+            Those knobs later collapsed into a single option, <code className="doc-code">intensity</code>.
+          </p>
+          <Shot src={tune} alt="The Terrain figure in the first Artifact, mid-hover: a few pillars raised bright near the pointer, a note on its radial falloff underneath, and a slider set to a radius of 3 cells." caption="Terrain on the bench, its radius on a slider." />
         </Step>
 
         <Step n={5}>
@@ -206,7 +193,7 @@ export default function Inspo() {
             <Part name="Write it down">Make these rules 09 and 10, so the next figure can&rsquo;t break them.</Part>
           </Prompt>
           <ol className="inspo-rules">
-            <li>
+            <li className="card">
               <span className="inspo-n">Rule 09</span>
               <div>
                 <p className="inspo-rule">Round every corner, then draw less.</p>
@@ -215,7 +202,7 @@ export default function Inspo() {
                 </p>
               </div>
             </li>
-            <li>
+            <li className="card">
               <span className="inspo-n">Rule 10</span>
               <div>
                 <p className="inspo-rule">No words inside the figure.</p>
@@ -247,7 +234,7 @@ export default function Inspo() {
           </ul>
         </Step>
 
-        <p className="inspo-prose doc-note">
+        <p className="col-end">
           The reference image belongs to Linear and appears here as a reference only. The figures and the code in Hairline are original.
         </p>
       </main>

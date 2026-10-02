@@ -148,7 +148,7 @@ for (const width of [320, 900]) {
   });
 }
 
-test("at 1200px each plate starts on its prompt's line and meets the column's edges", async ({ page }) => {
+test("at 1200px each card stacks its words over its figure, and the plate sits centred in the card", async ({ page }) => {
   await page.goto("/skill");
   await frames(page);
   await page.evaluate(() => window.scrollTo(0, 0));
@@ -158,10 +158,12 @@ test("at 1200px each plate starts on its prompt's line and meets the column's ed
       const at = frame.getBoundingClientRect();
       const plate = frame.contentDocument!.querySelector(".plate")!.getBoundingClientRect();
       const figure = el.querySelector(".example-figure")!.getBoundingClientRect();
-      const pill = el.querySelector('[data-command="prompt"]')!.getBoundingClientRect();
-      return { top: at.top + plate.top - pill.top, left: at.left + plate.left - figure.left, right: at.left + plate.right - figure.right };
+      const words = el.querySelector(".ex-b")!.getBoundingClientRect();
+      return { under: figure.top - words.bottom, left: at.left + plate.left - figure.left, right: figure.right - (at.left + plate.right) };
     });
-    for (const d of Object.values(m)) expect(Math.abs(d)).toBeLessThan(1);
+    expect(Math.abs(m.under)).toBeLessThan(1);
+    expect(m.left).toBeGreaterThanOrEqual(0);
+    expect(Math.abs(m.left - m.right)).toBeLessThan(1);
   }
 });
 
@@ -212,48 +214,31 @@ test("the top bar fits a 320px screen on one row, the version left out so the na
   expect(last.x + last.width).toBeLessThanOrEqual(bar.x + bar.width);
 });
 
-const PROMPT = "Make your own figure with the hairline-create skill";
-
-test("the home's hero points to the skill with the command as a prompt under its two buttons, and the prompt reaches /skill", async ({ page }) => {
+test("the home's hero points to the skill in one line between the buttons and the reel, and it reaches /skill", async ({ page }) => {
   for (const width of [1200, 320]) {
     await page.setViewportSize({ width, height: 800 });
     await page.goto("/");
-    const link = page.locator(".hero-rise").getByRole("link", { name: PROMPT });
+    const link = page.locator(".hero-rise").getByRole("link", { name: "Or draw your own with the skill" });
     await expect(link).toHaveAttribute("href", "/skill");
-    await expect(link.locator(".prompt-line")).toContainText("/hairline-create");
-    await expect(link.locator(".prompt-idea[data-on]")).toHaveText("a sales funnel");
     expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBe(0);
-    const actions = (await page.locator(".hero-actions").boundingBox())!;
-    const prompt = (await link.boundingBox())!;
-    // under the buttons, clear of them, and as wide as the install line above them
-    expect(prompt.y).toBeGreaterThanOrEqual(actions.y + actions.height);
-    const install = (await page.locator(".hero-install").boundingBox())!;
-    expect(Math.abs(prompt.width - install.width)).toBeLessThan(1);
-    // the idea reads whole, on a phone under the command, and the return key stays inside the prompt
-    const idea = (await link.locator(".prompt-idea[data-on]").boundingBox())!;
-    const line = (await link.locator(".prompt-line").boundingBox())!;
-    expect(idea.x + idea.width).toBeLessThanOrEqual(line.x + line.width);
-    await expect(link.locator(".prompt-line")).not.toHaveAttribute("data-more");
-    const key = (await link.locator(".prompt-key").boundingBox())!;
-    expect(key.x + key.width).toBeLessThanOrEqual(prompt.x + prompt.width);
+    const get = (await page.locator(".hero-get").boundingBox())!;
+    const box = (await link.boundingBox())!;
+    const reel = (await page.locator("[data-reel]").boundingBox())!;
+    expect(box.y).toBeGreaterThanOrEqual(get.y + get.height);
+    expect(box.y + box.height).toBeLessThanOrEqual(reel.y);
   }
-  await page.locator(".hero-rise").getByRole("link", { name: PROMPT }).click();
+  await page.locator(".hero-rise").getByRole("link", { name: "Or draw your own with the skill" }).click();
   await expect(page).toHaveURL(/\/skill$/);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Make your own figure");
 });
 
-test("the prompt types each idea the skill has drawn in turn, and holds the first under reduced motion", async ({ page }) => {
+test("a hover on the skill's link draws the hexagon's three inner edges into a cube", async ({ page }) => {
   await page.goto("/");
-  const on = page.locator(".prompt-idea[data-on]");
-  await expect(on).toHaveText("a sales funnel");
-  await expect(on).toHaveText("a rate limiter", { timeout: 4000 });
-  await expect(page.locator(".prompt-idea[data-gone]")).toHaveText("a sales funnel");
-  await expect(page.locator(".prompt-idea[data-on]")).toHaveCount(1);
-
-  await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.reload();
-  await page.waitForTimeout(3000);
-  await expect(page.locator(".prompt-idea[data-on]")).toHaveText("a sales funnel");
+  const edges = page.locator(".skill-link-edge");
+  await expect(edges).toHaveCount(3);
+  for (const edge of await edges.all()) await expect(edge).toHaveCSS("stroke-dashoffset", "1px");
+  await page.locator(".skill-link").hover();
+  for (const edge of await edges.all()) await expect(edge).toHaveCSS("stroke-dashoffset", "0px");
 });
 
 const FOLLOW_UPS: Record<string, string | undefined> = {

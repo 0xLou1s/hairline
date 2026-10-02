@@ -15,6 +15,9 @@
 
 :root {
   --topbar: 54px;
+  --gutter: clamp(18px, 5vw, 28px);
+  /* a card drawn by its shadow alone: a hairline ring, then two soft drops */
+  --card: 0 0 0 1px #0000000f, 0 1px 2px -1px #0000000f, 0 2px 4px 0 #0000000a;
   --lift: 0 1px 2px #00000008, 0 10px 28px -16px #00000024;
   --lift-lg: 0 1px 2px #00000008, 0 2px 6px #00000008, 0 32px 64px -34px #00000038;
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
@@ -90,12 +93,6 @@ footer a::after { content: ""; position: absolute; inset: -12px -8px; }
 @media (hover: hover) { .pill-manager:hover { background: var(--color-stone); } }
 .pill-manager:active { transform: scale(0.96); }
 
-.slider { width: 100%; height: 18px; appearance: none; background: transparent; cursor: pointer; }
-.slider::-webkit-slider-runnable-track { height: 2px; border-radius: 1px; background: rgba(0, 0, 0, 0.16); }
-.slider::-webkit-slider-thumb { appearance: none; width: 16px; height: 16px; margin-top: -7px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2), var(--lift); }
-.slider::-moz-range-track { height: 2px; border-radius: 1px; background: rgba(0, 0, 0, 0.16); }
-.slider::-moz-range-thumb { width: 16px; height: 16px; border: 0; border-radius: 50%; background: #fff; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2); }
-
 /* Code: a frame, a bar with the title and a copy icon, the code. Line numbers are a counter in ::before, so they are never selected or copied. */
 .code { overflow: hidden; border-radius: 12px; background: #fafafa; box-shadow: inset 0 0 0 1px var(--color-stone); }
 .code-bar { display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 4px 4px 4px 14px; border-bottom: 1px solid var(--color-stone); }
@@ -105,6 +102,12 @@ footer a::after { content: ""; position: absolute; inset: -12px -8px; }
 .code-tab[aria-selected="true"] { background: #fff; color: var(--color-ink); box-shadow: 0 0 0 1px var(--color-stone); }
 @media (hover: hover) { .code-tab:hover { color: var(--color-ink); } }
 .code-tab:active { transform: scale(0.96); }
+/* The tabs' highlight slides to the selected tab, under the tabs and never in the pointer's way. */
+.slide { position: relative; display: flex; isolation: isolate; }
+.slide-hl { position: absolute; top: 0; left: 0; z-index: -1; pointer-events: none; }
+.slide[data-ready] .slide-hl, .slide[data-ready] .slide-hl::before { transition: transform 200ms var(--ease-out), clip-path 200ms var(--ease-out); }
+/* a choice made with the keyboard lands at once */
+.slide[data-keyed] .slide-hl, .slide[data-keyed] .slide-hl::before { transition: none; }
 /* Once measured, the selected tab's white plate and its ring are one highlight that slides: a stone layer clipped to
    the tab plus a pixel, and a white one over it clipped to the tab. */
 .code-tabs[data-hl] .code-tab[aria-selected="true"] { background: none; box-shadow: none; }
@@ -119,8 +122,12 @@ footer a::after { content: ""; position: absolute; inset: -12px -8px; }
 .code-body[data-plain] .line::before { content: none; }
 
 .tile { overflow: hidden; border-radius: 14px; background: #fff; box-shadow: inset 0 0 0 1px var(--color-stone), var(--lift); }
-.figure-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(120px, 240px); align-items: center; gap: 24px; padding: 28px 0; border-top: 1px solid var(--color-line); }
-.figure-row:last-child { border-bottom: 1px solid var(--color-line); }
+/* a figure on its card: its name and what it does, the figure small at the right */
+.figure-row { display: grid; grid-template-columns: minmax(0, 1fr) 150px; align-items: center; gap: 16px; padding: 12px 12px 12px 16px; border-radius: 12px; background: #fff; box-shadow: var(--card); }
+.figure-name { font-size: 13.5px; font-weight: 500; line-height: 1.4; }
+.figure-text { margin-top: 4px; font-size: 13px; line-height: 1.55; color: var(--color-muted); text-wrap: pretty; }
+.figure-text b { font-weight: 500; color: var(--color-ink); }
+.figure-row .tile { box-shadow: inset 0 0 0 1px var(--color-stone); }
 .props, .intensity { width: 100%; border-collapse: collapse; font-size: 13px; }
 :is(.props, .intensity) th { padding: 8px 14px 8px 0; text-align: left; font-size: 13px; font-weight: 500; color: var(--color-muted); }
 :is(.props, .intensity) td { padding: 12px 14px 12px 0; vertical-align: top; border-top: 1px solid var(--color-line); line-height: 1.5; }
@@ -129,112 +136,181 @@ footer a::after { content: ""; position: absolute; inset: -12px -8px; }
 .props[data-tokens] td:nth-child(3) { white-space: normal; color: var(--color-ink); }
 .intensity td { white-space: nowrap; }
 .intensity td:nth-child(n + 3) { color: var(--color-muted); font-variant-numeric: tabular-nums; }
-.table-scroll { overflow-x: auto; border-radius: 4px; }
+.table-scroll { overflow-x: auto; }
+/* a table on a card, its first and last cells kept off the card's edge */
+.tbl-card { padding: 4px 16px; border-radius: 12px; background: #fff; box-shadow: var(--card); }
+.tbl-card :is(th, td):last-child { padding-right: 0; }
 
-/* The docs: the header and nine sections in one column. Prose stops at 64ch; code and tables take the column. */
-.docs { --gutter: clamp(18px, 5vw, 28px); --doc-offset: calc(var(--topbar) + 60px); max-width: 1080px; margin: 0 auto; padding: 0 var(--gutter); }
-.docs-main { display: grid; gap: 64px; min-width: 0; padding: 48px 0 96px; }
-.docs-main > * { min-width: 0; }
-.doc-section { display: grid; gap: 16px; scroll-margin-top: var(--doc-offset); }
+/* A page in the craft of a rail: one 640px column of 14px text, and beside it from 1100px a rail of the page's
+   sections, fixed by the column's left edge. The column then steps right of the rail, inside the 1080px column the top
+   bar keeps to, so the rail lines up under the name. */
+.col { max-width: calc(640px + 2 * var(--gutter)); margin: 0 auto; padding: 56px var(--gutter) 96px; font-size: 14px; line-height: 1.6; }
+.col > * { min-width: 0; }
+.col-label { font: 400 11.5px/1 var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-muted); }
+.col-h1 { margin-top: 10px; font-size: 16px; font-weight: 500; line-height: 1.35; letter-spacing: -0.01em; text-wrap: balance; }
+.col-h1 em { font-family: var(--font-serif); font-size: 1.12em; font-weight: 400; letter-spacing: 0; }
+.col header > .col-h1:first-child { margin-top: 0; }
+.col-lede { margin-top: 12px; max-width: 60ch; color: var(--color-muted); text-wrap: pretty; }
+.col-end { margin-top: 64px; padding-top: 20px; border-top: 1px solid var(--color-line); font-size: 13px; color: var(--color-muted); text-wrap: pretty; }
+.col-end .doc-more { font-size: inherit; }
+
+/* A section opens 56px under the last, its title beside a link that shows when the pointer is on the title. */
+.doc-section { display: grid; gap: 14px; padding-top: 56px; scroll-margin-top: calc(var(--topbar) + 44px); }
 .doc-section > * { min-width: 0; }
-.doc-h2 { font-size: 24px; font-weight: 500; line-height: 1.2; letter-spacing: -0.02em; text-wrap: balance; }
-.doc-p, .doc-list { max-width: 64ch; font-size: 15px; line-height: 1.6; text-wrap: pretty; }
-.doc-list { display: grid; gap: 8px; padding-left: 1.2em; list-style: disc; }
-.doc-note { max-width: 64ch; font-size: 14px; line-height: 1.55; color: var(--color-muted); text-wrap: pretty; }
+.doc-head { display: flex; align-items: center; gap: 4px; min-height: 28px; }
+.doc-h2 { font-size: 14px; font-weight: 500; line-height: 1.4; letter-spacing: -0.005em; text-wrap: balance; }
+.anchor { width: 28px; height: 28px; opacity: 0; transition: opacity 150ms ease, color 150ms ease, background-color 150ms ease; }
+.doc-head:focus-within .anchor, .anchor[data-copied] { opacity: 1; }
+@media (hover: hover) { .doc-head:hover .anchor { opacity: 1; } }
+/* no hover on a touch screen: the link stays in view, quiet */
+@media (hover: none) { .anchor { opacity: 1; color: var(--color-faint); } }
+.doc-p, .doc-list { max-width: 64ch; font-size: 14px; line-height: 1.6; text-wrap: pretty; }
+.doc-list { display: grid; gap: 6px; padding-left: 1.2em; list-style: disc; }
+.doc-list li::marker { color: var(--color-faint); }
+.doc-note { max-width: 64ch; font-size: 13px; line-height: 1.55; color: var(--color-muted); text-wrap: pretty; }
 .doc-code { font-size: 0.9em; color: var(--color-ink); }
 .doc-more { justify-self: start; font-size: 14px; color: var(--color-ink); text-decoration: underline; text-decoration-color: var(--color-faint); text-underline-offset: 4px; }
 @media (hover: hover) { .doc-more:hover { text-decoration-color: currentColor; } }
+/* code in the column is a white card, as the tables and figures are */
+.col .code { background: #fff; box-shadow: var(--card); }
+.col .code-bar { border-bottom-color: var(--color-line); }
+.col .code-body { font-size: 12.5px; }
 
-/* The sidebar: the same links twice, grouped in a column from 1024px, one sideways strip under the top bar below it. */
+/* The rail and the strip: the same links twice, grouped in the rail from 1100px, one sideways strip under the top bar
+   below it. */
 .doc-link { position: relative; display: flex; align-items: center; height: 32px; padding: 0 10px; border-radius: 8px; font-size: 14px; color: var(--color-muted); white-space: nowrap; transition: color 200ms ease; }
 .doc-link[aria-current] { color: var(--color-ink); }
 @media (hover: hover) { .doc-link:hover { color: var(--color-ink); } }
 /* in the strip, where a finger picks, a 40px target inside the strip's own padding */
 .doc-strip .doc-link::after { content: ""; position: absolute; inset: -4px 0; }
-/* The marked link's text steps aside for a dot that flies in from the link marked before. The old text steps back at
-   once and the new one steps aside as the dot lands, so the two never meet. Nothing moves until the first mark is
-   drawn: the page opens with it in place. */
+/* In the strip, the marked link's text steps aside for a dot that flies in from the link marked before. The old text
+   steps back at once and the new one steps aside as the dot lands, so the two never meet. Nothing moves until the first
+   mark is drawn: the page opens with it in place. */
 .doc-link > span { display: inline-block; }
-.doc-link[aria-current] > span { transform: translateX(12px); }
-[data-live] .doc-link > span { transition: transform 250ms var(--ease-out); }
-[data-live] .doc-link[aria-current] > span { transition-duration: 300ms; transition-delay: 160ms; }
+.doc-strip .doc-link[aria-current] > span { transform: translateX(12px); }
+.doc-strip [data-live] .doc-link > span { transition: transform 250ms var(--ease-out); }
+.doc-strip [data-live] .doc-link[aria-current] > span { transition-duration: 300ms; transition-delay: 160ms; }
 .doc-dot { position: absolute; top: 0; left: 0; width: 5px; height: 5px; border-radius: 50%; background: var(--color-ink); pointer-events: none; }
 [data-live] > .doc-dot { transition: translate 350ms var(--ease-out); }
-.doc-sidebar { display: none; }
-.doc-group-label { margin-bottom: 4px; padding: 0 10px; font-size: 12px; font-weight: 500; color: var(--color-muted); }
-.doc-strip { position: sticky; top: var(--topbar); z-index: 9; margin: 0 calc(-1 * var(--gutter)); background: color-mix(in srgb, var(--color-canvas) 82%, transparent); backdrop-filter: blur(12px); }
-.doc-strip-scroll { position: relative; overflow-x: auto; padding: 6px var(--gutter); scrollbar-width: none; }
+
+/* the rail's two ends fade, so a list taller than the window runs out softly instead of being cut */
+.fade-mask-y { mask-image: linear-gradient(to bottom, transparent, #0000001a 0.375rem, #00000059 0.75rem, #000000a6 1.125rem, #000000d9 1.5rem, #000000f2 1.875rem, #000 2.25rem, #000 calc(100% - 2.25rem), #000000f2 calc(100% - 1.875rem), #000000d9 calc(100% - 1.5rem), #000000a6 calc(100% - 1.125rem), #00000059 calc(100% - 0.75rem), #0000001a calc(100% - 0.375rem), transparent); }
+.rail { display: none; }
+.rail-group { display: grid; gap: 6px; }
+.rail-title { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 500; line-height: 1.5; color: var(--color-ink); transition: color 240ms ease; }
+.rail-title svg { flex: none; color: var(--gc); transition: filter 240ms ease, opacity 240ms ease; }
+/* Once a section is marked, only its group is lit: the others' marks go grey and their titles fade. */
+.doc-sidebar:has([aria-current]) .rail-group:not(:has([aria-current])) .rail-title { color: #525252; }
+.doc-sidebar:has([aria-current]) .rail-group:not(:has([aria-current])) .rail-title svg { filter: grayscale(1); opacity: 0.4; }
+.rail .doc-link { height: auto; padding: 3px 0; border-radius: 0; font-size: 13px; line-height: 1.5; }
+.rail .doc-link::after { content: ""; position: absolute; inset: -2px -8px; }
+
+/* The links hang off their group's mark on a hairline: a trunk down from the mark's centre, and an arm that bends out to
+   each link. Each row draws its own stretch of trunk and its arm, from 6px over the row before's centre, so the rows
+   stack into one line. The marked row's line is drawn in the group's colour: the trunk reaches down to the row's bend,
+   then the arm draws out, then a tip lands at its end; the line to a row left behind draws back the other way. The
+   trunk is a border, revealed by a clip, not a scaled bar, on a box as wide as the rows' own, so it lands on the same
+   device pixels as the grey line and the arms' borders at any zoom or column offset, with no grey showing beside it. */
+.rail ul { position: relative; padding-left: 24px; }
+.rail li { position: relative; }
+.rail li::before, .rail li::after { content: ""; position: absolute; left: -17px; width: 11px; border: 0 solid #e5e5e5; border-width: 0 0 1px 1px; border-bottom-left-radius: 6px; pointer-events: none; }
+.rail li::before { top: calc(-50% - 6px); bottom: 50%; }
+.rail li:first-child::before { top: -2px; }
+/* over the next row's grey stretch, which starts at this row's bend and would otherwise cross the coloured arm */
+.rail li::after { top: calc(50% - 6px); height: 6px; z-index: 1; border-color: var(--gc); clip-path: inset(0 100% 0 0); }
+.rail li:has(> [aria-current])::after { clip-path: inset(0); }
+.rail ul::after { content: ""; position: absolute; top: -2px; bottom: 0; left: 7px; width: 11px; border-left: 1px solid var(--gc); clip-path: inset(0 0 calc((1 - var(--reach, 0)) * 100%) 0); pointer-events: none; }
+.rail .doc-link::before { content: ""; position: absolute; top: calc(50% - 2.5px); left: -6.5px; width: 4px; height: 4px; border-radius: 50%; background: var(--gc); transform: scale(0); }
+.rail .doc-link[aria-current]::before { transform: none; }
+.rail [data-live] ul::after { transition: clip-path 300ms var(--ease-out); }
+.rail [data-live] li::after { transition: clip-path 140ms ease-out; }
+.rail [data-live] li:has(> [aria-current])::after { transition: clip-path 220ms var(--ease-out) 160ms; }
+.rail [data-live] .doc-link::before { transition: transform 120ms ease-out; }
+.rail [data-live] .doc-link[aria-current]::before { transition: transform 260ms cubic-bezier(0.34, 1.56, 0.64, 1) 320ms; }
+
+.doc-strip { position: sticky; top: var(--topbar); z-index: 9; background: color-mix(in srgb, var(--color-canvas) 82%, transparent); backdrop-filter: blur(12px); }
+/* the strip's first link keeps to the column's text: its 10px padding hangs out past it */
+.doc-strip-scroll { position: relative; overflow-x: auto; padding: 6px max(calc(var(--gutter) - 10px), calc((100% - 640px) / 2 - 10px)); scrollbar-width: none; }
 .doc-strip-scroll::-webkit-scrollbar { display: none; }
 .doc-strip-scroll ul { display: flex; gap: 8px; width: max-content; }
 .doc-strip-scroll[data-start] { mask-image: linear-gradient(to right, transparent, #000 24px); }
 .doc-strip-scroll[data-end] { mask-image: linear-gradient(to right, #000 calc(100% - 24px), transparent); }
 .doc-strip-scroll[data-start][data-end] { mask-image: linear-gradient(to right, transparent, #000 24px, #000 calc(100% - 24px), transparent); }
-@media (min-width: 1024px) {
-  .docs { --doc-offset: calc(var(--topbar) + 24px); display: grid; grid-template-columns: 220px minmax(0, 1fr); column-gap: 56px; padding-top: 64px; }
-  .docs-main { padding-top: 0; }
+@media (min-width: 1100px) {
   .doc-strip { display: none; }
-  /* short enough to fit the window from where it starts, 64px under the top bar, with 24px to spare; a shorter
-     window scrolls it */
-  .doc-sidebar { display: grid; gap: 24px; align-self: start; position: sticky; top: calc(var(--topbar) + 24px); max-height: calc(100vh - var(--topbar) - 88px); overflow-y: auto; scrollbar-width: thin; }
+  .doc-section { scroll-margin-top: var(--topbar); }
+  .col { max-width: none; margin: 0; padding-right: var(--gutter); padding-left: calc(max(var(--gutter), (100% - 1080px) / 2 + var(--gutter)) + 260px); }
+  .col > * { max-width: 640px; }
+  /* fixed by the column's left edge and centred in the window under the top bar; a window too short for it scrolls it */
+  .rail { position: fixed; top: var(--topbar); bottom: 0; left: max(var(--gutter), calc((100% - 1080px) / 2 + var(--gutter))); z-index: 5; display: flex; flex-direction: column; justify-content: center; gap: 28px; width: 220px; padding: 3rem 0; }
+  /* on a short window the sections scroll inside the rail */
+  .doc-sidebar { position: relative; display: grid; gap: 28px; min-height: 0; overflow-y: auto; scrollbar-width: none; }
+  .doc-sidebar::-webkit-scrollbar { display: none; }
 }
 
-/* The hero: each block rises out of a blur, one after another. */
-.hero-title { max-width: 16ch; font-size: 44px; font-weight: 500; line-height: 1.02; letter-spacing: -0.045em; text-wrap: balance; }
-.hero-title em { font-family: var(--font-serif); font-size: 1.08em; font-weight: 400; letter-spacing: -0.02em; }
-.hero-sub { margin-top: 20px; max-width: 44ch; font-size: 18px; line-height: 1.5; color: var(--color-muted); text-wrap: pretty; }
-.hero-install { margin-top: 36px; width: 100%; max-width: 460px; }
-.hero-actions { margin-top: 20px; display: flex; gap: 8px; }
-@media (min-width: 768px) { .hero-title { font-size: 64px; } }
-/* The way to the skill: a question, then the command as a prompt waiting to be sent. The ideas it has drawn come in
-   after it one at a time, each rising out of a blur as the last one leaves upward. */
-.hero-skill { margin-top: 44px; display: grid; justify-items: center; gap: 12px; width: 100%; max-width: 460px; }
-.hero-skill-ask { font-size: 14px; color: var(--color-muted); }
-.prompt { display: flex; align-items: center; gap: 12px; width: 100%; height: 52px; padding: 0 6px 0 16px; border-radius: 14px; background: var(--color-stone); text-align: left; transition: transform 160ms var(--ease-out), background-color 150ms ease; will-change: transform; }
-.prompt:active { transform: scale(0.98); }
-.prompt-caret { flex: none; font-size: 14px; line-height: 1; color: var(--color-faint); }
-.prompt-line { flex: 1; min-width: 0; height: 20px; overflow: hidden; font-size: 14px; line-height: 20px; white-space: nowrap; }
-.prompt-line[data-more] { mask-image: linear-gradient(to right, #000 calc(100% - 24px), transparent); }
-.prompt-ideas { position: relative; display: inline-block; height: 20px; vertical-align: top; }
-.prompt-idea { position: absolute; top: 0; left: 0; opacity: 0; transform: translateY(6px); filter: blur(3px); transition: opacity 260ms var(--ease-out), transform 260ms var(--ease-out), filter 260ms var(--ease-out); }
-.prompt-idea[data-on] { opacity: 1; transform: none; filter: none; }
-.prompt-idea[data-gone] { transform: translateY(-6px); }
-.prompt-go { flex: none; display: inline-flex; align-items: center; gap: 8px; margin-right: 6px; font-size: 12.5px; color: var(--color-faint); }
-/* a key, not a button: lit from above, it sinks a pixel when the prompt is pressed */
-.prompt-key { display: grid; place-items: center; width: 30px; height: 26px; border-radius: 7px; background: #fff; color: var(--color-muted); box-shadow: inset 0 0 0 1px #00000012, 0 1.5px 0 #00000014; transition: transform 120ms var(--ease-out), box-shadow 120ms var(--ease-out), color 150ms ease; }
-.prompt:active .prompt-key { transform: translateY(1px); box-shadow: inset 0 0 0 1px #00000012, 0 0.5px 0 #00000014; }
+/* The hero, one column: each block rises out of a blur, one after another. */
+.hero-title { max-width: 18ch; font-size: clamp(26px, 4vw, 34px); font-weight: 500; line-height: 1.12; letter-spacing: -0.03em; text-wrap: balance; }
+.hero-title em { font-family: var(--font-serif); font-size: 1.1em; font-weight: 400; letter-spacing: -0.01em; }
+.hero-sub { margin-top: 12px; max-width: 40ch; font-size: 15px; line-height: 1.6; color: var(--color-muted); text-wrap: pretty; }
+/* the command and the way in, side by side; on a phone the button goes under the pill. Here the pill is the button's
+   size, 36px with its 9px corners, so the two read as one row; the copy keeps a 36px target round a 28px circle. */
+.hero-get { margin-top: 28px; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px; width: 100%; }
+.hero-get .pill { flex: 0 1 312px; min-width: 0; height: 36px; gap: 9px; padding: 0 4px 0 13px; border-radius: 9px; font-size: 13px; margin-right: 4px; }
+.hero-get .pill-line { line-height: 36px; }
+.hero-get .icopy { width: 28px; height: 28px; }
+.hero-get .icopy::after { inset: -4px; }
+
+/* The way to the skill: an empty hexagon by the words. A hover draws its three inner edges one after another, and it
+   becomes a cube; leaving takes them back faster than they came. */
+.hero-skill { margin-top: 22px; }
+.skill-link { position: relative; display: inline-flex; align-items: center; gap: 9px; padding: 6px 2px; font-size: 13px; line-height: 1; color: var(--color-muted); transition: color 160ms ease; }
+.skill-link::after { content: ""; position: absolute; inset: -8px -6px; }
+.skill-link svg { flex: none; overflow: visible; }
+.skill-link-hex { stroke: var(--color-faint); transition: stroke 200ms ease; }
+.skill-link-edge { stroke: var(--color-ink); stroke-dasharray: 1; stroke-dashoffset: 1; transition: stroke-dashoffset 160ms ease-out; }
 @media (hover: hover) {
-  .prompt:hover { background: #efefef; }
-  .prompt:hover .prompt-key { color: var(--color-ink); }
+  .skill-link:hover { color: var(--color-ink); }
+  .skill-link:hover .skill-link-hex { stroke: var(--color-ink); }
+  .skill-link:hover .skill-link-edge { stroke-dashoffset: 0; transition: stroke-dashoffset 360ms var(--ease-out); }
+  .skill-link:hover .skill-link-edge:nth-of-type(3) { transition-delay: 70ms; }
+  .skill-link:hover .skill-link-edge:nth-of-type(4) { transition-delay: 140ms; }
 }
-/* on a phone the prompt wraps as a long prompt would: the idea goes under the command instead of off the edge */
-@media (max-width: 480px) {
-  .prompt { height: auto; padding-block: 12px; }
-  .prompt-caret { align-self: flex-start; line-height: 20px; }
-  .prompt-line { height: auto; }
-  .prompt-ideas { display: block; }
-  .prompt-go-label { display: none; }
-}
+.skill-link:focus-visible { color: var(--color-ink); }
+.skill-link:focus-visible .skill-link-hex { stroke: var(--color-ink); }
+.skill-link:focus-visible .skill-link-edge { stroke-dashoffset: 0; }
+
+/* The reel: the figure on the page itself, six ticks under it, and the caption of the one on show. Every figure is
+   5:4 and the captions share one cell, so a change of figure never moves the page. */
+.hero-reel { width: 100%; margin-top: 14px; scroll-margin-top: calc(var(--topbar) + 24px); }
+.reel { display: grid; justify-items: center; }
+.reel-stage { width: 100%; max-width: 440px; aspect-ratio: 5 / 4; --hairline-plate: var(--color-canvas); }
+.reel-stage > div { animation: reel-in 320ms var(--ease-out) both; }
+.reel-ticks { display: flex; margin-top: 10px; }
+.reel-tick { display: grid; place-items: center; width: 30px; height: 26px; border-radius: 6px; }
+.reel-tick::before, .reel-fill { grid-area: 1 / 1; width: 20px; height: 1.5px; border-radius: 1px; }
+.reel-tick::before { content: ""; background: rgba(0, 0, 0, 0.12); transition: background-color 150ms ease; }
+@media (hover: hover) { .reel-tick:hover::before { background: rgba(0, 0, 0, 0.3); } }
+.reel-fill { background: var(--color-ink); transform: scaleX(0); transform-origin: left; }
+/* the clock: the fill runs while its figure plays, and its end moves the reel on; a pause only holds it */
+.reel[data-playing] .reel-tick[aria-current] .reel-fill { animation: reel-tick 6000ms linear both; }
+.reel[data-playing][data-paused] .reel-tick[aria-current] .reel-fill { animation-play-state: paused; }
+/* once the reel has stopped, the tick of the figure on show stays drawn */
+.reel:not([data-playing]) .reel-tick[aria-current] .reel-fill { transform: none; transition: transform 240ms var(--ease-out); }
+.reel-caps { display: grid; width: 100%; max-width: 46ch; margin-top: 4px; font-size: 13.5px; line-height: 1.55; }
+.reel-cap { grid-area: 1 / 1; color: var(--color-muted); text-wrap: balance; visibility: hidden; }
+.reel-cap[data-on] { visibility: visible; animation: reel-cap 300ms var(--ease-out) both; }
+.reel-cap b { font-weight: 500; color: var(--color-ink); }
+@keyframes reel-in { from { opacity: 0; filter: blur(4px); } to { opacity: 1; filter: none; } }
+@keyframes reel-tick { to { transform: none; } }
+@keyframes reel-cap { from { opacity: 0; filter: blur(3px); transform: translateY(3px); } to { opacity: 1; filter: none; transform: none; } }
 
 /* Rise, blur and fade end in that order. The rise and the blur end in steps: moving text is drawn on whole device
    pixels, so the last pixel of travel lands as a hop, and Chrome draws no blur under 0.4px, so the last of it goes
    in one frame. The hop comes under the blur, the blur goes while the block still fades in, and the fade ends it. */
 .hero-rise > * { animation: fade 750ms var(--ease-out) both, unblur 560ms var(--ease-out) both, rise 380ms var(--ease-out) both; animation-delay: calc(var(--i) * 70ms + 60ms); }
-.enter { animation: fade 850ms var(--ease-out) both, unblur 640ms var(--ease-out) both, rise 440ms var(--ease-out) both; animation-delay: var(--d, 0ms); }
-.enter-hint { animation: hint 220ms var(--ease-out) both; }
 @keyframes unblur { from { filter: blur(6px); } to { filter: none; } }
 @keyframes rise { from { transform: translateY(12px); } to { transform: none; } }
-@keyframes hint { from { opacity: 0; transform: translateY(2px); filter: blur(2px); } to { opacity: 1; transform: none; filter: none; } }
 @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
-
-/* A single choice whose highlight slides to the checked option. */
-.slide { position: relative; display: flex; isolation: isolate; }
-.slide-hl { position: absolute; top: 0; left: 0; z-index: -1; pointer-events: none; }
-.slide[data-ready] .slide-hl, .slide[data-ready] .slide-hl::before { transition: transform 200ms var(--ease-out), clip-path 200ms var(--ease-out); }
-/* a choice made with the keyboard lands at once */
-.slide[data-keyed] .slide-hl, .slide[data-keyed] .slide-hl::before { transition: none; }
-.slide-item { position: relative; display: inline-flex; flex: none; align-items: center; justify-content: center; white-space: nowrap; color: var(--color-muted); transition: color 150ms ease; }
-.slide-item[aria-checked="true"] { color: var(--color-ink); }
-@media (hover: hover) { .slide-item:hover { color: var(--color-ink); } }
 
 /* Copy as an icon: the clipboard blurs and shrinks away as the check grows in. That swap is the one scale a copy
    makes, so the round button stays still on press instead of shrinking under it. */
@@ -246,128 +322,50 @@ footer a::after { content: ""; position: absolute; inset: -12px -8px; }
 .icopy-b, .icopy[data-copied] .icopy-a { opacity: 0; transform: scale(0.25); filter: blur(4px); }
 .icopy[data-copied] .icopy-b { opacity: 1; transform: none; filter: none; }
 
-/* The inspector's snippet, in greys: only the tag name carries weight. */
-.p-code { flex: 1; min-width: 0; margin: 0; overflow-x: auto; font: 400 13px/1.65 var(--font-mono); color: var(--color-ink); white-space: pre; }
-.t-kw { color: var(--code-token-keyword); }
-.t-str { color: var(--code-token-string); }
-.t-tag { color: var(--code-token-constant); font-weight: 500; }
-.t-attr { color: var(--code-token-function); }
-.t-val { color: var(--code-foreground); }
-
-/* The inspector: the figure on the page itself, one dock under it for every control. */
-.s-inspector { display: grid; grid-template-columns: minmax(0, 1fr); justify-items: center; }
-.s-stage { position: relative; display: grid; place-items: center; width: 100%; max-width: 760px; padding: clamp(8px, 4vw, 40px); border-radius: 28px; }
-.s-stage > [data-hairline] { width: 100%; max-width: 560px; }
-.s-stage[data-dark] { background: #08090a; }
-.s-dock { margin-top: 8px; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px; max-width: 100%; padding: 6px; border-radius: 16px; background: #fff; box-shadow: inset 0 0 0 1px var(--color-stone), var(--lift-lg); }
-.s-figures { min-width: 0; max-width: 100%; overflow-x: auto; scrollbar-width: none; }
-.s-figures::-webkit-scrollbar { display: none; }
-.s-figures .slide-item { height: 36px; padding: 0 12px; font-size: 14px; }
-.s-figures { --slide-radius: 10px; }
-.s-figures .slide-hl { background: var(--color-stone); }
-.s-row { display: flex; align-items: center; gap: 12px; padding-left: 12px; border-left: 1px solid var(--color-line); }
-.s-range { display: flex; align-items: center; gap: 10px; width: 230px; }
-.s-range-label { font-size: 13px; color: var(--color-muted); }
-.s-range .slider { flex: 1; min-width: 0; }
-.s-value { width: 4ch; font-size: 13px; font-weight: 500; font-variant-numeric: tabular-nums; text-align: right; }
-.s-themes { padding: 2px; border-radius: 10px; background: var(--color-stone); }
-.s-themes .slide-item { width: 36px; height: 36px; }
-.s-themes .slide-hl { border-radius: 8px; background: #fff; box-shadow: var(--lift); }
-.s-hint { margin-top: 14px; min-height: 1.5em; font-size: 13px; line-height: 1.5; color: var(--color-muted); text-align: center; text-wrap: balance; }
-.s-code { margin-top: 28px; display: flex; align-items: flex-start; gap: 8px; width: 100%; max-width: 560px; padding: 6px 6px 6px 0; border-radius: 14px; background: #fff; box-shadow: inset 0 0 0 1px var(--color-stone), var(--lift); }
-.s-code .p-code { padding: 10px 0 10px 18px; }
-
-@media (max-width: 760px) {
-  .s-dock { width: 100%; }
-  .s-figures { flex: 1 1 100%; }
-  .s-row { width: 100%; justify-content: space-between; padding: 6px 0 0 10px; border-left: 0; border-top: 1px solid var(--color-line); }
-  .s-range { flex: 1; width: auto; }
-}
-
-/* Inspo: an essay. Everything sits on one centred axis: prose keeps to the measure, and the evidence (pictures, the
-   ledger of pushback) takes the page's width around it. */
-.inspo { --gutter: clamp(18px, 5vw, 28px); --measure: 640px; display: grid; grid-template-columns: minmax(0, 1fr); justify-items: center; gap: 80px; max-width: 1080px; margin: 0 auto; padding: 56px var(--gutter) 96px; }
-.inspo-prose, .inspo-step > * { width: 100%; max-width: var(--measure); }
-.inspo-label { font: 400 12px/1 var(--font-mono); letter-spacing: 0.02em; text-transform: uppercase; color: var(--color-muted); }
-.inspo-title { margin-top: 20px; font-size: 44px; font-weight: 500; line-height: 1.02; letter-spacing: -0.045em; text-wrap: balance; }
-.inspo-title em { font-family: var(--font-serif); font-size: 1.08em; font-weight: 400; letter-spacing: -0.02em; }
-.inspo-lede { margin-top: 24px; font-size: 18px; line-height: 1.5; color: var(--color-muted); text-wrap: pretty; }
-/* the seven steps as a way in: two columns that read down, each row a 40px target */
-.inspo-toc { margin-top: 40px; }
-.inspo-toc ol { display: grid; border-bottom: 1px solid var(--color-line); }
-.inspo-toc a { display: flex; align-items: baseline; gap: 14px; padding: 11px 0; border-top: 1px solid var(--color-line); font-size: 14px; line-height: 18px; color: var(--color-muted); transition: color 150ms ease; }
-@media (hover: hover) { .inspo-toc a:hover { color: var(--color-ink); } }
-.inspo-step { display: grid; grid-template-columns: minmax(0, 1fr); justify-items: center; gap: 24px; width: 100%; }
-/* a step opens under a hairline, its number over its title */
-.inspo-h2 { display: grid; gap: 16px; padding-top: 28px; border-top: 1px solid var(--color-line); font-size: 24px; font-weight: 500; line-height: 1.15; letter-spacing: -0.025em; text-wrap: balance; scroll-margin-top: calc(var(--topbar) + 16px); }
-.inspo-n { font: 400 12px/1 var(--font-mono); letter-spacing: 0.02em; color: var(--color-muted); font-variant-numeric: tabular-nums; }
-.inspo-p { font-size: 16px; line-height: 1.65; text-wrap: pretty; }
-/* A prompt: a white card like the site's other surfaces, a row per part, its label in a column of its own when there is room. */
-.inspo-prompt { margin-block: 8px; border-radius: 16px; background: #fff; box-shadow: inset 0 0 0 1px var(--color-stone), var(--lift); }
-.inspo-prompt > .inspo-label { padding: 18px 20px; }
-.inspo-quote { font-size: 15px; line-height: 1.6; text-wrap: pretty; }
-.inspo-part { display: grid; gap: 8px; padding: 16px 20px; border-top: 1px solid var(--color-line); }
-.inspo-part > .inspo-label { line-height: 1.5; }
-/* The pushback: a ledger. What I said, and across from it what that changed. */
-.inspo-pushback { display: grid; counter-reset: turn; }
-.inspo-pushback li { position: relative; display: grid; gap: 10px; padding: 22px 0 22px 40px; border-top: 1px solid var(--color-line); counter-increment: turn; }
-.inspo-pushback li:last-child { border-bottom: 1px solid var(--color-line); }
-.inspo-pushback li::before { content: counter(turn, decimal-leading-zero); position: absolute; top: 28px; left: 0; font: 400 12px/1 var(--font-mono); letter-spacing: 0.02em; color: var(--color-muted); font-variant-numeric: tabular-nums; }
-.inspo-said { font-size: 16px; line-height: 1.55; text-wrap: pretty; }
-.inspo-changed { font-size: 14px; line-height: 1.6; color: var(--color-muted); text-wrap: pretty; }
-.inspo-changed::before { content: "Changed: "; color: var(--color-ink); font-weight: 500; }
-/* A picture on its plate. The plate's corner is the picture's plus the padding between them. */
-.inspo-figure { display: grid; justify-items: center; gap: 14px; margin-block: 16px; }
-.inspo-step > .inspo-figure, .inspo-step > .inspo-pushback, .inspo-step > .inspo-split { max-width: none; }
-.inspo-shot { --pad: clamp(6px, 1.6vw, 16px); width: 100%; padding: var(--pad); border-radius: calc(8px + var(--pad)); background: var(--color-ink); }
-.inspo-shot img { display: block; width: 100%; height: auto; border-radius: 8px; }
-.inspo-caption { width: 100%; max-width: var(--measure); font-size: 13px; line-height: 1.5; color: var(--color-muted); text-wrap: pretty; }
-.inspo-split { display: grid; justify-items: center; gap: 24px; }
-.inspo-split-text { display: grid; gap: 16px; width: 100%; max-width: var(--measure); }
-.inspo-split .inspo-figure { width: 100%; max-width: 480px; margin-block: 8px 0; }
-.inspo-rules { display: grid; }
-.inspo-rules li { display: grid; gap: 10px; padding: 20px 0; border-top: 1px solid var(--color-line); }
-.inspo-rules li:last-child { border-bottom: 1px solid var(--color-line); }
-.inspo-rules .inspo-n { line-height: 24px; text-transform: uppercase; }
-.inspo-rules li > div { display: grid; gap: 4px; }
-.inspo-rule { font-size: 16px; font-weight: 500; line-height: 1.5; }
-.inspo-rules .inspo-p { font-size: 15px; line-height: 1.6; color: var(--color-muted); }
-/* what the story leaves behind, a line each */
-.inspo-keep { display: grid; font-size: 16px; line-height: 1.55; text-wrap: pretty; }
-.inspo-keep li { padding: 16px 0; border-top: 1px solid var(--color-line); }
-.inspo-keep li:last-child { border-bottom: 1px solid var(--color-line); }
+/* Inspo, as an essay: the story in the column, each step under its number, the evidence on cards between the prose. */
+.inspo-label { font: 400 11.5px/1.5 var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-muted); }
+.inspo .col-h1 { margin-top: 10px; }
+.inspo-step .doc-h2 { display: flex; align-items: baseline; gap: 10px; }
+.inspo-n { font: 500 11.5px/1 var(--font-mono); letter-spacing: 0.02em; color: var(--color-faint); font-variant-numeric: tabular-nums; }
+.inspo-p { text-wrap: pretty; }
+.card { border-radius: 12px; background: #fff; box-shadow: var(--card); }
+/* the brief: a card with a row per part, its label in a column of its own when there is room */
+.inspo-prompt { margin-block: 2px; padding: 6px 16px; }
+.inspo-prompt > .inspo-label { padding: 10px 0; }
+.inspo-quote { font-size: 13px; line-height: 1.55; text-wrap: pretty; }
+.inspo-part { display: grid; gap: 4px; padding: 12px 0; border-top: 1px solid var(--color-line); }
+/* a picture in the dark frame it was taken in, a light ring inside its edge */
+.inspo-figure { display: grid; gap: 8px; margin-block: 6px; }
+.inspo-shot { position: relative; overflow: hidden; border-radius: 12px; background: #0b0b0c; box-shadow: var(--card); }
+.inspo-shot::after { content: ""; position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08); pointer-events: none; }
+.inspo-shot img { display: block; width: 100%; height: auto; }
+.inspo-caption { font-size: 12.5px; line-height: 1.5; color: var(--color-muted); text-wrap: pretty; }
+/* the pushback: what I said on a card, and under it, set off by a green rule, what that changed */
+.inspo-pushback { display: grid; gap: 12px; margin-block: 2px; }
+.inspo-pushback li { padding: 14px 16px; }
+.inspo-said { font-size: 13.5px; line-height: 1.55; text-wrap: pretty; }
+.inspo-changed { margin-top: 8px; padding-left: 12px; border-left: 2px solid #10b981; font-size: 13px; line-height: 1.55; color: var(--color-muted); text-wrap: pretty; }
+.inspo-rules { display: grid; gap: 10px; }
+.inspo-rules li { display: grid; gap: 6px; padding: 14px 16px; }
+.inspo-rules .inspo-n { line-height: 21px; text-transform: uppercase; }
+.inspo-rule { font-weight: 500; }
+.inspo-rules .inspo-p { margin-top: 2px; font-size: 13px; line-height: 1.55; color: var(--color-muted); }
+/* what the story leaves behind, numbered */
+.inspo-keep { display: grid; gap: 10px; counter-reset: keep; }
+.inspo-keep li { display: grid; grid-template-columns: 28px minmax(0, 1fr); color: var(--color-muted); text-wrap: pretty; counter-increment: keep; }
+.inspo-keep li::before { content: counter(keep, decimal-leading-zero); font: 400 11.5px/22px var(--font-mono); color: var(--color-faint); font-variant-numeric: tabular-nums; }
 /* a 14px link on its own gets a taller target than its text */
-.inspo .doc-more { display: inline-block; margin-block: -10px; padding-block: 10px; }
+.inspo-step .doc-more { display: inline-block; margin-block: -10px; padding-block: 10px; }
 @media (min-width: 600px) {
-  .inspo-toc ol { grid-auto-flow: column; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(4, auto); column-gap: 32px; }
-  .inspo-part { grid-template-columns: 148px minmax(0, 1fr); align-items: baseline; gap: 20px; }
-  .inspo-rules li { grid-template-columns: 84px minmax(0, 1fr); gap: 12px; }
-}
-@media (min-width: 768px) {
-  .inspo { gap: 112px; padding-top: 96px; }
-  .inspo-title { font-size: 64px; }
-  .inspo-lede { font-size: 20px; }
-  .inspo-h2 { font-size: 28px; }
-  .inspo-keep { font-size: 18px; }
-}
-/* from here the ledger and the bench have the width for two columns */
-@media (min-width: 960px) {
-  .inspo-pushback li { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); align-items: baseline; gap: 48px; padding-left: 56px; }
-  .inspo-said { font-size: 17px; }
-}
-/* the bench beside its story: the words keep the measure's left edge and the picture runs to the page's right */
-@media (min-width: 1024px) {
-  .inspo-split { grid-template-columns: calc((100% - var(--measure)) / 2) minmax(0, 1fr) 400px; align-items: center; justify-items: stretch; gap: 0; margin-top: 16px; }
-  .inspo-split-text { grid-column: 2; max-width: none; padding-right: 48px; }
-  .inspo-split .inspo-figure { max-width: none; margin: 0; }
+  .inspo-part { grid-template-columns: 130px minmax(0, 1fr); align-items: baseline; gap: 12px; }
+  .inspo-rules li { grid-template-columns: 76px minmax(0, 1fr); gap: 0; }
 }
 
 :is(button, a, input, .code-body, .table-scroll):focus-visible { outline: 1.5px solid var(--color-ink); outline-offset: 2px; }
 
 @media (max-width: 640px) {
-  /* a row stacks, text first, and the figure keeps its width */
-  .figure-row { grid-template-columns: minmax(0, 1fr); gap: 16px; }
-  .figure-row .tile { justify-self: start; }
+  /* a row stacks, text first, the figure under it */
+  .figure-row { grid-template-columns: minmax(0, 1fr); gap: 12px; padding: 12px; }
   /* one option per block: name, type and default on a line, the description under them */
   .props thead { display: none; }
   .props tr { display: flex; flex-wrap: wrap; column-gap: 12px; padding: 14px 0; border-top: 1px solid var(--color-line); }
@@ -376,42 +374,41 @@ footer a::after { content: ""; position: absolute; inset: -12px -8px; }
   .props[data-tokens] td:nth-child(3) { flex-basis: 100%; margin-top: 6px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .hero-rise > *, .enter, .enter-hint { animation-name: fade; }
-  .slide[data-ready] .slide-hl, .slide[data-ready] .slide-hl::before { transition: none; }
+  .hero-rise > *, .reel-stage > div, .reel-cap[data-on] { animation-name: fade; }
+  .reel[data-playing] .reel-tick[aria-current] .reel-fill { animation: none; }
+  .skill-link-hex, .skill-link-edge, .skill-link:hover .skill-link-edge { transition: none; }
   .icopy-b, .icopy[data-copied] .icopy-a { transform: none; filter: none; }
-  .prompt-idea { transform: none; filter: none; transition: opacity 200ms ease; }
-  .prompt:active, .prompt:active .prompt-key { transform: none; }
-  [data-live] > .doc-dot, [data-live] .doc-link > span { transition: none; }
+  [data-live] > .doc-dot, .doc-strip [data-live] .doc-link[aria-current] > span, .doc-strip [data-live] .doc-link > span { transition: none; }
+  .slide[data-ready] .slide-hl, .slide[data-ready] .slide-hl::before { transition: none; }
+  .rail [data-live] ul::after, .rail [data-live] li::after, .rail [data-live] li:has(> [aria-current])::after,
+  .rail [data-live] .doc-link::before, .rail [data-live] .doc-link[aria-current]::before { transition: none; }
 }
 
-/* /skill: the pitch, then each prompt beside the page it produced, then how it works and how to use it. */
-.skill { display: grid; gap: 72px; max-width: 1080px; margin: 0 auto; padding: 64px clamp(18px, 5vw, 28px) 96px; }
-.skill > * { min-width: 0; }
-.skill-install { margin-top: 28px; max-width: 460px; }
-.example { display: grid; gap: 16px; padding: 28px 0; border-top: 1px solid var(--color-line); }
-.example:last-child { border-bottom: 1px solid var(--color-line); }
-.example > * { min-width: 0; }
-.example-prompt { position: relative; z-index: 1; display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; align-content: start; }
-.example-figure { container-type: inline-size; }
-/* the prompt and its follow-up, one exchange: the follow-up is marked as the next turn */
-.example-turns { display: grid; gap: 8px; }
-.example-then { padding: 2px 16px 0; font-size: 12px; font-weight: 500; line-height: 1; color: var(--color-muted); }
+/* /skill, as a catalogue: how to get it and use it, the steps, then a card per idea the skill has drawn. */
+.skill .pill { box-shadow: var(--card); }
+.skill [data-command="usage"] { max-width: 460px; }
 /* a prompt is read, not run: it wraps in its pill when it must, and the copy icon stays by its first line. Only the
    install command, a shell line, keeps to one line and scrolls. */
 .pill:is([data-command="prompt"], [data-command="follow-up"], [data-command="usage"]) { height: auto; min-height: 48px; padding-block: 6px; align-items: start; }
 .pill:is([data-command="prompt"], [data-command="follow-up"], [data-command="usage"]) .pill-line { padding-block: 8px; line-height: 20px; white-space: normal; overflow: visible; text-wrap: pretty; }
-/* The generated page pads its column by 24px above and below and 16px at the sides. The frame bleeds by that much,
-   so the plate meets the column: its edges on the column's, its top on the prompt's. Stacked, the frame's top padding
-   runs under the prompt above it, which is drawn over the frame, so the plate sits one gap under the prompt. The height is the one the page takes before it is measured: its plate, as
-   wide as the column up to 640px, a 5:4 stage, and the 148px of controls and lines under it, which wrap onto more
+.howto { display: grid; gap: 10px; counter-reset: step; }
+.howto > li { display: grid; grid-template-columns: 28px minmax(0, 1fr); color: var(--color-muted); text-wrap: pretty; counter-increment: step; }
+.howto > li::before { content: counter(step, decimal-leading-zero); font: 400 11.5px/22px var(--font-mono); color: var(--color-faint); font-variant-numeric: tabular-nums; }
+.howto b { font-weight: 500; color: var(--color-ink); }
+/* An example's card: the prompt in its header, flat, beside a link to the file; what it drew and the turn after it;
+   then the page itself, in a frame under a hairline. */
+.ex { overflow: hidden; margin-top: 4px; }
+.ex-h { display: flex; align-items: flex-start; gap: 4px; padding: 0 6px 0 2px; border-bottom: 1px solid var(--color-line); }
+.ex-h .pill { flex: 1; min-width: 0; background: none; box-shadow: none; font-size: 12.5px; }
+.ex-b { padding: 12px 16px 14px; }
+.ex-name { font: 500 12px/1.5 var(--font-mono); }
+.ex-means { margin-top: 2px; font-size: 13px; line-height: 1.55; color: var(--color-muted); text-wrap: pretty; }
+.ex-fu { margin-top: 10px; padding-left: 12px; border-left: 2px solid var(--color-line); }
+.ex-then { font: 400 10.5px/1.5 var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-muted); }
+.ex-fu .pill { margin-left: -16px; background: none; box-shadow: none; font-size: 12.5px; }
+.example-figure { container-type: inline-size; border-top: 1px solid var(--color-line); }
+/* The generated page pads its column by 24px above and below and 16px at the sides, so in the card the plate sits
+   inside that much white. The height is the one the page takes before it is measured: its plate, as wide as the
+   column less its sides up to 640px, a 5:4 stage, and the 148px of controls and lines under it, which wrap onto more
    lines in a column narrower than 360px. */
-.example-frame { display: block; width: calc(100% + 32px); margin: -24px -16px; height: calc(min(100cqw, 640px) * 0.8 + 148px + max(0px, 360px - 100cqw) * 0.75); border: 0; }
-.skill-steps { display: grid; gap: 12px; max-width: 64ch; counter-reset: step; }
-.skill-steps > li { display: grid; grid-template-columns: 2.2em minmax(0, 1fr); align-items: baseline; font-size: 15px; line-height: 1.55; color: var(--color-muted); counter-increment: step; }
-.skill-steps > li::before { content: counter(step, decimal-leading-zero); font: 400 12px/1 var(--font-mono); font-variant-numeric: tabular-nums; color: var(--color-faint); }
-.skill-steps strong { font-weight: 500; color: var(--color-ink); }
-
-@media (min-width: 900px) {
-  .example { grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); gap: 40px; align-items: start; }
-  .example-prompt { position: sticky; top: calc(var(--topbar) + 24px); }
-}
+.example-frame { display: block; width: 100%; height: calc(min(100cqw - 32px, 640px) * 0.8 + 148px + 48px + max(0px, 392px - 100cqw) * 0.75); border: 0; }
