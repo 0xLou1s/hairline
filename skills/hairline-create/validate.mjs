@@ -12,6 +12,7 @@
  *   paint     no stroke width, colour, fill, opacity, filter or shadow of its own (rule 04)
  *   outside   nothing loaded or reached outside the file; every node from HL.mk
  *   clock     no timers, frames or SMIL animation of its own; it joins HL.register (rule 07)
+ *   tween     every tset is given its four values, the delay last
  *   hit       input only through HL.pointer; nothing measured on screen (rule 01)
  *   readout   it writes read.textContent
  *   handle    mount returns { set, destroy }
@@ -109,6 +110,28 @@ const NEED = [
   ["handle", /(?<![.\w$])destroy\s*[:(,}]/, "mount must return { set(value), destroy() }, and destroy is missing. It undoes everything mount did: bag.dispose."],
 ];
 
+/**
+ * Each `tset` given fewer than its four values. Without its delay a tween
+ * starts at no time at all: its value is NaN, and so is every path drawn from it.
+ */
+function tweens(shape) {
+  const out = [];
+  for (const m of shape.matchAll(/(?<![\w$])tset\s*\(/g)) {
+    let i = m.index + m[0].length, depth = 1, given = 1;
+    for (; i < shape.length && depth; i++) {
+      const c = shape[i];
+      if ("([{".includes(c)) depth++;
+      else if (")]}".includes(c)) depth--;
+      else if (c === "," && depth === 1) given++;
+    }
+    const call = shape.slice(m.index, i).replace(/\s+/g, " ");
+    if (given < 4 && !call.includes("...")) {
+      out.push(`tween: \`${call}\` is given ${given} of tset's four values: tset(tw, to, now, delay). Without the delay the tween's value is NaN and nothing is drawn. Give it 0 to start at once.`);
+    }
+  }
+  return out;
+}
+
 /** The declaration at the end of the file, read as text. */
 function declared(code) {
   const say = (what) => `declare: the file must end with hairline({ name, means, rules, range, mount }). ${what}`;
@@ -171,6 +194,7 @@ export function validate(input) {
   out.push(...parse(src));
   for (const [id, re, say, empty] of BAD) if (re.test(code) || empty?.test(shape)) out.push(`${id}: ${say}`);
   for (const [id, re, say] of NEED) if (!re.test(code)) out.push(`${id}: ${say}`);
+  out.push(...tweens(shape));
   out.push(...declared(code));
   const lines = src.split("\n").length;
   if (lines > LIMIT) out.push(`length: the figure is ${lines} lines and the limit is ${LIMIT}. A figure this long is usually two ideas: cut the concept down to one.`);

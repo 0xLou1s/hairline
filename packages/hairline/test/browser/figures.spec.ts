@@ -67,7 +67,9 @@ test("Turntable settles on a quarter turn after a flick", async ({ page }) => {
   expect(await read(page)).toBe("az 045° · el 30°");
   for (const x of [50, 120, 200, 280, 350]) { await fire(page, "pointermove", [x, 176]); await page.waitForTimeout(16); }
   await fire(page, "pointerleave");
-  await expect.poll(() => read(page), { timeout: 8000 }).toMatch(/^az (045|135|225|315)° · el 30°$/);
+  /* still coasting, the platter shows a quarter turn for a frame as it passes one: wait for a read-out that holds */
+  const held = async () => { const was = await read(page); await page.waitForTimeout(150); return (await read(page)) === was ? was : "turning"; };
+  await expect.poll(held, { timeout: 8000 }).toMatch(/^az (045|135|225|315)° · el 30°$/);
   const settled = await read(page);
   await page.waitForTimeout(400);
   expect(await read(page)).toBe(settled);

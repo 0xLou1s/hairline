@@ -64,6 +64,9 @@ const HONEST: [why: string, figure: string][] = [
   ["the word import inside a longer name", plus("const important = true;")],
   ["a name that starts with import, before a comma", plus("const [important, b] = [1, 2];")],
   ["a name that starts with import, as an argument", plus("f(imported, 1);")],
+  ["a tset given a delay of 0, with a call among its values", plus("HL.tset(HL.tween(0), Math.max(1, 2), performance.now(), 0);")],
+  ["a name that ends in tset", plus("const offset = (a, b) => a + b;\noffset(1, 2);")],
+  ["a tset written in a string", plus('const note = "tset(a, b)";')],
   ["a handle returned in shorthand, { set, destroy }", terrain.replace(
     /return \{\n {4}set: (\(v\) => \{[^\n]*\}),\n {4}destroy: bag\.dispose,\n {2}\};/,
     (_, set) => `const set = ${set};\n  const destroy = bag.dispose;\n  return { set, destroy };`,
@@ -112,6 +115,8 @@ const BROKEN: [id: string, why: string, figure: string, change?: (page: string) 
   ["clock", "an SMIL animateMotion element", plus("mk('animateMotion', { dur: \"1s\", repeatCount: \"indefinite\" });")],
   ["clock", "a timer after a // in a string", plus('const s = "a // b"; setTimeout(() => {}, 1);')],
   ["clock", "no kernel loop", terrain.replace("register(stage,", "((s, t) => ({ wake() {}, unregister() {} }))(stage,")],
+  ["tween", "a tset without its delay", plus("HL.tset(HL.tween(0), 1, performance.now());")],
+  ["tween", "a tset without its delay, with a call among its values", plus("HL.tset(HL.tween(0), Math.max(1, 2), performance.now());")],
   ["hit", "a box measured on screen", plus("stage.getBoundingClientRect();")],
   ["hit", "its own listener", plus('stage.addEventListener("pointermove", () => {});')],
   ["hit", "no pointer", terrain.replace("bag.add(pointer(stage,", "bag.add(((s, h) => () => {})(stage,")],

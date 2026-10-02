@@ -7,10 +7,10 @@ import { expect, it } from "vitest";
 
 /** The skill folder is what an agent installs: these hold its shape. */
 const SKILL = fileURLToPath(new URL("../../../../skills/hairline-create/", import.meta.url));
-const FILES = ["SKILL.md", "bench.html", "build.mjs", "concepts.md", "examples/riffle.js", "examples/terrain.js", "kernel.js", "look.md", "rules.md", "validate.mjs"];
+const FILES = ["SKILL.md", "bench.html", "build.mjs", "concepts.md", "examples/riffle.js", "examples/terrain.js", "kernel.js", "look.md", "look.mjs", "rules.md", "validate.mjs"];
 const text = (p: string) => readFileSync(SKILL + p, "utf8");
 
-it("holds exactly its ten files", () => {
+it("holds exactly its eleven files", () => {
   const found = (readdirSync(SKILL, { recursive: true, withFileTypes: true }) as import("node:fs").Dirent[])
     .filter((e) => e.isFile())
     .map((e) => (e.parentPath + "/" + e.name).slice(SKILL.length).replace(/^\//, ""));
@@ -43,7 +43,7 @@ it("look.md and SKILL.md name the validator's checks and the bench's parameters 
   expect(text("look.md")).toContain("at=");
   for (const param of ["?intensity=0", "?intensity=1", "?theme=dark", "?theme=light"]) expect(text("look.md"), param).toContain(param);
   for (const param of ["intensity", "theme"]) expect(text("bench.html"), param).toContain(`params.get("${param}")`);
-  for (const id of ["kernel", "parse", "bench", "text", "paint", "outside", "clock", "hit", "readout", "handle", "declare", "length"]) {
+  for (const id of ["kernel", "parse", "bench", "text", "paint", "outside", "clock", "tween", "hit", "readout", "handle", "declare", "length"]) {
     expect(text("validate.mjs"), id).toMatch(new RegExp(`^ \\* {3}${id} `, "m"));
   }
 });
@@ -61,13 +61,22 @@ it("look.md runs build.mjs by its path in the skill folder, as SKILL.md says, so
   expect(text("look.md")).not.toMatch(/`node build\.mjs /);
 });
 
-it("look.md's look.mjs is one script Node can parse, which reads the console and prints ?at= points", () => {
-  const blocks = [...text("look.md").matchAll(/^```js\n([\s\S]*?)^```$/gm)].map((m) => m[1]);
-  expect(blocks).toHaveLength(1);
-  for (const want of ['from "playwright"', '"pageerror"', '"warning"', "waitForTimeout(1500)", "window.P", "process.exit"]) expect(blocks[0], want).toContain(want);
-  const file = join(mkdtempSync(join(tmpdir(), "hl-look-")), "look.mjs");
-  writeFileSync(file, blocks[0]);
-  const run = spawnSync("node", ["--check", file], { encoding: "utf8" });
+it("look.mjs is one script Node can parse, and look.md runs it instead of holding one of its own", () => {
+  const run = spawnSync("node", ["--check", SKILL + "look.mjs"], { encoding: "utf8" });
   expect(run.stderr).toBe("");
   expect(run.status).toBe(0);
+  expect(text("look.md")).not.toMatch(/^```js$/m);
+  expect(text("look.md")).toContain("`node <skill folder>/look.mjs <name>.js --answer");
+  for (const want of ["\"pageerror\"", "\"warning\"", "window.P", "WAIT = 1500", "process.exit"]) expect(text("look.mjs"), want).toContain(want);
+});
+
+it("look.mjs reads points as world or viewBox points, and keeps its cache outside the skill", async () => {
+  const look = await import(SKILL + "look.mjs");
+  expect(look.point("42,28,52")).toEqual([42, 28, 52]);
+  expect(look.point("220,120")).toEqual([220, 120]);
+  for (const bad of ["", "1", "1,2,3,4", "a,b", "1,,2"]) expect(look.point(bad), bad).toBeNull();
+  expect(look.cacheDir({ HAIRLINE_LOOK_CACHE: "/x" }, "linux", "/h")).toBe("/x");
+  expect(look.cacheDir({}, "darwin", "/h")).toBe(join("/h", "Library", "Caches", "hairline-look"));
+  expect(look.cacheDir({}, "linux", "/h")).toBe(join("/h", ".cache", "hairline-look"));
+  expect(look.SHOTS.map((s: string[]) => s[0])).toEqual(["rest", "answer", "small", "small-answer", "low", "high", "dark", "light"]);
 });
