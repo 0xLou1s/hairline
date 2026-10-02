@@ -279,6 +279,39 @@ test("llms.txt and the registry item are served", async ({ request }) => {
   expect(item.files[0].content).toContain('"use client"');
 });
 
+// the build's base URL, which is localhost:3000 off Vercel
+const BASE = "http://localhost:3000";
+
+test("a pasted link shows the page it leads to: each page's card has its own title, text and address", async ({ request }) => {
+  const CARDS = [
+    ["/", "hairline", /^Six isometric line figures/],
+    ["/docs", "Docs", /^Six isometric line figures/],
+    ["/skill", "Make your own figure", /^hairline-create is a skill/],
+    ["/inspo", "How Hairline was made", /^A long brief/],
+  ] as const;
+  for (const [path, title, text] of CARDS) {
+    const html = await (await request.get(path)).text();
+    const tag = (key: string) => html.match(new RegExp(`<meta (?:property|name)="${key}" content="([^"]*)"`))?.[1];
+    // Open Graph's tags and X's say the same thing
+    for (const key of ["og:title", "twitter:title"]) expect(tag(key), `${path} ${key}`).toBe(title);
+    for (const key of ["og:description", "twitter:description"]) expect(tag(key), `${path} ${key}`).toMatch(text);
+    for (const key of ["og:image", "twitter:image"]) expect(tag(key), `${path} ${key}`).toBe(`${BASE}/og.png`);
+    expect(tag("og:url"), path).toBe(path === "/" ? BASE : BASE + path);
+    expect(tag("twitter:card"), path).toBe("summary_large_image");
+    // the account the footer links
+    expect(tag("twitter:creator"), path).toBe("@lucasmarkes__");
+  }
+});
+
+test("robots.txt lets every crawler in and names the sitemap, which lists the four pages", async ({ request }) => {
+  const robots = await (await request.get("/robots.txt")).text();
+  expect(robots).toMatch(/^User-Agent: \*\nAllow: \/\n/);
+  expect(robots).toContain(`Sitemap: ${BASE}/sitemap.xml`);
+
+  const sitemap = await (await request.get("/sitemap.xml")).text();
+  expect([...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1])).toEqual([BASE, `${BASE}/docs`, `${BASE}/skill`, `${BASE}/inspo`]);
+});
+
 test("the page fits a phone, with the longest install command, its buttons and the reel's ticks", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 800 });
   await page.goto("/");

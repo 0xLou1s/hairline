@@ -3,6 +3,7 @@ import Image, { type StaticImageData } from "next/image";
 import type { CSSProperties, ReactNode } from "react";
 import { Footer, Topbar } from "@/components/chrome";
 import { Rail } from "@/components/rail";
+import { share } from "@/lib/share";
 import craft from "@/public/inspo/craft.webp";
 import dissection from "@/public/inspo/dissection.webp";
 import figures from "@/public/inspo/figures.webp";
@@ -12,12 +13,7 @@ import tune from "@/public/inspo/tune.webp";
 const TITLE = "How Hairline was made";
 const DESCRIPTION = "A long brief, a lot of arguing, and every correction written down as a rule: how Hairline was designed with Claude Opus and a live Artifact.";
 
-export const metadata: Metadata = {
-  title: `${TITLE} · hairline`,
-  description: DESCRIPTION,
-  alternates: { canonical: "/inspo" },
-  openGraph: { title: TITLE, description: DESCRIPTION, url: "/inspo", siteName: "hairline", type: "article", images: [{ url: "/og.png", width: 1200, height: 630, alt: "Line drawings that answer the pointer: the Terrain figure, its pillars rising." }] },
-};
+export const metadata: Metadata = share("/inspo", TITLE, DESCRIPTION, "article");
 
 /** The story's parts, in order: the rail lists them and each step takes its title from here. */
 const STEPS = ["A feeling, not a look", "The brief", "What came back", "Pushback", "The design pass", "Into a package", "What I’d keep"];
