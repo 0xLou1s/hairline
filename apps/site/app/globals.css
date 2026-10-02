@@ -18,7 +18,8 @@
   --lift: 0 1px 2px #00000008, 0 10px 28px -16px #00000024;
   --lift-lg: 0 1px 2px #00000008, 0 2px 6px #00000008, 0 32px 64px -34px #00000038;
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
-  --ease-icon: cubic-bezier(0.2, 0, 0, 1);
+  /* a critically damped spring (no bounce, settles in 300ms), sampled: it leaves rest gently and eases home on a long tail, with no step in between */
+  --spring-icon: linear(0, 0.057, 0.18, 0.32, 0.454, 0.572, 0.67, 0.749, 0.811, 0.859, 0.896, 0.923, 0.944, 0.959, 0.97, 0.979, 0.985, 0.989, 0.992, 0.994, 0.996, 0.997, 0.998, 0.999, 1);
   /* Code in greys, each at least 4.5:1 on the code frame's #fafafa. shiki writes these names. */
   --code-foreground: #0a0a0a;
   --code-background: transparent;
@@ -42,7 +43,9 @@ em { font-style: italic; }
 .topbar {
   position: sticky; top: 0; z-index: 10;
   display: flex; align-items: center; justify-content: space-between;
-  height: var(--topbar); padding: 0 clamp(18px, 5vw, 28px);
+  /* the bar spans the page, its contents keep to the 1080px column the footer, the docs and the skill page use */
+  --gutter: clamp(18px, 5vw, 28px);
+  height: var(--topbar); padding: 0 max(var(--gutter), calc((100% - 1080px) / 2 + var(--gutter)));
   background: color-mix(in srgb, var(--color-canvas) 82%, transparent);
   backdrop-filter: blur(12px);
 }
@@ -53,6 +56,8 @@ em { font-style: italic; }
 /* a 40px target around each link, the name and the footer's links, taller than what is drawn */
 a.topbar-link::after { content: ""; position: absolute; inset: -5px 0; }
 .topbar > a { position: relative; }
+/* the last link's 10px padding is target, not ink: pull the nav out by it so the GitHub mark ends on the column's edge, as the footer's last link does */
+.topbar nav { margin-right: -10px; }
 .topbar > a::after { content: ""; position: absolute; inset: -9px -6px; }
 /* the docs' underline, kept clear until the pointer is on the link */
 footer a { position: relative; text-decoration: underline; text-decoration-color: transparent; text-underline-offset: 4px; transition: text-decoration-color 150ms ease; }
@@ -180,6 +185,35 @@ footer a::after { content: ""; position: absolute; inset: -12px -8px; }
 .hero-install { margin-top: 36px; width: 100%; max-width: 460px; }
 .hero-actions { margin-top: 20px; display: flex; gap: 8px; }
 @media (min-width: 768px) { .hero-title { font-size: 64px; } }
+/* The way to the skill: a question, then the command as a prompt waiting to be sent. The ideas it has drawn come in
+   after it one at a time, each rising out of a blur as the last one leaves upward. */
+.hero-skill { margin-top: 44px; display: grid; justify-items: center; gap: 12px; width: 100%; max-width: 460px; }
+.hero-skill-ask { font-size: 14px; color: var(--color-muted); }
+.prompt { display: flex; align-items: center; gap: 12px; width: 100%; height: 52px; padding: 0 6px 0 16px; border-radius: 14px; background: var(--color-stone); text-align: left; transition: transform 160ms var(--ease-out), background-color 150ms ease; will-change: transform; }
+.prompt:active { transform: scale(0.98); }
+.prompt-caret { flex: none; font-size: 14px; line-height: 1; color: var(--color-faint); }
+.prompt-line { flex: 1; min-width: 0; height: 20px; overflow: hidden; font-size: 14px; line-height: 20px; white-space: nowrap; }
+.prompt-line[data-more] { mask-image: linear-gradient(to right, #000 calc(100% - 24px), transparent); }
+.prompt-ideas { position: relative; display: inline-block; height: 20px; vertical-align: top; }
+.prompt-idea { position: absolute; top: 0; left: 0; opacity: 0; transform: translateY(6px); filter: blur(3px); transition: opacity 260ms var(--ease-out), transform 260ms var(--ease-out), filter 260ms var(--ease-out); }
+.prompt-idea[data-on] { opacity: 1; transform: none; filter: none; }
+.prompt-idea[data-gone] { transform: translateY(-6px); }
+.prompt-go { flex: none; display: inline-flex; align-items: center; gap: 8px; margin-right: 6px; font-size: 12.5px; color: var(--color-faint); }
+/* a key, not a button: lit from above, it sinks a pixel when the prompt is pressed */
+.prompt-key { display: grid; place-items: center; width: 30px; height: 26px; border-radius: 7px; background: #fff; color: var(--color-muted); box-shadow: inset 0 0 0 1px #00000012, 0 1.5px 0 #00000014; transition: transform 120ms var(--ease-out), box-shadow 120ms var(--ease-out), color 150ms ease; }
+.prompt:active .prompt-key { transform: translateY(1px); box-shadow: inset 0 0 0 1px #00000012, 0 0.5px 0 #00000014; }
+@media (hover: hover) {
+  .prompt:hover { background: #efefef; }
+  .prompt:hover .prompt-key { color: var(--color-ink); }
+}
+/* on a phone the prompt wraps as a long prompt would: the idea goes under the command instead of off the edge */
+@media (max-width: 480px) {
+  .prompt { height: auto; padding-block: 12px; }
+  .prompt-caret { align-self: flex-start; line-height: 20px; }
+  .prompt-line { height: auto; }
+  .prompt-ideas { display: block; }
+  .prompt-go-label { display: none; }
+}
 
 /* Rise, blur and fade end in that order. The rise and the blur end in steps: moving text is drawn on whole device
    pixels, so the last pixel of travel lands as a hop, and Chrome draws no blur under 0.4px, so the last of it goes
@@ -202,13 +236,13 @@ footer a::after { content: ""; position: absolute; inset: -12px -8px; }
 .slide-item[aria-checked="true"] { color: var(--color-ink); }
 @media (hover: hover) { .slide-item:hover { color: var(--color-ink); } }
 
-/* Copy as an icon: the clipboard blurs and shrinks away as the check grows in. */
-.icopy { position: relative; flex: none; display: grid; place-items: center; width: 36px; height: 36px; border-radius: 8px; color: var(--color-muted); transition: color 150ms ease, background-color 150ms ease, transform 160ms var(--ease-out); }
+/* Copy as an icon: the clipboard blurs and shrinks away as the check grows in. That swap is the one scale a copy
+   makes, so the round button stays still on press instead of shrinking under it. */
+.icopy { position: relative; flex: none; display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; color: var(--color-muted); transition: color 150ms ease, background-color 150ms ease; }
 .icopy::after { content: ""; position: absolute; inset: -2px; }
 @media (hover: hover) { .icopy:hover { color: var(--color-ink); background: var(--color-stone); } }
-.icopy:active { transform: scale(0.96); }
 .icopy[data-copied] { color: var(--color-ink); }
-.icopy svg { grid-area: 1 / 1; transition: opacity 200ms var(--ease-icon), transform 200ms var(--ease-icon), filter 200ms var(--ease-icon); }
+.icopy svg { grid-area: 1 / 1; transition: opacity 300ms var(--spring-icon), transform 300ms var(--spring-icon), filter 300ms var(--spring-icon); }
 .icopy-b, .icopy[data-copied] .icopy-a { opacity: 0; transform: scale(0.25); filter: blur(4px); }
 .icopy[data-copied] .icopy-b { opacity: 1; transform: none; filter: none; }
 
@@ -345,6 +379,8 @@ footer a::after { content: ""; position: absolute; inset: -12px -8px; }
   .hero-rise > *, .enter, .enter-hint { animation-name: fade; }
   .slide[data-ready] .slide-hl, .slide[data-ready] .slide-hl::before { transition: none; }
   .icopy-b, .icopy[data-copied] .icopy-a { transform: none; filter: none; }
+  .prompt-idea { transform: none; filter: none; transition: opacity 200ms ease; }
+  .prompt:active, .prompt:active .prompt-key { transform: none; }
   [data-live] > .doc-dot, [data-live] .doc-link > span { transition: none; }
 }
 

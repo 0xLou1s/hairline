@@ -212,24 +212,48 @@ test("the top bar fits a 320px screen on one row, the version left out so the na
   expect(last.x + last.width).toBeLessThanOrEqual(bar.x + bar.width);
 });
 
-test("the home's hero points to the skill in one quiet line under its two buttons, and the line reaches /skill", async ({ page }) => {
+const PROMPT = "Make your own figure with the hairline-create skill";
+
+test("the home's hero points to the skill with the command as a prompt under its two buttons, and the prompt reaches /skill", async ({ page }) => {
   for (const width of [1200, 320]) {
     await page.setViewportSize({ width, height: 800 });
     await page.goto("/");
-    const link = page.locator(".hero-rise").getByRole("link", { name: "Or make your own with the skill →" });
+    const link = page.locator(".hero-rise").getByRole("link", { name: PROMPT });
     await expect(link).toHaveAttribute("href", "/skill");
+    await expect(link.locator(".prompt-line")).toContainText("/hairline-create");
+    await expect(link.locator(".prompt-idea[data-on]")).toHaveText("a sales funnel");
     expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBe(0);
     const actions = (await page.locator(".hero-actions").boundingBox())!;
-    const line = (await link.boundingBox())!;
-    // under the buttons, clear of them, and on one line
-    expect(line.y).toBeGreaterThanOrEqual(actions.y + actions.height);
-    expect(line.height).toBeLessThan(28);
-    // not a third button
-    expect(await link.evaluate((a) => a.classList.contains("btn"))).toBe(false);
+    const prompt = (await link.boundingBox())!;
+    // under the buttons, clear of them, and as wide as the install line above them
+    expect(prompt.y).toBeGreaterThanOrEqual(actions.y + actions.height);
+    const install = (await page.locator(".hero-install").boundingBox())!;
+    expect(Math.abs(prompt.width - install.width)).toBeLessThan(1);
+    // the idea reads whole, on a phone under the command, and the return key stays inside the prompt
+    const idea = (await link.locator(".prompt-idea[data-on]").boundingBox())!;
+    const line = (await link.locator(".prompt-line").boundingBox())!;
+    expect(idea.x + idea.width).toBeLessThanOrEqual(line.x + line.width);
+    await expect(link.locator(".prompt-line")).not.toHaveAttribute("data-more");
+    const key = (await link.locator(".prompt-key").boundingBox())!;
+    expect(key.x + key.width).toBeLessThanOrEqual(prompt.x + prompt.width);
   }
-  await page.locator(".hero-rise").getByRole("link", { name: "Or make your own with the skill →" }).click();
+  await page.locator(".hero-rise").getByRole("link", { name: PROMPT }).click();
   await expect(page).toHaveURL(/\/skill$/);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Make your own figure");
+});
+
+test("the prompt types each idea the skill has drawn in turn, and holds the first under reduced motion", async ({ page }) => {
+  await page.goto("/");
+  const on = page.locator(".prompt-idea[data-on]");
+  await expect(on).toHaveText("a sales funnel");
+  await expect(on).toHaveText("a rate limiter", { timeout: 4000 });
+  await expect(page.locator(".prompt-idea[data-gone]")).toHaveText("a sales funnel");
+  await expect(page.locator(".prompt-idea[data-on]")).toHaveCount(1);
+
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.reload();
+  await page.waitForTimeout(3000);
+  await expect(page.locator(".prompt-idea[data-on]")).toHaveText("a sales funnel");
 });
 
 const FOLLOW_UPS: Record<string, string | undefined> = {
