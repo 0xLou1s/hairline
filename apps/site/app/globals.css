@@ -18,7 +18,8 @@
   --lift: 0 1px 2px #00000008, 0 10px 28px -16px #00000024;
   --lift-lg: 0 1px 2px #00000008, 0 2px 6px #00000008, 0 32px 64px -34px #00000038;
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
-  --ease-icon: cubic-bezier(0.2, 0, 0, 1);
+  /* a critically damped spring (no bounce, settles in 300ms), sampled: it leaves rest gently and eases home on a long tail, with no step in between */
+  --spring-icon: linear(0, 0.057, 0.18, 0.32, 0.454, 0.572, 0.67, 0.749, 0.811, 0.859, 0.896, 0.923, 0.944, 0.959, 0.97, 0.979, 0.985, 0.989, 0.992, 0.994, 0.996, 0.997, 0.998, 0.999, 1);
   /* Code in greys, each at least 4.5:1 on the code frame's #fafafa. shiki writes these names. */
   --code-foreground: #0a0a0a;
   --code-background: transparent;
@@ -206,13 +207,13 @@ footer a::after { content: ""; position: absolute; inset: -12px -8px; }
 .slide-item[aria-checked="true"] { color: var(--color-ink); }
 @media (hover: hover) { .slide-item:hover { color: var(--color-ink); } }
 
-/* Copy as an icon: the clipboard blurs and shrinks away as the check grows in. */
-.icopy { position: relative; flex: none; display: grid; place-items: center; width: 36px; height: 36px; border-radius: 8px; color: var(--color-muted); transition: color 150ms ease, background-color 150ms ease, transform 160ms var(--ease-out); }
+/* Copy as an icon: the clipboard blurs and shrinks away as the check grows in. That swap is the one scale a copy
+   makes, so the round button stays still on press instead of shrinking under it. */
+.icopy { position: relative; flex: none; display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; color: var(--color-muted); transition: color 150ms ease, background-color 150ms ease; }
 .icopy::after { content: ""; position: absolute; inset: -2px; }
 @media (hover: hover) { .icopy:hover { color: var(--color-ink); background: var(--color-stone); } }
-.icopy:active { transform: scale(0.96); }
 .icopy[data-copied] { color: var(--color-ink); }
-.icopy svg { grid-area: 1 / 1; transition: opacity 200ms var(--ease-icon), transform 200ms var(--ease-icon), filter 200ms var(--ease-icon); }
+.icopy svg { grid-area: 1 / 1; transition: opacity 300ms var(--spring-icon), transform 300ms var(--spring-icon), filter 300ms var(--spring-icon); }
 .icopy-b, .icopy[data-copied] .icopy-a { opacity: 0; transform: scale(0.25); filter: blur(4px); }
 .icopy[data-copied] .icopy-b { opacity: 1; transform: none; filter: none; }
 
