@@ -102,9 +102,28 @@ The figure's styles have no specificity, so any rule of yours wins without `!imp
 - **Server rendering.** On the server a component is an empty box with a 5:4 aspect ratio, so nothing shifts when it draws. The functions need a DOM: call them in an effect, in `onMount`, or in a script after the element.
 - **Shadow DOM.** A figure mounted inside a shadow root styles itself there.
 
+## Make your own
+
+`hairline-create` is a skill for coding agents. Give it an idea and it draws a new figure to Hairline's ten rules, on the same engine as the six above, as one HTML file.
+
+```sh
+npx skills add lucasmarkes/hairline
+```
+
+Then type the command with an idea in the agent:
+
+```
+/hairline-create a sales funnel
+```
+
+It offers two or three concepts, draws the one you pick, checks it against the rules and in a browser, and hands over `hairline-<name>.html`: one file with no dependencies that opens from disk. It runs on any agent that reads skills: Claude Code, Cursor, Codex and others.
+
+Four figures it drew, each beside its prompt: [hairline.lucasmarkes.com/skill](https://hairline.lucasmarkes.com/skill).
+
 ## More
 
 - [hairline.lucasmarkes.com](https://hairline.lucasmarkes.com): every figure live, an inspector that writes the snippet for you, and a CDN example.
+- [How Hairline was made](https://hairline.lucasmarkes.com/inspo): the brief, the arguing, and every correction written down as a rule.
 - [The essay](https://lucasmarkes.com/lab/hairline): how the figures are drawn, and why with lines.
 - [CHANGELOG.md](https://github.com/lucasmarkes/hairline/blob/main/CHANGELOG.md) and [CONTRIBUTING.md](https://github.com/lucasmarkes/hairline/blob/main/CONTRIBUTING.md).
 
