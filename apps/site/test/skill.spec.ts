@@ -148,7 +148,7 @@ for (const width of [320, 900]) {
   });
 }
 
-test("at 1200px each plate starts on its prompt's line and meets the column's edges", async ({ page }) => {
+test("at 1200px each card stacks its words over its figure, and the plate sits centred in the card", async ({ page }) => {
   await page.goto("/skill");
   await frames(page);
   await page.evaluate(() => window.scrollTo(0, 0));
@@ -158,10 +158,12 @@ test("at 1200px each plate starts on its prompt's line and meets the column's ed
       const at = frame.getBoundingClientRect();
       const plate = frame.contentDocument!.querySelector(".plate")!.getBoundingClientRect();
       const figure = el.querySelector(".example-figure")!.getBoundingClientRect();
-      const pill = el.querySelector('[data-command="prompt"]')!.getBoundingClientRect();
-      return { top: at.top + plate.top - pill.top, left: at.left + plate.left - figure.left, right: at.left + plate.right - figure.right };
+      const words = el.querySelector(".ex-b")!.getBoundingClientRect();
+      return { under: figure.top - words.bottom, left: at.left + plate.left - figure.left, right: figure.right - (at.left + plate.right) };
     });
-    for (const d of Object.values(m)) expect(Math.abs(d)).toBeLessThan(1);
+    expect(Math.abs(m.under)).toBeLessThan(1);
+    expect(m.left).toBeGreaterThanOrEqual(0);
+    expect(Math.abs(m.left - m.right)).toBeLessThan(1);
   }
 });
 
