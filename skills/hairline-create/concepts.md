@@ -5,11 +5,12 @@ A concept is three things: **an object**, **what the pointer does to it**, and *
 ## Finding it
 
 1. **Find the object.** Something you could put on a desk: a tray, a belt, a platter, a stack, a board of pegs. Not a diagram. A deploy pipeline is not boxes and arrows; it might be a flight of canal locks.
-2. **Find the variable.** Every idea has one number or one choice that matters: how far, which one, how fast, how long. That is what the pointer gets.
-3. **Give the pointer that variable.** Where it is sets a position (continuous); what it is over sets a choice (discrete). The answer should be what a hand would expect from the object.
-4. **Design the rest.** What does the object look like when nobody touches it? It must already be a composition, and already say what the figure is about.
-5. **Choose the read-out's words.** A few characters naming what is under the pointer: `cell 4·2`, `08`, `lock 3`. And `rest`.
-6. **Choose the slider's number.** One number that makes the answer weaker or stronger: a radius, a stagger, a gap, a rate. Its three values go in `range`.
+2. **Find what gives it away.** For each kind of part, name the two or three features that make it what it is, each something the object would really have. A car: a cabin narrower than its body, a windscreen that slopes, wheels. A lighthouse: a tower that tapers, a lantern on top, a gallery round it. A part with none of them is a rounded block, and a row of rounded blocks is nothing in particular. Keep the list: you draw from it, and the look checks the small picture against it.
+3. **Find the variable.** Every idea has one number or one choice that matters: how far, which one, how fast, how long. That is what the pointer gets.
+4. **Give the pointer that variable.** Where it is sets a position (continuous); what it is over sets a choice (discrete). The answer should be what a hand would expect from the object.
+5. **Design the rest.** What does the object look like when nobody touches it? It must already be a composition, and already say what the figure is about.
+6. **Choose the read-out's words.** A few characters naming what is under the pointer: `cell 4·2`, `08`, `lock 3`. And `rest`.
+7. **Choose the slider's number.** One number that makes the answer weaker or stronger: a radius, a stagger, a gap, a rate. Its three values go in `range`.
 
 ## Six answers already proven
 

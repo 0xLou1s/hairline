@@ -49,7 +49,7 @@ On the sheet, `rest` and `answer` are large; `small` and `small-answer` are at t
 
 Answer each with yes or no. A no is fixed in the figure before anything is handed over. `look.mjs` answers 8, 9 and 12, and measures part of 4; the rest are answered from the sheet. Zoom when a line is too small to judge.
 
-1. **The silhouette reads at 240px.** You can say what the object is from the small picture alone.
+1. **The silhouette reads at 240px.** You can say what the object is from the small picture alone. You know what you drew, so do not ask yourself whether it looks like it: for each kind of part, point in the `small` picture to the features you named for it in the concept (`concepts.md`, step 2). A part that shows none of them there is a no, however it looks at full size.
 2. **Rest is a composition** (rule 05). Not flat, not empty, not a regular grid; something is bright where the eye should start.
 3. **The answer falls off with distance, or spreads out from the pointer** (rules 02 and 03). It is not everything at once, and not one part alone.
 4. **Nothing flickers** (rule 01). With the pointer held on a part that moves when touched, the drawing comes to rest. `look.mjs` waits 1.5 seconds after each page loads, then until its drawing holds still for a quarter of a second, for 5 seconds at most. `still` is a yes, and says how long the slowest took. `moving` names the pictures that never held still: answering pictures moving while rest held still is a flicker loop; every picture moving is an ambient figure, or a loop that never ends. A machine too busy to keep up says `moving` too, so run it again before you believe it. `at` moves the pointer once, so also read the hit test: it picks from the rest pose or the target, never from the pose on screen.

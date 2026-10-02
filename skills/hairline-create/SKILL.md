@@ -64,6 +64,7 @@ When the person asks for a change, edit only `<name>.js`, then run `look.mjs` ag
 | writing a timer, a `requestAnimationFrame` or a CSS animation | `register(stage, tick)`, with springs or tweens (rules 07 and 08) |
 | testing the pointer against what is drawn right now | test it against the rest or target pose (rule 01) |
 | drawing a box with twelve edges | `prism` of two rounded rings: a silhouette and one crease (rule 09) |
+| drawing a part as a plain rounded block | give it the features that make it what it is, the ones you named in the concept (`concepts.md`) |
 | leaving rest flat, empty, or symmetric because that was easy | compose it: rest is the thumbnail (rule 05) |
 | editing the kernel or the bench to make something work | the figure is wrong; change the figure |
 | letting in a second idea | cut it: one figure, one idea |
