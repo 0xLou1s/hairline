@@ -279,12 +279,21 @@ footer a::after { content: ""; position: absolute; inset: -12px -8px; }
 .skill-link:focus-visible .skill-link-hex { stroke: var(--color-ink); }
 .skill-link:focus-visible .skill-link-edge { stroke-dashoffset: 0; }
 
-/* The reel: the figure on the page itself, six ticks under it, and the caption of the one on show. Every figure is
-   5:4 and the captions share one cell, so a change of figure never moves the page. */
+/* The reel: the figure on the page itself and six ticks under it. Every figure is 5:4 and the layers of a change
+   stack in one box, so a change of figure never moves the page. */
 .hero-reel { width: 100%; margin-top: 14px; scroll-margin-top: calc(var(--topbar) + 24px); }
 .reel { display: grid; justify-items: center; }
-.reel-stage { width: 100%; max-width: 440px; aspect-ratio: 5 / 4; --hairline-plate: var(--color-canvas); }
-.reel-stage > div { animation: reel-in 320ms var(--ease-out) both; }
+.reel-stage { position: relative; width: 100%; max-width: 440px; aspect-ratio: 5 / 4; --hairline-plate: var(--color-canvas); --d: 520ms; }
+/* a pick answers faster than the reel's own turn */
+.reel:not([data-playing]) .reel-stage { --d: 260ms; }
+/* A change dissolves: the new figure comes into focus over the old, which blurs away a little faster. Transitions,
+   not keyframes, so a pick in the middle of a change turns it around from where it is. */
+.reel-layer { position: absolute; inset: 0; transition: opacity var(--d) var(--ease-out), filter var(--d) var(--ease-out); }
+@starting-style { .reel-layer { opacity: 0; filter: blur(6px); } }
+.reel-layer[data-leaving] { opacity: 0; filter: blur(6px); transition-duration: calc(var(--d) * 0.7); pointer-events: none; }
+/* the demo pointer: a hairline ring, there only while it walks the figure */
+.reel-ghost { position: absolute; top: 0; left: 0; z-index: 1; width: 18px; height: 18px; margin: -9px 0 0 -9px; border-radius: 50%; border: 1px solid var(--color-ink); pointer-events: none; opacity: 0; transition: opacity 200ms ease; }
+.reel-ghost[data-on] { opacity: 0.4; }
 .reel-ticks { display: flex; margin-top: 10px; }
 .reel-tick { display: grid; place-items: center; width: 30px; height: 26px; border-radius: 6px; }
 .reel-tick::before, .reel-fill { grid-area: 1 / 1; width: 20px; height: 1.5px; border-radius: 1px; }
@@ -294,15 +303,11 @@ footer a::after { content: ""; position: absolute; inset: -12px -8px; }
 /* the clock: the fill runs while its figure plays, and its end moves the reel on; a pause only holds it */
 .reel[data-playing] .reel-tick[aria-current] .reel-fill { animation: reel-tick 6000ms linear both; }
 .reel[data-playing][data-paused] .reel-tick[aria-current] .reel-fill { animation-play-state: paused; }
-/* once the reel has stopped, the tick of the figure on show stays drawn */
+/* once the reel has stopped, the tick of the figure on show stays drawn; a pick to the left draws it from the right,
+   where the line it takes over from was */
 .reel:not([data-playing]) .reel-tick[aria-current] .reel-fill { transform: none; transition: transform 240ms var(--ease-out); }
-.reel-caps { display: grid; width: 100%; max-width: 46ch; margin-top: 4px; font-size: 13.5px; line-height: 1.55; }
-.reel-cap { grid-area: 1 / 1; color: var(--color-muted); text-wrap: balance; visibility: hidden; }
-.reel-cap[data-on] { visibility: visible; animation: reel-cap 300ms var(--ease-out) both; }
-.reel-cap b { font-weight: 500; color: var(--color-ink); }
-@keyframes reel-in { from { opacity: 0; filter: blur(4px); } to { opacity: 1; filter: none; } }
+.reel:not([data-playing])[data-dir="back"] .reel-tick[aria-current] .reel-fill { transform-origin: right; }
 @keyframes reel-tick { to { transform: none; } }
-@keyframes reel-cap { from { opacity: 0; filter: blur(3px); transform: translateY(3px); } to { opacity: 1; filter: none; transform: none; } }
 
 /* Rise, blur and fade end in that order. The rise and the blur end in steps: moving text is drawn on whole device
    pixels, so the last pixel of travel lands as a hop, and Chrome draws no blur under 0.4px, so the last of it goes
@@ -374,7 +379,10 @@ footer a::after { content: ""; position: absolute; inset: -12px -8px; }
   .props[data-tokens] td:nth-child(3) { flex-basis: 100%; margin-top: 6px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .hero-rise > *, .reel-stage > div, .reel-cap[data-on] { animation-name: fade; }
+  .hero-rise > * { animation-name: fade; }
+  /* a change of figure only crossfades, and the demo pointer stays home */
+  .reel-layer { filter: none !important; transition: opacity 180ms ease; }
+  .reel-ghost { display: none; }
   .reel[data-playing] .reel-tick[aria-current] .reel-fill { animation: none; }
   .skill-link-hex, .skill-link-edge, .skill-link:hover .skill-link-edge { transition: none; }
   .icopy-b, .icopy[data-copied] .icopy-a { transform: none; filter: none; }

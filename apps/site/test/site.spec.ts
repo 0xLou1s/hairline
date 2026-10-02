@@ -112,14 +112,15 @@ test("the reel plays the six figures in turn, holds under the pointer, and stops
   await expect(ticks).toHaveCount(6);
   await expect(figure).toHaveAttribute("data-figure", "riffle");
   await expect(ticks.first()).toHaveAttribute("aria-current", "true");
-  await expect(reel.locator(".reel-cap[data-on]")).toContainText("Riffle.");
+  // the figure stands alone: no caption under it
+  await expect(reel.locator("p")).toHaveCount(0);
 
   // the tick's fill is the clock: its end moves the reel on
   const fill = reel.locator(".reel-tick[aria-current] .reel-fill");
   await expect.poll(() => fill.evaluate((el) => el.getAnimations().length)).toBe(1);
   await fill.evaluate((el) => el.getAnimations()[0].finish());
   await expect(figure).toHaveAttribute("data-figure", "terrain");
-  await expect(reel.locator(".reel-cap[data-on]")).toContainText("Terrain.");
+  await expect(ticks.nth(1)).toHaveAttribute("aria-current", "true");
 
   await figure.hover();
   await expect(reel).toHaveAttribute("data-paused", "");
