@@ -25,8 +25,10 @@ try {
   process.exit(1);
 }
 await page.waitForFunction(() => document.querySelectorAll("[data-hairline] > svg > *").length >= 1 && document.fonts.status === "loaded");
-// let the figure finish its first frames
+// let the figure finish its first frames, then sweep the pointer across it so its layers stand open, and let them settle
 await page.waitForTimeout(1200);
+for (let x = 560; x <= 1160; x += 24) await page.mouse.move(x, 300, { steps: 2 });
+await page.waitForTimeout(1500);
 const out = join(SITE, "public/og.png");
 await page.screenshot({ path: out, clip: { x: 0, y: 0, width: 1200, height: 630 } });
 await browser.close();
