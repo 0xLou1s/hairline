@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   title: "hairline",
   description: DESCRIPTION,
   alternates: { canonical: "/" },
-  openGraph: { title: "hairline", description: DESCRIPTION, url: "/", siteName: "hairline", type: "website", images: [{ url: "/og.png", width: 1200, height: 630, alt: "Line drawings that answer the pointer: the Terrain figure, its pillars rising." }] },
+  openGraph: { title: "hairline", description: DESCRIPTION, url: "/", siteName: "hairline", type: "website", images: [{ url: "/og.png", width: 1200, height: 630, alt: "Line drawings that answer the pointer: the Exploded figure, its layers lifted apart, with the install commands." }] },
   twitter: { card: "summary_large_image", title: "hairline", description: DESCRIPTION, images: ["/og.png"], creator: "@lucasmarkes" },
   icons: { icon: "/icon.svg" },
 };
