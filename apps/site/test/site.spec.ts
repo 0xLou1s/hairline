@@ -522,61 +522,57 @@ test("on a phone the sidebar is one strip under the top bar, and it follows the 
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
 });
 
-test("the sidebar marks its section with one black dot before its ink text, and no pill", async ({ page }) => {
+test("the sidebar draws the line to its section in its group's colour, and only that group stays lit", async ({ page }) => {
   await page.goto("/docs");
   const nav = page.locator(".doc-sidebar");
   await nav.getByRole("link", { name: "Theme" }).click();
   await expect(nav.getByRole("link", { name: "Theme" })).toHaveAttribute("aria-current", "location");
   const read = () => nav.evaluate((nav) => {
-    const ink = (el: Element) => {
-      const range = document.createRange();
-      range.selectNodeContents(el);
-      return range.getBoundingClientRect();
-    };
+    const style = (el: Element, pseudo?: string) => getComputedStyle(el, pseudo);
     const on = nav.querySelector("a[aria-current]")!;
     const off = nav.querySelector("a:not([aria-current])")!;
-    const dots = [...nav.querySelectorAll(".doc-dot")];
-    const dot = dots[0]?.getBoundingClientRect();
-    const box = on.getBoundingClientRect();
+    const group = on.closest(".rail-group")!;
+    const other = nav.querySelector(".rail-group:not(:has([aria-current]))")!;
+    const scale = (ul: Element) => new DOMMatrixReadOnly(style(ul, "::after").transform).d;
     return {
-      dots: dots.length,
-      size: dot && [Math.round(dot.width), Math.round(dot.height)],
-      fill: dots[0] && getComputedStyle(dots[0]).backgroundColor,
-      round: dots[0] && getComputedStyle(dots[0]).borderRadius,
-      level: dot && Math.abs(dot.top + dot.height / 2 - (box.top + box.height / 2)),
-      clear: dot && ink(on).left - dot.right,
-      inside: dot && dot.left >= box.left,
-      // the text moves aside for the dot: its distance from the link's edge, against an unmarked link's
-      shift: Math.round(ink(on).left - box.left - (ink(off).left - off.getBoundingClientRect().left)),
-      on: [getComputedStyle(on).color, getComputedStyle(on).backgroundColor],
-      off: [getComputedStyle(off).color, getComputedStyle(off).backgroundColor],
+      // the trunk reaches into the marked group alone, and one arm is drawn: the marked row's
+      reach: [...nav.querySelectorAll("ul")].map((ul) => scale(ul) > 0),
+      arms: [...nav.querySelectorAll("li")].filter((li) => style(li, "::after").clipPath === "inset(0px)").map((li) => li.textContent),
+      tip: [style(on, "::before").transform, style(on, "::before").backgroundColor, style(off, "::before").transform],
+      on: style(on).color,
+      off: style(off).color,
+      lit: [style(group.querySelector(".rail-title")!).color, style(group.querySelector("svg")!).filter],
+      dim: [style(other.querySelector(".rail-title")!).color, style(other.querySelector("svg")!).filter],
+      dots: nav.querySelectorAll(".doc-dot").length,
     };
   });
-  await expect.poll(async () => (await read()).shift).toBe(12);
+  // the line has finished drawing: the arm is out and the tip has landed
+  await expect.poll(async () => {
+    const r = await read();
+    return [r.arms, r.tip[0]];
+  }).toEqual([["Theme"], "none"]);
   const r = await read();
-  expect(r.dots).toBe(1);
-  expect(r.size).toEqual([5, 5]);
-  expect(r.fill).toBe("rgb(10, 10, 10)");
-  expect(r.round).toBe("50%");
-  expect(r.level).toBeLessThan(1);
-  expect(r.clear).toBeGreaterThanOrEqual(4);
-  expect(r.inside).toBe(true);
-  expect(r.on).toEqual(["rgb(10, 10, 10)", "rgba(0, 0, 0, 0)"]);
-  expect(r.off).toEqual(["rgb(115, 115, 115)", "rgba(0, 0, 0, 0)"]);
+  expect(r.reach).toEqual([false, false, true]);
+  // the tip is in Reference's amber; the unmarked rows have none
+  expect(r.tip.slice(1)).toEqual(["rgb(245, 158, 11)", "matrix(0, 0, 0, 0, 0, 0)"]);
+  expect(r.on).toBe("rgb(10, 10, 10)");
+  expect(r.off).toBe("rgb(115, 115, 115)");
+  expect(r.lit).toEqual(["rgb(10, 10, 10)", "none"]);
+  expect(r.dim).toEqual(["rgb(82, 82, 82)", "grayscale(1)"]);
+  expect(r.dots).toBe(0);
 });
 
-test("the dot travels from section to section instead of jumping, and under reduced motion it jumps", async ({ page }) => {
+test("the line draws from section to section instead of jumping, and under reduced motion it jumps", async ({ page }) => {
   await page.goto("/docs");
   const nav = page.locator(".doc-sidebar");
   await expect(nav.getByRole("link", { name: "Install" })).toHaveAttribute("aria-current", "location");
+  // Reference's trunk, as it reaches down to Theme
   const flight = () => nav.evaluate((nav) => new Promise<number[]>((done) => {
-    const dot = nav.querySelector(".doc-dot")!;
+    const ul = nav.querySelectorAll("ul")[2];
     const ys: number[] = [];
     const t0 = performance.now();
     const tick = () => {
-      // from the column's top: the column itself moves up as it sticks
-      const r = dot.getBoundingClientRect();
-      ys.push(r.top + r.height / 2 - nav.getBoundingClientRect().top);
+      ys.push(new DOMMatrixReadOnly(getComputedStyle(ul, "::after").transform).d);
       if (performance.now() - t0 < 700) requestAnimationFrame(tick);
       else done(ys);
     };
@@ -584,22 +580,17 @@ test("the dot travels from section to section instead of jumping, and under redu
     // straight to Theme: no section passes through the band on the way, so the mark moves once
     document.getElementById("theme")!.scrollIntoView({ behavior: "instant" });
   }));
-  const centre = (name: string) => nav.getByRole("link", { name }).evaluate((a) => {
-    const r = a.getBoundingClientRect();
-    return r.top + r.height / 2 - a.closest("nav")!.getBoundingClientRect().top;
-  });
-  const from = await centre("Install");
-  const to = await centre("Theme");
   const ys = await flight();
-  expect(ys.filter((y) => y > from + 2 && y < to - 2).length).toBeGreaterThanOrEqual(3);
-  expect(Math.abs(ys[ys.length - 1] - to)).toBeLessThan(1);
+  const to = ys[ys.length - 1];
+  expect(to).toBeGreaterThan(0.3);
+  expect(ys.filter((y) => y > 0.02 && y < to - 0.02).length).toBeGreaterThanOrEqual(3);
 
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
   await expect(nav.getByRole("link", { name: "Install" })).toHaveAttribute("aria-current", "location");
   await page.waitForTimeout(800);
   const jump = await flight();
-  expect(jump.filter((y) => y > from + 2 && y < to - 2)).toEqual([]);
+  expect(jump.filter((y) => y > 0.02 && y < to - 0.02)).toEqual([]);
 });
 
 test("a deep link marks only its own section, with no other marked first", async ({ page }) => {

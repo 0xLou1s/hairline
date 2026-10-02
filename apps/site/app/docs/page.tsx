@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import type { CSSProperties } from "react";
 import { Footer, Topbar } from "@/components/chrome";
-import { Sidebar } from "@/components/sidebar";
+import { Rail, type RailGroup } from "@/components/rail";
+import { SECTIONS, type Group } from "@/lib/docs";
 import { LINKS } from "@/lib/figures";
 import { highlight } from "@/lib/highlight";
 import { tiny } from "@/lib/size";
@@ -9,7 +11,18 @@ import { Api, GettingStarted, Reference } from "./sections";
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL!;
 
+/** A block's place in the header's entrance. */
+const at = (i: number) => ({ "--i": i }) as CSSProperties;
+
 export const metadata: Metadata = { title: "Docs · hairline", alternates: { canonical: "/docs" } };
+
+/** Each group of the rail under its own mark and colour. */
+const MARK: Record<Group, Pick<RailGroup, "icon" | "color">> = {
+  "Getting started": { icon: "bolt", color: "#3b82f6" },
+  API: { icon: "braces", color: "#8b5cf6" },
+  Reference: { icon: "stack", color: "#f59e0b" },
+};
+const RAIL: RailGroup[] = (Object.keys(MARK) as Group[]).map((group) => ({ title: group, ...MARK[group], items: SECTIONS.filter((s) => s.group === group) }));
 
 /**
  * The docs: one page of sections. A Server Component, so every snippet is
@@ -30,23 +43,21 @@ export default async function Docs() {
   return (
     <>
       <Topbar />
-      <div className="docs">
-        <Sidebar />
-        <main className="docs-main">
-          <header className="max-w-[64ch]">
-            <h1 className="text-[36px] font-medium leading-[1.05] tracking-[-0.035em] text-balance md:text-[44px]">Six figures, one set of options.</h1>
-            <p className="mt-4 text-[16px] leading-[1.55] text-muted">
-              Every figure takes the same four options and draws itself in SVG, with no dependencies. Install the package, paste a figure, and turn <code className="doc-code">intensity</code> up or down.
-            </p>
-          </header>
-          <GettingStarted commands={install(SITE)} size={tiny()} quickstart={quickstart} />
-          <Api code={{ reactSignature, react, vanillaSignature, vanilla, cdn }} />
-          <Reference css={css} />
-          <p className="doc-note">
-            Anything missing? <a className="doc-more" href={`${LINKS.github}/issues`}>Open an issue on GitHub</a>.
+      <Rail label="Docs" groups={RAIL} />
+      <main className="col">
+        <header className="hero-rise">
+          <h1 className="col-h1" style={at(0)}>Six figures, one set of options.</h1>
+          <p className="col-lede" style={at(1)}>
+            Every figure takes the same four options and draws itself in SVG, with no dependencies. Install the package, paste a figure, and turn <code className="doc-code">intensity</code> up or down.
           </p>
-        </main>
-      </div>
+        </header>
+        <GettingStarted commands={install(SITE)} size={tiny()} quickstart={quickstart} />
+        <Api code={{ reactSignature, react, vanillaSignature, vanilla, cdn }} />
+        <Reference css={css} />
+        <p className="col-end">
+          Anything missing? <a className="doc-more" href={`${LINKS.github}/issues`}>Open an issue on GitHub</a>.
+        </p>
+      </main>
       <Footer />
     </>
   );

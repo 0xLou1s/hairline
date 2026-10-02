@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { Exploded, Phosphor, Riffle, Slow, Terrain, Turntable } from "@lucasmarkes/hairline/react";
+import { Anchor } from "@/components/anchor";
 import { CodeBlock } from "@/components/code-block";
 import { Install } from "@/components/install";
 import { Tabs, type Tab } from "@/components/tabs";
@@ -9,12 +10,15 @@ import { PACKAGE } from "@/lib/snippets";
 
 const SMALL = { riffle: Riffle, terrain: Terrain, exploded: Exploded, phosphor: Phosphor, slow: Slow, turntable: Turntable };
 
-/** A section takes its title from SECTIONS, the list the sidebar reads, so the two always agree. */
+/** A section takes its title from SECTIONS, the list the rail reads, so the two always agree. Its link copies from beside its title. */
 function Section({ id, children }: { id: string; children: ReactNode }) {
   const { title } = SECTIONS.find((s) => s.id === id)!;
   return (
     <section id={id} aria-labelledby={`${id}-title`} className="doc-section">
-      <h2 id={`${id}-title`} className="doc-h2">{title}</h2>
+      <div className="doc-head">
+        <h2 id={`${id}-title`} className="doc-h2">{title}</h2>
+        <Anchor id={id} title={title} />
+      </div>
       {children}
     </section>
   );
@@ -38,7 +42,7 @@ export function GettingStarted({ commands, size, quickstart }: { commands: { lab
       </Section>
       <Section id="options">
         <p className="doc-p">Every figure takes the same four options, all optional.</p>
-        <div className="overflow-x-auto">
+        <div className="tbl-card">
           <table className="props" data-options>
             <thead>
               <tr><th>Option</th><th>Type</th><th>Default</th><th>What it does</th></tr>
@@ -87,22 +91,22 @@ export function Reference({ css }: { css: string }) {
     <>
       <Section id="figures">
         <p className="doc-p">Every figure takes <C>intensity</C>, from 0 to 1. Here is what it turns up.</p>
-        <ul className="grid">
+        <ul className="grid gap-[10px]">
           {FIGURES.map((doc) => {
             const Small = SMALL[doc.id];
             return (
               <li key={doc.id} className="figure-row" data-row={doc.id}>
                 <div>
-                  <h3 className="text-[20px] font-medium leading-none tracking-[-0.02em]">{doc.name}</h3>
-                  <p className="mt-3 text-[15px] leading-[1.5]">Higher intensity: {doc.stronger}</p>
-                  <p className="mt-1 max-w-[52ch] text-[14px] leading-[1.55] text-muted">{doc.summary}</p>
+                  <h3 className="figure-name">{doc.name}</h3>
+                  <p className="figure-text"><b>Higher intensity:</b> {doc.stronger}</p>
+                  <p className="figure-text">{doc.summary}</p>
                 </div>
-                <div className="tile w-full max-w-[240px] justify-self-end"><Small /></div>
+                <div className="tile"><Small /></div>
               </li>
             );
           })}
         </ul>
-        <div className="table-scroll" tabIndex={0} role="region" aria-label="What intensity sets in each figure">
+        <div className="table-scroll tbl-card" tabIndex={0} role="region" aria-label="What intensity sets in each figure">
           <table className="intensity" data-intensity>
             <thead>
               <tr><th>Figure</th><th>Parameter</th><th>0</th><th>0.5</th><th>1</th></tr>
@@ -124,7 +128,7 @@ export function Reference({ css }: { css: string }) {
         <p className="doc-p">
           Six custom properties, set on the figure or on any ancestor. Without them a figure is light, or dark when an ancestor has class <C>dark</C> or <C>data-theme=&quot;dark&quot;</C>, or when the page&rsquo;s <C>color-scheme</C> is dark.
         </p>
-        <div className="overflow-x-auto">
+        <div className="tbl-card">
           <table className="props" data-tokens>
             <thead>
               <tr><th>Property</th><th>Light</th><th>Role</th></tr>
