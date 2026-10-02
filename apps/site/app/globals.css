@@ -42,7 +42,9 @@ em { font-style: italic; }
 .topbar {
   position: sticky; top: 0; z-index: 10;
   display: flex; align-items: center; justify-content: space-between;
-  height: var(--topbar); padding: 0 clamp(18px, 5vw, 28px);
+  /* the bar spans the page, its contents keep to the 1080px column the footer, the docs and the skill page use */
+  --gutter: clamp(18px, 5vw, 28px);
+  height: var(--topbar); padding: 0 max(var(--gutter), calc((100% - 1080px) / 2 + var(--gutter)));
   background: color-mix(in srgb, var(--color-canvas) 82%, transparent);
   backdrop-filter: blur(12px);
 }
@@ -53,6 +55,8 @@ em { font-style: italic; }
 /* a 40px target around each link, the name and the footer's links, taller than what is drawn */
 a.topbar-link::after { content: ""; position: absolute; inset: -5px 0; }
 .topbar > a { position: relative; }
+/* the last link's 10px padding is target, not ink: pull the nav out by it so the GitHub mark ends on the column's edge, as the footer's last link does */
+.topbar nav { margin-right: -10px; }
 .topbar > a::after { content: ""; position: absolute; inset: -9px -6px; }
 /* the docs' underline, kept clear until the pointer is on the link */
 footer a { position: relative; text-decoration: underline; text-decoration-color: transparent; text-underline-offset: 4px; transition: text-decoration-color 150ms ease; }
