@@ -2,7 +2,9 @@ import type { CSSProperties } from "react";
 import { Footer, GitHub, Topbar } from "@/components/chrome";
 import { Inspector } from "@/components/inspector";
 import { Install } from "@/components/install";
+import { SkillPrompt } from "@/components/skill-prompt";
 import { LINKS } from "@/lib/figures";
+import { COMMAND, EXAMPLES } from "@/lib/skill";
 import { install } from "@/lib/snippets";
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL!;
@@ -31,10 +33,7 @@ export default function Page() {
             <a className="btn btn-primary press" href="/docs">Get started</a>
             <a className="btn press" href={LINKS.github}><GitHub /> GitHub</a>
           </div>
-          {/* a quiet line, not a third button: the two above stay the way in */}
-          <p className="mt-5 text-[14px] text-muted" style={at(4)}>
-            <a className="hover:text-ink" href="/skill">Or make your own with the skill →</a>
-          </p>
+          <SkillPrompt command={COMMAND} ideas={EXAMPLES.map((e) => e.idea)} style={at(4)} />
         </section>
 
         <section id="try" aria-label="Try it" className="scroll-mt-[calc(var(--topbar)+24px)]">
