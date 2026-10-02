@@ -43,7 +43,7 @@ it("look.md and SKILL.md name the validator's checks and the bench's parameters 
   expect(text("look.md")).toContain("at=");
   for (const param of ["?intensity=0", "?intensity=1", "?theme=dark", "?theme=light"]) expect(text("look.md"), param).toContain(param);
   for (const param of ["intensity", "theme"]) expect(text("bench.html"), param).toContain(`params.get("${param}")`);
-  for (const id of ["kernel", "parse", "bench", "text", "paint", "outside", "clock", "hit", "readout", "handle", "declare", "length"]) {
+  for (const id of ["kernel", "parse", "bench", "text", "paint", "outside", "clock", "tween", "hit", "readout", "handle", "declare", "length"]) {
     expect(text("validate.mjs"), id).toMatch(new RegExp(`^ \\* {3}${id} `, "m"));
   }
 });
