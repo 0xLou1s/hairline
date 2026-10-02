@@ -6,6 +6,7 @@ import { Command } from "@/components/command";
 import { ExampleFrame } from "@/components/example-frame";
 import { Rail } from "@/components/rail";
 import { LINKS } from "@/lib/figures";
+import { share } from "@/lib/share";
 import { COMMAND, FOLDER, INSTALL, STEPS, SUMMARY, USE, examples } from "@/lib/skill";
 
 /** The file the skill writes, set as code where a line names it. USE stays plain text for llms.txt. */
@@ -19,7 +20,7 @@ const named = (line: string) => {
 /** A block's place in the header's entrance. */
 const at = (i: number) => ({ "--i": i }) as CSSProperties;
 
-export const metadata: Metadata = { title: "Make your own figure · hairline", description: SUMMARY, alternates: { canonical: "/skill" } };
+export const metadata: Metadata = share("/skill", "Make your own figure", SUMMARY);
 
 const RAIL = [
   {

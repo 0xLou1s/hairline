@@ -5,6 +5,7 @@ import { Rail, type RailGroup } from "@/components/rail";
 import { SECTIONS, type Group } from "@/lib/docs";
 import { LINKS } from "@/lib/figures";
 import { highlight } from "@/lib/highlight";
+import { share } from "@/lib/share";
 import { tiny } from "@/lib/size";
 import { CDN, CSS, QUICKSTART, REACT, REACT_SIGNATURE, VANILLA, VANILLA_SIGNATURE, install } from "@/lib/snippets";
 import { Api, GettingStarted, Reference } from "./sections";
@@ -14,7 +15,7 @@ const SITE = process.env.NEXT_PUBLIC_SITE_URL!;
 /** A block's place in the header's entrance. */
 const at = (i: number) => ({ "--i": i }) as CSSProperties;
 
-export const metadata: Metadata = { title: "Docs · hairline", alternates: { canonical: "/docs" } };
+export const metadata: Metadata = share("/docs", "Docs");
 
 /** Each group of the rail under its own mark and colour. */
 const MARK: Record<Group, Pick<RailGroup, "icon" | "color">> = {
