@@ -4,7 +4,7 @@ Six isometric line figures that answer the pointer. For React and for anything w
 
 [![npm](https://img.shields.io/npm/v/@lucasmarkes/hairline)](https://www.npmjs.com/package/@lucasmarkes/hairline)
 [![CI](https://github.com/lucasmarkes/hairline/actions/workflows/ci.yml/badge.svg)](https://github.com/lucasmarkes/hairline/actions/workflows/ci.yml)
-[![license](https://img.shields.io/npm/l/@lucasmarkes/hairline)](./LICENSE)
+[![license](https://img.shields.io/github/license/lucasmarkes/hairline)](./LICENSE)
 
 ![The six figures: a tray of cards, a field of pillars, a window in layers, a dot matrix, a conveyor belt and a turntable](https://raw.githubusercontent.com/lucasmarkes/hairline/main/assets/hero.gif)
 
@@ -107,8 +107,6 @@ The figure's styles have no specificity, so any rule of yours wins without `!imp
 - [hairline.lucasmarkes.com](https://hairline.lucasmarkes.com): every figure live, an inspector that writes the snippet for you, and a CDN example.
 - [The essay](https://lucasmarkes.com/lab/hairline): how the figures are drawn, and why with lines.
 - [CHANGELOG.md](https://github.com/lucasmarkes/hairline/blob/main/CHANGELOG.md) and [CONTRIBUTING.md](https://github.com/lucasmarkes/hairline/blob/main/CONTRIBUTING.md).
-
-The style is a study of the illustrations on [Linear](https://linear.app)'s home page.
 
 ## License
 
