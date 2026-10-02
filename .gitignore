@@ -16,3 +16,6 @@ playwright-report/
 # Copied in from the root by the package's prepack
 packages/hairline/README.md
 packages/hairline/LICENSE
+
+# Specs and plans from the superpowers skills: kept on the machine, not in the repo
+docs/superpowers/
