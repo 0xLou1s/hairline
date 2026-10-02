@@ -11,7 +11,7 @@ import { llms, scale } from "@/lib/llms";
 import { tiny } from "@/lib/size";
 import { COMMAND, EXAMPLES, INSTALL } from "@/lib/skill";
 import { highlight } from "@/lib/highlight";
-import { CDN, CSS, QUICKSTART, REACT, REACT_SIGNATURE, VANILLA, VANILLA_SIGNATURE, install, snippet } from "@/lib/snippets";
+import { CDN, CSS, QUICKSTART, REACT, REACT_SIGNATURE, VANILLA, VANILLA_SIGNATURE, install } from "@/lib/snippets";
 
 /** The docs describe the package, and these check that nothing was written by hand around it. */
 
@@ -36,31 +36,6 @@ describe("the options table", () => {
 
   it("gives intensity's default as 0.5", () => {
     expect(OPTIONS[0]).toMatchObject({ name: "intensity", type: "number", default: "0.5" });
-  });
-});
-
-describe("the inspector's snippet", () => {
-  it("is the bare component at the defaults", () => {
-    expect(snippet("Terrain", { intensity: 0.5, theme: "auto" })).toContain("<Terrain />");
-  });
-
-  it("leaves out an intensity that reads as 0.5 at the slider's precision", () => {
-    expect(snippet("Terrain", { intensity: 0.1 + 0.4, theme: "auto" })).toContain("<Terrain />");
-    expect(snippet("Terrain", { intensity: 0.5000001, theme: "auto" })).toContain("<Terrain />");
-  });
-
-  it("shows an intensity of 0, which is not the default", () => {
-    expect(snippet("Riffle", { intensity: 0, theme: "auto" })).toContain("<Riffle intensity={0} />");
-  });
-
-  it("shows what differs, intensity first, at two decimals", () => {
-    expect(snippet("Slow", { intensity: 0.1 + 0.2, theme: "dark" })).toContain('<Slow intensity={0.3} theme="dark" />');
-    expect(snippet("Slow", { intensity: 0.55, theme: "light" })).toContain('<Slow intensity={0.55} theme="light" />');
-    expect(snippet("Slow", { intensity: 1, theme: "auto" })).toContain("<Slow intensity={1} />");
-  });
-
-  it("imports what it renders", () => {
-    expect(snippet("Exploded", { intensity: 0.5, theme: "auto" })).toMatch(/^import \{ Exploded \} from "@lucasmarkes\/hairline\/react";/);
   });
 });
 

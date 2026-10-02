@@ -21,10 +21,7 @@ function watch(page: Page): string[] {
   return noise;
 }
 
-/** The figure's drawing, without the ids that differ between mounts. */
-const drawing = (page: Page) => page.locator("[data-inspector] [data-hairline] > svg").evaluate((svg) => svg.innerHTML.replace(/hl-fd\d+/g, ""));
-
-test("the home prerenders an empty box, then draws the inspector's figure with a clean console", async ({ page, request }) => {
+test("the home prerenders an empty box, then draws the reel's figure with a clean console", async ({ page, request }) => {
   const html = await (await request.get("/")).text();
   // the figure's box is empty on the server
   expect(html.match(/<div style="aspect-ratio:5 \/ 4"><\/div>/g)).toHaveLength(1);
@@ -91,130 +88,89 @@ test("the docs' code is in greys: every token's colour has equal red, green and 
   expect(tinted).toEqual([]);
 });
 
-test("the inspector's figure picker picks the figure, and the snippet follows", async ({ page }) => {
-  await page.goto("/");
-  const inspector = page.locator("[data-inspector]");
-  await expect(inspector.locator("[data-snippet] pre")).toContainText("<Terrain />");
-  const figures = inspector.getByRole("radiogroup", { name: "Figure" });
-  await figures.getByRole("radio", { name: "Riffle" }).click();
-  await expect(figures.getByRole("radio", { name: "Riffle" })).toHaveAttribute("aria-checked", "true");
-  await expect(inspector.locator("[data-figure]")).toHaveAttribute("data-figure", "riffle");
-  await expect(inspector.locator("[data-hairline]")).toHaveCount(1);
-  // the arrow keys walk the choice
-  await figures.getByRole("radio", { name: "Riffle" }).press("ArrowRight");
-  await expect(inspector.locator("[data-figure]")).toHaveAttribute("data-figure", "terrain");
-  await expect(figures.getByRole("radio", { name: "Terrain" })).toBeFocused();
-  await figures.getByRole("radio", { name: "Terrain" }).press("ArrowLeft");
-  await expect(inspector.locator("[data-snippet] pre")).toContainText('import { Riffle } from "@lucasmarkes/hairline/react";');
-  await expect(inspector.locator("[data-snippet] pre")).toContainText("<Riffle />");
-});
-
-test("the inspector's slider reaches the figure, and the snippet shows it", async ({ page }) => {
-  await page.goto("/");
-  const inspector = page.locator("[data-inspector]");
-  const slider = inspector.getByRole("slider", { name: "Intensity" });
-  const stage = inspector.locator("[data-hairline]");
-  // measured at each hover: the slider sits under the figure, and filling it can scroll the page
-  const hover = async () => {
-    await stage.scrollIntoViewIfNeeded();
-    const box = (await stage.boundingBox())!;
-    await page.mouse.move(box.x + 4, box.y + 4);
-    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2, { steps: 4 });
-    await page.waitForTimeout(1200);
-  };
-
-  await slider.fill("0");
-  await expect(inspector.locator("output")).toHaveText("0.00");
-  await expect(inspector.locator("[data-snippet] pre")).toContainText("<Terrain intensity={0} />");
-  await hover();
-  const subtle = await drawing(page);
-
-  await slider.fill("1");
-  await expect(inspector.locator("[data-snippet] pre")).toContainText("<Terrain intensity={1} />");
-  await hover();
-  expect(await drawing(page)).not.toBe(subtle);
-
-  await slider.fill("0.5");
-  await expect(inspector.locator("[data-snippet] pre")).toContainText("<Terrain />");
-});
-
-test("the inspector's theme switch repaints the figure", async ({ page }) => {
-  await page.goto("/");
-  const inspector = page.locator("[data-inspector]");
-  await inspector.getByRole("radio", { name: "Dark" }).click();
-  await expect(inspector.locator("[data-snippet] pre")).toContainText('<Terrain theme="dark" />');
-  const plate = () => inspector.locator("[data-hairline] svg path").first().evaluate((el) => getComputedStyle(el).fill);
-  await expect.poll(plate).toBe("rgb(8, 9, 10)");
-  await inspector.getByRole("radio", { name: "Auto" }).click();
-  await expect.poll(plate).toBe("rgb(255, 255, 255)");
-});
-
-/** Waits for every transition and entrance on the page to finish. */
-const settled = (page: Page) => expect.poll(() => page.evaluate(() => document.getAnimations().filter((a) => a.playState === "running").length)).toBe(0);
-
-/** Where a picker's highlight shows: its box, less what its clip-path cuts from each side. */
-const lit = (page: Page, name: string) =>
-  page.getByRole("radiogroup", { name }).evaluate((group) => {
-    const hl = group.querySelector<HTMLElement>(".slide-hl")!;
-    const box = hl.getBoundingClientRect();
-    const inset = getComputedStyle(hl).clipPath.match(/^inset\((.*?)(?: round .*)?\)$/)?.[1].split(" ").map(parseFloat) ?? [0];
-    const [t, r = t, b = t, l = r] = inset;
-    return { left: box.left + l, right: box.right - r, top: box.top + t, bottom: box.bottom - b };
-  });
-const checked = (page: Page, name: string) =>
-  page.getByRole("radiogroup", { name }).locator('[aria-checked="true"]').evaluate((el) => {
-    const box = el.getBoundingClientRect();
-    return { left: box.left, right: box.right, top: box.top, bottom: box.bottom };
-  });
-const near = (a: Record<string, number>, b: Record<string, number>) => {
-  for (const k of Object.keys(b)) expect(Math.abs(a[k] - b[k]), k).toBeLessThan(0.75);
-};
-
-test("a picker's highlight lands on the checked option by moving and clipping, never by animating its size", async ({ page }) => {
-  await page.goto("/");
-  await settled(page);
-  for (const name of ["Figure", "Theme"]) {
-    const group = page.getByRole("radiogroup", { name });
-    expect(await group.locator(".slide-hl").evaluate((el) => getComputedStyle(el).transitionProperty)).not.toMatch(/width|height/);
-    for (const radio of await group.getByRole("radio").all()) {
-      await radio.click();
-      await settled(page);
-      near(await lit(page, name), await checked(page, name));
-    }
-  }
-});
-
-test("the arrow keys move a picker's highlight at once, and a click still slides it", async ({ page }) => {
-  await page.goto("/");
-  await settled(page);
-  const figures = page.getByRole("radiogroup", { name: "Figure" });
-  const hl = figures.locator(".slide-hl");
-  await figures.getByRole("radio", { name: "Terrain" }).press("ArrowRight");
-  expect(await hl.evaluate((el) => el.getAnimations().length)).toBe(0);
-  near(await lit(page, "Figure"), await checked(page, "Figure"));
-  await figures.getByRole("radio", { name: "Riffle" }).click();
-  expect(await hl.evaluate((el) => el.getAnimations().length)).toBeGreaterThan(0);
-});
-
-test("the theme switch repaints the plate in the same frame as the figure", async ({ page }) => {
-  await page.goto("/");
-  await settled(page);
-  const inspector = page.locator("[data-inspector]");
-  await inspector.getByRole("radio", { name: "Dark" }).click();
-  // the stage's own entrance has finished; what is left would be a transition
-  expect(await inspector.locator(".s-stage").evaluate((el) => el.getAnimations().filter((a) => a instanceof CSSTransition).length)).toBe(0);
-});
+/** Waits for every transition and entrance on the page to finish: all but the reel's clock, which runs as long as the reel plays. */
+const settled = (page: Page) =>
+  expect.poll(() => page.evaluate(() => document.getAnimations().filter((a) => a.playState === "running" && !(a.effect as KeyframeEffect).target?.closest(".reel-ticks")).length)).toBe(0);
 
 test("the home's entrance settles within 1.4s, with its hero blocks 70ms apart", async ({ page }) => {
   await page.goto("/");
   const timing = await page.evaluate(() => {
     const of = (el: Element) => el.getAnimations().map((a) => a.effect!.getComputedTiming());
     const hero = [...document.querySelectorAll(".hero-rise > *")].map((el) => Math.min(...of(el).map((t) => Number(t.delay))));
-    const end = Math.max(...[...document.querySelectorAll(".hero-rise > *, .enter")].flatMap((el) => of(el).map((t) => Number(t.endTime))));
+    const end = Math.max(...[...document.querySelectorAll(".hero-rise > *")].flatMap((el) => of(el).map((t) => Number(t.endTime))));
     return { gaps: hero.slice(1).map((d, n) => d - hero[n]), end };
   });
   expect(timing.gaps).toEqual([70, 70, 70, 70]);
   expect(timing.end).toBeLessThanOrEqual(1400);
+});
+
+test("the reel plays the six figures in turn, holds under the pointer, and stops on a picked tick", async ({ page }) => {
+  await page.goto("/");
+  const reel = page.locator("[data-reel]");
+  const figure = reel.locator(".reel-stage");
+  const ticks = reel.getByRole("group", { name: "Figures" }).getByRole("button");
+  await expect(ticks).toHaveCount(6);
+  await expect(figure).toHaveAttribute("data-figure", "riffle");
+  await expect(ticks.first()).toHaveAttribute("aria-current", "true");
+  await expect(reel.locator(".reel-cap[data-on]")).toContainText("Riffle.");
+
+  // the tick's fill is the clock: its end moves the reel on
+  const fill = reel.locator(".reel-tick[aria-current] .reel-fill");
+  await expect.poll(() => fill.evaluate((el) => el.getAnimations().length)).toBe(1);
+  await fill.evaluate((el) => el.getAnimations()[0].finish());
+  await expect(figure).toHaveAttribute("data-figure", "terrain");
+  await expect(reel.locator(".reel-cap[data-on]")).toContainText("Terrain.");
+
+  await figure.hover();
+  await expect(reel).toHaveAttribute("data-paused", "");
+  await expect(fill).toHaveCSS("animation-play-state", "paused");
+  await expect(figure).toHaveAttribute("data-figure", "terrain");
+  await page.mouse.move(0, 0);
+  await expect(reel).not.toHaveAttribute("data-paused");
+
+  await ticks.nth(4).click();
+  await expect(figure).toHaveAttribute("data-figure", "slow");
+  await expect(reel).not.toHaveAttribute("data-playing");
+  // the clock is gone: no fill runs its keyframes (the picked tick only eases full)
+  expect(await reel.locator(".reel-fill").evaluateAll((els) => els.flatMap((el) => el.getAnimations()).filter((a) => a instanceof CSSAnimation).length)).toBe(0);
+  await expect(figure).toHaveAttribute("data-figure", "slow");
+  await expect(reel.locator("[data-hairline]")).toHaveCount(1);
+});
+
+test("under reduced motion the reel never starts", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
+  await expect(page.locator("[data-reel]")).not.toHaveAttribute("data-playing");
+  await expect(page.locator(".reel-stage")).toHaveAttribute("data-figure", "riffle");
+});
+
+test("a change of figure never moves the page: the reel and the page hold their height through all six", async ({ page }) => {
+  for (const width of [1440, 390, 320]) {
+    await page.setViewportSize({ width, height: 800 });
+    await page.goto("/");
+    const ticks = page.locator(".reel-tick");
+    const heights = new Set<string>();
+    for (let i = 0; i < 6; i++) {
+      await ticks.nth(i).click();
+      await expect(page.locator(".reel-stage [data-hairline] > svg")).toHaveCount(1);
+      heights.add(await page.evaluate(() => `${document.documentElement.scrollHeight} ${Math.round(document.querySelector(".reel")!.getBoundingClientRect().height)}`));
+    }
+    expect([...heights], `${width}px`).toHaveLength(1);
+  }
+});
+
+test("the command and Get started are one height, and on a wide screen they share a line", async ({ page }) => {
+  for (const width of [1200, 320]) {
+    await page.setViewportSize({ width, height: 800 });
+    await page.goto("/");
+    // the row has risen into place, so both are read where they come to rest
+    await settled(page);
+    const pill = (await page.locator(".hero-get .pill").boundingBox())!;
+    const button = (await page.locator(".hero-get").getByRole("link", { name: "Get started" }).boundingBox())!;
+    expect(pill.height, `${width}px`).toBe(36);
+    expect(button.height, `${width}px`).toBe(36);
+    if (width === 1200) expect(pill.y).toBeCloseTo(button.y, 0);
+  }
 });
 
 test("a hero button's text holds still through a press: no jump when its layer comes and goes", async ({ page }) => {
@@ -222,8 +178,8 @@ test("a hero button's text holds still through a press: no jump when its layer c
   await settled(page);
   // the press is what is watched; following the link would end the recording
   await page.evaluate(() => document.addEventListener("click", (e) => e.preventDefault(), true));
-  for (const name of ["Get started", "GitHub"]) {
-    const button = page.locator(".hero-actions").getByRole("link", { name });
+  for (const name of ["Get started"]) {
+    const button = page.locator(".hero-get").getByRole("link", { name });
     const box = (await button.boundingBox())!;
     await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
     await page.waitForTimeout(100);
@@ -260,7 +216,7 @@ test("a hero button's text holds still through a press: no jump when its layer c
       for (let k = 0; k < before.length; k += 4) worst = Math.max(worst, Math.abs(before[k] - after[k]));
       return worst;
     }, { frames: release.slice(-2), box, viewport });
-    expect(worst, name).toBeLessThan(64);
+    expect(worst, String(name)).toBeLessThan(64);
   }
 });
 
@@ -292,10 +248,6 @@ test("without a clipboard, copy selects the text instead and throws nothing", as
   await copy.click();
   await expect(copy).not.toHaveAttribute("data-copied");
   expect(await page.evaluate(() => window.getSelection()?.toString())).toBe("npm i @lucasmarkes/hairline");
-
-  const snippet = page.locator("[data-snippet]");
-  await snippet.getByRole("button", { name: "Copy snippet" }).click();
-  expect(await page.evaluate(() => window.getSelection()?.toString())).toContain("<Terrain />");
   expect(noise).toEqual([]);
 });
 
@@ -327,7 +279,7 @@ test("llms.txt and the registry item are served", async ({ request }) => {
   expect(item.files[0].content).toContain('"use client"');
 });
 
-test("the page fits a phone, with the longest install command and every control", async ({ page }) => {
+test("the page fits a phone, with the longest install command, its buttons and the reel's ticks", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 800 });
   await page.goto("/");
   const width = () => page.evaluate(() => document.documentElement.scrollWidth);
@@ -338,16 +290,14 @@ test("the page fits a phone, with the longest install command and every control"
   await expect(pill).toHaveAttribute("data-install", "shadcn");
   expect(await width()).toBeLessThanOrEqual(390);
 
-  const inspector = page.locator("[data-inspector]");
-  for (const name of ["Turntable", "Dark"]) {
-    const control = inspector.getByRole("radio", { name });
-    await control.click();
+  const controls = page.locator(".hero-get .btn, .reel-tick");
+  await expect(controls).toHaveCount(7);
+  for (const control of await controls.all()) {
     const box = (await control.boundingBox())!;
     expect(box.x).toBeGreaterThanOrEqual(0);
     expect(box.x + box.width).toBeLessThanOrEqual(390);
   }
-  await inspector.getByRole("slider", { name: "Intensity" }).fill("0.85");
-  await expect(inspector.locator("[data-snippet] pre")).toContainText('<Turntable intensity={0.85} theme="dark" />');
+  await page.getByRole("button", { name: "Turntable" }).click();
   expect(await width()).toBeLessThanOrEqual(390);
 });
 
@@ -455,7 +405,7 @@ test("the figures' link goes to the home's figure", async ({ page }) => {
   await page.goto("/docs");
   await page.getByRole("link", { name: "Try them on the home page →" }).click();
   await expect(page).toHaveURL(/\/#try$/);
-  await expect(page.locator("#try [data-inspector]")).toBeInViewport();
+  await expect(page.locator("#try [data-reel]")).toBeInViewport();
 });
 
 test("the sidebar's links land on their section under the top bar and mark it, and scrolling moves the mark", async ({ page }) => {
@@ -533,7 +483,11 @@ test("the sidebar draws the line to its section in its group's colour, and only 
     const off = nav.querySelector("a:not([aria-current])")!;
     const group = on.closest(".rail-group")!;
     const other = nav.querySelector(".rail-group:not(:has([aria-current]))")!;
-    const scale = (ul: Element) => new DOMMatrixReadOnly(style(ul, "::after").transform).d;
+    const scale = (ul: Element) => {
+      const after = style(ul, "::after");
+      const bottom = after.clipPath.match(/^inset\(\S+ \S+ (\S+)/)?.[1] ?? "0px";
+      return 1 - (bottom.endsWith("%") ? parseFloat(bottom) / 100 : parseFloat(bottom) / parseFloat(after.height));
+    };
     return {
       // the trunk reaches into the marked group alone, and one arm is drawn: the marked row's
       reach: [...nav.querySelectorAll("ul")].map((ul) => scale(ul) > 0),
@@ -572,7 +526,10 @@ test("the line draws from section to section instead of jumping, and under reduc
     const ys: number[] = [];
     const t0 = performance.now();
     const tick = () => {
-      ys.push(new DOMMatrixReadOnly(getComputedStyle(ul, "::after").transform).d);
+      // the trunk is a border uncovered from the top: its reach is what the clip-path's bottom inset leaves
+      const after = getComputedStyle(ul, "::after");
+      const bottom = after.clipPath.match(/^inset\(\S+ \S+ (\S+)/)?.[1] ?? "0px";
+      ys.push(1 - (bottom.endsWith("%") ? parseFloat(bottom) / 100 : parseFloat(bottom) / parseFloat(after.height)));
       if (performance.now() - t0 < 700) requestAnimationFrame(tick);
       else done(ys);
     };
@@ -582,7 +539,7 @@ test("the line draws from section to section instead of jumping, and under reduc
   }));
   const ys = await flight();
   const to = ys[ys.length - 1];
-  expect(to).toBeGreaterThan(0.3);
+  expect(to).toBeGreaterThan(0.25);
   expect(ys.filter((y) => y > 0.02 && y < to - 0.02).length).toBeGreaterThanOrEqual(3);
 
   await page.emulateMedia({ reducedMotion: "reduce" });
@@ -658,8 +615,8 @@ test.describe("on a 2x screen", () => {
   // a twitch on a block that looks settled, so both happen while the block is still fading in.
   test("the home's blocks come home before their blur clears, and clear it while still fading in", async ({ page }) => {
     await page.goto("/");
-    const blocks = page.locator(".hero-rise > *, .enter");
-    expect(await blocks.count()).toBeGreaterThanOrEqual(7);
+    const blocks = page.locator(".hero-rise > *");
+    expect(await blocks.count()).toBe(5);
     const late = await blocks.evaluateAll((els) => els.flatMap((el) => {
       const anims = el.getAnimations();
       anims.forEach((a) => a.pause());

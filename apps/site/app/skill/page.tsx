@@ -93,11 +93,6 @@ export default function Skill() {
             <article key={e.file} className="card ex" data-example={e.name} aria-label={e.prompt}>
               <div className="ex-h">
                 <Command code={e.prompt} kind="prompt" label={`Copy prompt: ${e.idea}`} />
-                <a className="ex-open" href={e.href} target="_blank" rel="noreferrer" aria-label={`Open ${e.file} in a new tab`} title="Open the file">
-                  <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <path d="M6 3.75H4.25a1.5 1.5 0 0 0-1.5 1.5v6.5a1.5 1.5 0 0 0 1.5 1.5h6.5a1.5 1.5 0 0 0 1.5-1.5V10M9 2.75h4.25V7M13 3 7.5 8.5" />
-                  </svg>
-                </a>
               </div>
               <div className="ex-b">
                 <p className="ex-name">{e.name}</p>

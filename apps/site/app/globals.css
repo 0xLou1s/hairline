@@ -93,12 +93,6 @@ footer a::after { content: ""; position: absolute; inset: -12px -8px; }
 @media (hover: hover) { .pill-manager:hover { background: var(--color-stone); } }
 .pill-manager:active { transform: scale(0.96); }
 
-.slider { width: 100%; height: 18px; appearance: none; background: transparent; cursor: pointer; }
-.slider::-webkit-slider-runnable-track { height: 2px; border-radius: 1px; background: rgba(0, 0, 0, 0.16); }
-.slider::-webkit-slider-thumb { appearance: none; width: 16px; height: 16px; margin-top: -7px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2), var(--lift); }
-.slider::-moz-range-track { height: 2px; border-radius: 1px; background: rgba(0, 0, 0, 0.16); }
-.slider::-moz-range-thumb { width: 16px; height: 16px; border: 0; border-radius: 50%; background: #fff; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2); }
-
 /* Code: a frame, a bar with the title and a copy icon, the code. Line numbers are a counter in ::before, so they are never selected or copied. */
 .code { overflow: hidden; border-radius: 12px; background: #fafafa; box-shadow: inset 0 0 0 1px var(--color-stone); }
 .code-bar { display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 4px 4px 4px 14px; border-bottom: 1px solid var(--color-stone); }
@@ -108,6 +102,12 @@ footer a::after { content: ""; position: absolute; inset: -12px -8px; }
 .code-tab[aria-selected="true"] { background: #fff; color: var(--color-ink); box-shadow: 0 0 0 1px var(--color-stone); }
 @media (hover: hover) { .code-tab:hover { color: var(--color-ink); } }
 .code-tab:active { transform: scale(0.96); }
+/* The tabs' highlight slides to the selected tab, under the tabs and never in the pointer's way. */
+.slide { position: relative; display: flex; isolation: isolate; }
+.slide-hl { position: absolute; top: 0; left: 0; z-index: -1; pointer-events: none; }
+.slide[data-ready] .slide-hl, .slide[data-ready] .slide-hl::before { transition: transform 200ms var(--ease-out), clip-path 200ms var(--ease-out); }
+/* a choice made with the keyboard lands at once */
+.slide[data-keyed] .slide-hl, .slide[data-keyed] .slide-hl::before { transition: none; }
 /* Once measured, the selected tab's white plate and its ring are one highlight that slides: a stone layer clipped to
    the tab plus a pixel, and a white one over it clipped to the tab. */
 .code-tabs[data-hl] .code-tab[aria-selected="true"] { background: none; box-shadow: none; }
@@ -208,18 +208,21 @@ footer a::after { content: ""; position: absolute; inset: -12px -8px; }
 /* The links hang off their group's mark on a hairline: a trunk down from the mark's centre, and an arm that bends out to
    each link. Each row draws its own stretch of trunk and its arm, from 6px over the row before's centre, so the rows
    stack into one line. The marked row's line is drawn in the group's colour: the trunk reaches down to the row's bend,
-   then the arm draws out, then a tip lands at its end; the line to a row left behind draws back the other way. */
+   then the arm draws out, then a tip lands at its end; the line to a row left behind draws back the other way. The
+   trunk is a border, revealed by a clip, not a scaled bar, on a box as wide as the rows' own, so it lands on the same
+   device pixels as the grey line and the arms' borders at any zoom or column offset, with no grey showing beside it. */
 .rail ul { position: relative; padding-left: 24px; }
 .rail li { position: relative; }
 .rail li::before, .rail li::after { content: ""; position: absolute; left: -17px; width: 11px; border: 0 solid #e5e5e5; border-width: 0 0 1px 1px; border-bottom-left-radius: 6px; pointer-events: none; }
 .rail li::before { top: calc(-50% - 6px); bottom: 50%; }
 .rail li:first-child::before { top: -2px; }
-.rail li::after { top: calc(50% - 6px); height: 6px; border-color: var(--gc); clip-path: inset(0 100% 0 0); }
+/* over the next row's grey stretch, which starts at this row's bend and would otherwise cross the coloured arm */
+.rail li::after { top: calc(50% - 6px); height: 6px; z-index: 1; border-color: var(--gc); clip-path: inset(0 100% 0 0); }
 .rail li:has(> [aria-current])::after { clip-path: inset(0); }
-.rail ul::after { content: ""; position: absolute; top: -2px; bottom: 0; left: 7px; width: 1px; background: var(--gc); transform: scaleY(var(--reach, 0)); transform-origin: top; pointer-events: none; }
+.rail ul::after { content: ""; position: absolute; top: -2px; bottom: 0; left: 7px; width: 11px; border-left: 1px solid var(--gc); clip-path: inset(0 0 calc((1 - var(--reach, 0)) * 100%) 0); pointer-events: none; }
 .rail .doc-link::before { content: ""; position: absolute; top: calc(50% - 2.5px); left: -6.5px; width: 4px; height: 4px; border-radius: 50%; background: var(--gc); transform: scale(0); }
 .rail .doc-link[aria-current]::before { transform: none; }
-.rail [data-live] ul::after { transition: transform 300ms var(--ease-out); }
+.rail [data-live] ul::after { transition: clip-path 300ms var(--ease-out); }
 .rail [data-live] li::after { transition: clip-path 140ms ease-out; }
 .rail [data-live] li:has(> [aria-current])::after { transition: clip-path 220ms var(--ease-out) 160ms; }
 .rail [data-live] .doc-link::before { transition: transform 120ms ease-out; }
@@ -245,63 +248,69 @@ footer a::after { content: ""; position: absolute; inset: -12px -8px; }
   .doc-sidebar::-webkit-scrollbar { display: none; }
 }
 
-/* The hero: each block rises out of a blur, one after another. */
-.hero-title { max-width: 16ch; font-size: 44px; font-weight: 500; line-height: 1.02; letter-spacing: -0.045em; text-wrap: balance; }
-.hero-title em { font-family: var(--font-serif); font-size: 1.08em; font-weight: 400; letter-spacing: -0.02em; }
-.hero-sub { margin-top: 20px; max-width: 44ch; font-size: 18px; line-height: 1.5; color: var(--color-muted); text-wrap: pretty; }
-.hero-install { margin-top: 36px; width: 100%; max-width: 460px; }
-.hero-actions { margin-top: 20px; display: flex; gap: 8px; }
-@media (min-width: 768px) { .hero-title { font-size: 64px; } }
-/* The way to the skill: a question, then the command as a prompt waiting to be sent. The ideas it has drawn come in
-   after it one at a time, each rising out of a blur as the last one leaves upward. */
-.hero-skill { margin-top: 44px; display: grid; justify-items: center; gap: 12px; width: 100%; max-width: 460px; }
-.hero-skill-ask { font-size: 14px; color: var(--color-muted); }
-.prompt { display: flex; align-items: center; gap: 12px; width: 100%; height: 52px; padding: 0 6px 0 16px; border-radius: 14px; background: var(--color-stone); text-align: left; transition: transform 160ms var(--ease-out), background-color 150ms ease; will-change: transform; }
-.prompt:active { transform: scale(0.98); }
-.prompt-caret { flex: none; font-size: 14px; line-height: 1; color: var(--color-faint); }
-.prompt-line { flex: 1; min-width: 0; height: 20px; overflow: hidden; font-size: 14px; line-height: 20px; white-space: nowrap; }
-.prompt-line[data-more] { mask-image: linear-gradient(to right, #000 calc(100% - 24px), transparent); }
-.prompt-ideas { position: relative; display: inline-block; height: 20px; vertical-align: top; }
-.prompt-idea { position: absolute; top: 0; left: 0; opacity: 0; transform: translateY(6px); filter: blur(3px); transition: opacity 260ms var(--ease-out), transform 260ms var(--ease-out), filter 260ms var(--ease-out); }
-.prompt-idea[data-on] { opacity: 1; transform: none; filter: none; }
-.prompt-idea[data-gone] { transform: translateY(-6px); }
-.prompt-go { flex: none; display: inline-flex; align-items: center; gap: 8px; margin-right: 6px; font-size: 12.5px; color: var(--color-faint); }
-/* a key, not a button: lit from above, it sinks a pixel when the prompt is pressed */
-.prompt-key { display: grid; place-items: center; width: 30px; height: 26px; border-radius: 7px; background: #fff; color: var(--color-muted); box-shadow: inset 0 0 0 1px #00000012, 0 1.5px 0 #00000014; transition: transform 120ms var(--ease-out), box-shadow 120ms var(--ease-out), color 150ms ease; }
-.prompt:active .prompt-key { transform: translateY(1px); box-shadow: inset 0 0 0 1px #00000012, 0 0.5px 0 #00000014; }
+/* The hero, one column: each block rises out of a blur, one after another. */
+.hero-title { max-width: 18ch; font-size: clamp(26px, 4vw, 34px); font-weight: 500; line-height: 1.12; letter-spacing: -0.03em; text-wrap: balance; }
+.hero-title em { font-family: var(--font-serif); font-size: 1.1em; font-weight: 400; letter-spacing: -0.01em; }
+.hero-sub { margin-top: 12px; max-width: 40ch; font-size: 15px; line-height: 1.6; color: var(--color-muted); text-wrap: pretty; }
+/* the command and the way in, side by side; on a phone the button goes under the pill. Here the pill is the button's
+   size, 36px with its 9px corners, so the two read as one row; the copy keeps a 36px target round a 28px circle. */
+.hero-get { margin-top: 28px; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px; width: 100%; }
+.hero-get .pill { flex: 0 1 312px; min-width: 0; height: 36px; gap: 9px; padding: 0 4px 0 13px; border-radius: 9px; font-size: 13px; margin-right: 4px; }
+.hero-get .pill-line { line-height: 36px; }
+.hero-get .icopy { width: 28px; height: 28px; }
+.hero-get .icopy::after { inset: -4px; }
+
+/* The way to the skill: an empty hexagon by the words. A hover draws its three inner edges one after another, and it
+   becomes a cube; leaving takes them back faster than they came. */
+.hero-skill { margin-top: 22px; }
+.skill-link { position: relative; display: inline-flex; align-items: center; gap: 9px; padding: 6px 2px; font-size: 13px; line-height: 1; color: var(--color-muted); transition: color 160ms ease; }
+.skill-link::after { content: ""; position: absolute; inset: -8px -6px; }
+.skill-link svg { flex: none; overflow: visible; }
+.skill-link-hex { stroke: var(--color-faint); transition: stroke 200ms ease; }
+.skill-link-edge { stroke: var(--color-ink); stroke-dasharray: 1; stroke-dashoffset: 1; transition: stroke-dashoffset 160ms ease-out; }
 @media (hover: hover) {
-  .prompt:hover { background: #efefef; }
-  .prompt:hover .prompt-key { color: var(--color-ink); }
+  .skill-link:hover { color: var(--color-ink); }
+  .skill-link:hover .skill-link-hex { stroke: var(--color-ink); }
+  .skill-link:hover .skill-link-edge { stroke-dashoffset: 0; transition: stroke-dashoffset 360ms var(--ease-out); }
+  .skill-link:hover .skill-link-edge:nth-of-type(3) { transition-delay: 70ms; }
+  .skill-link:hover .skill-link-edge:nth-of-type(4) { transition-delay: 140ms; }
 }
-/* on a phone the prompt wraps as a long prompt would: the idea goes under the command instead of off the edge */
-@media (max-width: 480px) {
-  .prompt { height: auto; padding-block: 12px; }
-  .prompt-caret { align-self: flex-start; line-height: 20px; }
-  .prompt-line { height: auto; }
-  .prompt-ideas { display: block; }
-  .prompt-go-label { display: none; }
-}
+.skill-link:focus-visible { color: var(--color-ink); }
+.skill-link:focus-visible .skill-link-hex { stroke: var(--color-ink); }
+.skill-link:focus-visible .skill-link-edge { stroke-dashoffset: 0; }
+
+/* The reel: the figure on the page itself, six ticks under it, and the caption of the one on show. Every figure is
+   5:4 and the captions share one cell, so a change of figure never moves the page. */
+.hero-reel { width: 100%; margin-top: 14px; scroll-margin-top: calc(var(--topbar) + 24px); }
+.reel { display: grid; justify-items: center; }
+.reel-stage { width: 100%; max-width: 440px; aspect-ratio: 5 / 4; --hairline-plate: var(--color-canvas); }
+.reel-stage > div { animation: reel-in 320ms var(--ease-out) both; }
+.reel-ticks { display: flex; margin-top: 10px; }
+.reel-tick { display: grid; place-items: center; width: 30px; height: 26px; border-radius: 6px; }
+.reel-tick::before, .reel-fill { grid-area: 1 / 1; width: 20px; height: 1.5px; border-radius: 1px; }
+.reel-tick::before { content: ""; background: rgba(0, 0, 0, 0.12); transition: background-color 150ms ease; }
+@media (hover: hover) { .reel-tick:hover::before { background: rgba(0, 0, 0, 0.3); } }
+.reel-fill { background: var(--color-ink); transform: scaleX(0); transform-origin: left; }
+/* the clock: the fill runs while its figure plays, and its end moves the reel on; a pause only holds it */
+.reel[data-playing] .reel-tick[aria-current] .reel-fill { animation: reel-tick 6000ms linear both; }
+.reel[data-playing][data-paused] .reel-tick[aria-current] .reel-fill { animation-play-state: paused; }
+/* once the reel has stopped, the tick of the figure on show stays drawn */
+.reel:not([data-playing]) .reel-tick[aria-current] .reel-fill { transform: none; transition: transform 240ms var(--ease-out); }
+.reel-caps { display: grid; width: 100%; max-width: 46ch; margin-top: 4px; font-size: 13.5px; line-height: 1.55; }
+.reel-cap { grid-area: 1 / 1; color: var(--color-muted); text-wrap: balance; visibility: hidden; }
+.reel-cap[data-on] { visibility: visible; animation: reel-cap 300ms var(--ease-out) both; }
+.reel-cap b { font-weight: 500; color: var(--color-ink); }
+@keyframes reel-in { from { opacity: 0; filter: blur(4px); } to { opacity: 1; filter: none; } }
+@keyframes reel-tick { to { transform: none; } }
+@keyframes reel-cap { from { opacity: 0; filter: blur(3px); transform: translateY(3px); } to { opacity: 1; filter: none; transform: none; } }
 
 /* Rise, blur and fade end in that order. The rise and the blur end in steps: moving text is drawn on whole device
    pixels, so the last pixel of travel lands as a hop, and Chrome draws no blur under 0.4px, so the last of it goes
    in one frame. The hop comes under the blur, the blur goes while the block still fades in, and the fade ends it. */
 .hero-rise > * { animation: fade 750ms var(--ease-out) both, unblur 560ms var(--ease-out) both, rise 380ms var(--ease-out) both; animation-delay: calc(var(--i) * 70ms + 60ms); }
-.enter { animation: fade 850ms var(--ease-out) both, unblur 640ms var(--ease-out) both, rise 440ms var(--ease-out) both; animation-delay: var(--d, 0ms); }
-.enter-hint { animation: hint 220ms var(--ease-out) both; }
 @keyframes unblur { from { filter: blur(6px); } to { filter: none; } }
 @keyframes rise { from { transform: translateY(12px); } to { transform: none; } }
-@keyframes hint { from { opacity: 0; transform: translateY(2px); filter: blur(2px); } to { opacity: 1; transform: none; filter: none; } }
 @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
-
-/* A single choice whose highlight slides to the checked option. */
-.slide { position: relative; display: flex; isolation: isolate; }
-.slide-hl { position: absolute; top: 0; left: 0; z-index: -1; pointer-events: none; }
-.slide[data-ready] .slide-hl, .slide[data-ready] .slide-hl::before { transition: transform 200ms var(--ease-out), clip-path 200ms var(--ease-out); }
-/* a choice made with the keyboard lands at once */
-.slide[data-keyed] .slide-hl, .slide[data-keyed] .slide-hl::before { transition: none; }
-.slide-item { position: relative; display: inline-flex; flex: none; align-items: center; justify-content: center; white-space: nowrap; color: var(--color-muted); transition: color 150ms ease; }
-.slide-item[aria-checked="true"] { color: var(--color-ink); }
-@media (hover: hover) { .slide-item:hover { color: var(--color-ink); } }
 
 /* Copy as an icon: the clipboard blurs and shrinks away as the check grows in. That swap is the one scale a copy
    makes, so the round button stays still on press instead of shrinking under it. */
@@ -312,44 +321,6 @@ footer a::after { content: ""; position: absolute; inset: -12px -8px; }
 .icopy svg { grid-area: 1 / 1; transition: opacity 300ms var(--spring-icon), transform 300ms var(--spring-icon), filter 300ms var(--spring-icon); }
 .icopy-b, .icopy[data-copied] .icopy-a { opacity: 0; transform: scale(0.25); filter: blur(4px); }
 .icopy[data-copied] .icopy-b { opacity: 1; transform: none; filter: none; }
-
-/* The inspector's snippet, in greys: only the tag name carries weight. */
-.p-code { flex: 1; min-width: 0; margin: 0; overflow-x: auto; font: 400 13px/1.65 var(--font-mono); color: var(--color-ink); white-space: pre; }
-.t-kw { color: var(--code-token-keyword); }
-.t-str { color: var(--code-token-string); }
-.t-tag { color: var(--code-token-constant); font-weight: 500; }
-.t-attr { color: var(--code-token-function); }
-.t-val { color: var(--code-foreground); }
-
-/* The inspector: the figure on the page itself, one dock under it for every control. */
-.s-inspector { display: grid; grid-template-columns: minmax(0, 1fr); justify-items: center; }
-.s-stage { position: relative; display: grid; place-items: center; width: 100%; max-width: 760px; padding: clamp(8px, 4vw, 40px); border-radius: 28px; }
-.s-stage > [data-hairline] { width: 100%; max-width: 560px; }
-.s-stage[data-dark] { background: #08090a; }
-.s-dock { margin-top: 8px; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px; max-width: 100%; padding: 6px; border-radius: 16px; background: #fff; box-shadow: inset 0 0 0 1px var(--color-stone), var(--lift-lg); }
-.s-figures { min-width: 0; max-width: 100%; overflow-x: auto; scrollbar-width: none; }
-.s-figures::-webkit-scrollbar { display: none; }
-.s-figures .slide-item { height: 36px; padding: 0 12px; font-size: 14px; }
-.s-figures { --slide-radius: 10px; }
-.s-figures .slide-hl { background: var(--color-stone); }
-.s-row { display: flex; align-items: center; gap: 12px; padding-left: 12px; border-left: 1px solid var(--color-line); }
-.s-range { display: flex; align-items: center; gap: 10px; width: 230px; }
-.s-range-label { font-size: 13px; color: var(--color-muted); }
-.s-range .slider { flex: 1; min-width: 0; }
-.s-value { width: 4ch; font-size: 13px; font-weight: 500; font-variant-numeric: tabular-nums; text-align: right; }
-.s-themes { padding: 2px; border-radius: 10px; background: var(--color-stone); }
-.s-themes .slide-item { width: 36px; height: 36px; }
-.s-themes .slide-hl { border-radius: 8px; background: #fff; box-shadow: var(--lift); }
-.s-hint { margin-top: 14px; min-height: 1.5em; font-size: 13px; line-height: 1.5; color: var(--color-muted); text-align: center; text-wrap: balance; }
-.s-code { margin-top: 28px; display: flex; align-items: flex-start; gap: 8px; width: 100%; max-width: 560px; padding: 6px 6px 6px 0; border-radius: 14px; background: #fff; box-shadow: inset 0 0 0 1px var(--color-stone), var(--lift); }
-.s-code .p-code { padding: 10px 0 10px 18px; }
-
-@media (max-width: 760px) {
-  .s-dock { width: 100%; }
-  .s-figures { flex: 1 1 100%; }
-  .s-row { width: 100%; justify-content: space-between; padding: 6px 0 0 10px; border-left: 0; border-top: 1px solid var(--color-line); }
-  .s-range { flex: 1; width: auto; }
-}
 
 /* Inspo, as an essay: the story in the column, each step under its number, the evidence on cards between the prose. */
 .inspo-label { font: 400 11.5px/1.5 var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-muted); }
@@ -403,12 +374,12 @@ footer a::after { content: ""; position: absolute; inset: -12px -8px; }
   .props[data-tokens] td:nth-child(3) { flex-basis: 100%; margin-top: 6px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .hero-rise > *, .enter, .enter-hint { animation-name: fade; }
-  .slide[data-ready] .slide-hl, .slide[data-ready] .slide-hl::before { transition: none; }
+  .hero-rise > *, .reel-stage > div, .reel-cap[data-on] { animation-name: fade; }
+  .reel[data-playing] .reel-tick[aria-current] .reel-fill { animation: none; }
+  .skill-link-hex, .skill-link-edge, .skill-link:hover .skill-link-edge { transition: none; }
   .icopy-b, .icopy[data-copied] .icopy-a { transform: none; filter: none; }
-  .prompt-idea { transform: none; filter: none; transition: opacity 200ms ease; }
-  .prompt:active, .prompt:active .prompt-key { transform: none; }
   [data-live] > .doc-dot, .doc-strip [data-live] .doc-link[aria-current] > span, .doc-strip [data-live] .doc-link > span { transition: none; }
+  .slide[data-ready] .slide-hl, .slide[data-ready] .slide-hl::before { transition: none; }
   .rail [data-live] ul::after, .rail [data-live] li::after, .rail [data-live] li:has(> [aria-current])::after,
   .rail [data-live] .doc-link::before, .rail [data-live] .doc-link[aria-current]::before { transition: none; }
 }
@@ -429,8 +400,6 @@ footer a::after { content: ""; position: absolute; inset: -12px -8px; }
 .ex { overflow: hidden; margin-top: 4px; }
 .ex-h { display: flex; align-items: flex-start; gap: 4px; padding: 0 6px 0 2px; border-bottom: 1px solid var(--color-line); }
 .ex-h .pill { flex: 1; min-width: 0; background: none; box-shadow: none; font-size: 12.5px; }
-.ex-open { position: relative; flex: none; display: grid; place-items: center; width: 36px; height: 36px; margin-top: 6px; border-radius: 50%; color: var(--color-muted); transition: color 150ms ease, background-color 150ms ease; }
-@media (hover: hover) { .ex-open:hover { color: var(--color-ink); background: var(--color-stone); } }
 .ex-b { padding: 12px 16px 14px; }
 .ex-name { font: 500 12px/1.5 var(--font-mono); }
 .ex-means { margin-top: 2px; font-size: 13px; line-height: 1.55; color: var(--color-muted); text-wrap: pretty; }

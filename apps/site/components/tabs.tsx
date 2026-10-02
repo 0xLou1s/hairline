@@ -14,8 +14,7 @@ const KEY = "hairline:docs-tab";
  * the first tab; the stored one is read after mount, and storage that throws
  * (private mode, blocked) leaves the first tab on.
  *
- * The selected tab's plate slides to a tab picked with a pointer, as in Slide:
- * it spans the row and a clip-path cuts it down to the tab, so it never
+ * The selected tab's plate slides to a tab picked with a pointer. It spans the row and a clip-path cuts it down to the tab, so it never
  * animates its size. It is turned on after the first paint, and a tab picked
  * with the arrow keys lands at once.
  */

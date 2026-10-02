@@ -84,15 +84,21 @@ function place(list: HTMLElement | null, active: string) {
 }
 
 /**
- * Draws the rail's line to the marked link: each group's trunk reaches down to the marked row's bend, 6px over its
- * centre, or back up to nothing in the other groups. The row's arm and tip take it from there, in CSS.
+ * Draws the rail's line to the marked link: each group's trunk reaches down to where the marked row's arm starts to
+ * bend (6px over its centre) and a pixel into it, so the two meet with no seam, or back up to nothing in the other
+ * groups. The row's arm and tip take it from there, in CSS. Measured in fractions of a pixel, as the arm is placed.
  */
 function reach(nav: HTMLElement | null, active: string) {
   if (!nav?.clientWidth) return;
   for (const list of nav.querySelectorAll<HTMLElement>("ul")) {
     const row = list.querySelector(`a[href="#${active}"]`)?.parentElement;
-    // the trunk runs from 2px over the list to its foot
-    const f = row ? (row.offsetTop + row.offsetHeight / 2 - 4) / (list.offsetHeight + 2) : 0;
+    let f = 0;
+    if (row) {
+      const box = list.getBoundingClientRect();
+      const at = row.getBoundingClientRect();
+      // the trunk runs from 2px over the list to its foot
+      f = (at.top - box.top + at.height / 2 - 6 + 1 + 2) / (box.height + 2);
+    }
     list.style.setProperty("--reach", String(f));
   }
   live(nav);
