@@ -203,7 +203,7 @@ test("the top bar fits a 320px screen on one row, the version left out so the na
   // from the name's last letter to the Skill link's first: at least the 20px the links keep between each other
   const gap = await page.evaluate(() => {
     const text = (el: Element) => { const r = document.createRange(); r.selectNodeContents(el); return r.getBoundingClientRect(); };
-    return text(document.querySelector(".topbar-link")!).left - text(document.querySelector(".topbar > a")!).right;
+    return text(document.querySelector(".topbar-link")!).left - text(document.querySelector(".topbar-name")!).right;
   });
   expect(gap).toBeGreaterThanOrEqual(20);
   expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBe(0);
@@ -214,7 +214,7 @@ test("the top bar fits a 320px screen on one row, the version left out so the na
   expect(last.x + last.width).toBeLessThanOrEqual(bar.x + bar.width);
 });
 
-test("the home's hero points to the skill in one line between the buttons and the reel, and it reaches /skill", async ({ page }) => {
+test("the home's hero points to the skill in one line between the buttons and the drawing, and it reaches /skill", async ({ page }) => {
   for (const width of [1200, 320]) {
     await page.setViewportSize({ width, height: 800 });
     await page.goto("/");
@@ -223,9 +223,9 @@ test("the home's hero points to the skill in one line between the buttons and th
     expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBe(0);
     const get = (await page.locator(".hero-get").boundingBox())!;
     const box = (await link.boundingBox())!;
-    const reel = (await page.locator("[data-reel]").boundingBox())!;
+    const art = (await page.locator("[data-assembly]").boundingBox())!;
     expect(box.y).toBeGreaterThanOrEqual(get.y + get.height);
-    expect(box.y + box.height).toBeLessThanOrEqual(reel.y);
+    expect(box.y + box.height).toBeLessThanOrEqual(art.y);
   }
   await page.locator(".hero-rise").getByRole("link", { name: "Or draw your own with the skill" }).click();
   await expect(page).toHaveURL(/\/skill$/);

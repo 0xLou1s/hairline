@@ -21,28 +21,40 @@ function watch(page: Page): string[] {
   return noise;
 }
 
-test("the home prerenders an empty box, then draws the reel's figure with a clean console", async ({ page, request }) => {
+test("the home prerenders the drawing's empty box, then draws it with a clean console", async ({ page, request }) => {
   const html = await (await request.get("/")).text();
-  // the figure's box is empty on the server
-  expect(html.match(/<div style="aspect-ratio:5 \/ 4"><\/div>/g)).toHaveLength(1);
-  expect(html).not.toMatch(/aspect-ratio:5 \/ 4"[^>]*><svg/);
-  expect(html).not.toMatch(/Fig\. \d/);
+  // the drawing's box is empty on the server, and no figure is on the home
+  expect(html.match(/<div class="assembly" data-assembly="true"><\/div>/g)).toHaveLength(1);
+  expect(html).not.toContain("data-hairline");
 
   const noise = watch(page);
   await page.goto("/");
-  await expect(page.locator("[data-hairline] > svg")).toHaveCount(1);
+  await expect(page.locator("[data-assembly] > svg")).toHaveCount(1);
   await expect(page.locator("[data-install]").first()).toHaveText(/npm i @lucasmarkes\/hairline/);
   await expect(page.locator("[data-version]")).toHaveText(/^v\d+\.\d+\.\d+/);
   expect(noise).toEqual([]);
 });
 
-test("the top bar holds the figures, the skill, the docs, the story, the version and GitHub, and no llms.txt button", async ({ page }) => {
+test("the top bar holds the name with the version beside it, then the figures, the skill, the docs, the story and GitHub, and no llms.txt button", async ({ page }) => {
   await page.goto("/");
-  await expect(page.locator(".topbar nav > *")).toHaveCount(6);
+  await expect(page.locator(".topbar nav > *")).toHaveCount(5);
   await expect(page.locator(".topbar nav > a").nth(0)).toHaveText("Figures");
   await expect(page.locator(".topbar nav > a").nth(1)).toHaveText("Skill");
   await expect(page.locator(".topbar nav > a").nth(2)).toHaveText("Docs");
+  await expect(page.locator(".topbar nav [data-version]")).toHaveCount(0);
   await expect(page.locator(".topbar")).not.toContainText("llms.txt");
+  // the version follows the name on its baseline, a step smaller, close enough to read as one
+  const [name, version] = await Promise.all([".topbar-name", "[data-version]"].map((s) => page.locator(s).evaluate((el) => {
+    const r = document.createRange();
+    r.selectNodeContents(el);
+    const box = r.getBoundingClientRect();
+    return { left: box.left, right: box.right, bottom: box.bottom, size: parseFloat(getComputedStyle(el).fontSize) };
+  })));
+  const gap = version.left - name.right;
+  expect(gap).toBeGreaterThan(4);
+  expect(gap).toBeLessThan(12);
+  expect(Math.abs(version.bottom - name.bottom)).toBeLessThan(2.5);
+  expect(version.size).toBeLessThan(name.size);
 });
 
 test("the top bar's links sit as one row: one height, one centre line, one type, even spaces between them", async ({ page }) => {
@@ -56,7 +68,7 @@ test("the top bar's links sit as one row: one height, one centre line, one type,
     const style = getComputedStyle(el);
     return { height: box.height, middle: box.top + box.height / 2, left: ink.left, right: ink.right, type: [style.fontSize, style.fontWeight, style.color, style.backgroundColor].join(" ") };
   }));
-  expect(items).toHaveLength(6);
+  expect(items).toHaveLength(5);
   expect(new Set(items.map((i) => i.height)).size).toBe(1);
   for (const i of items) expect(Math.abs(i.middle - items[0].middle)).toBeLessThan(0.5);
   expect(new Set(items.map((i) => i.type)).size).toBe(1);
@@ -89,9 +101,9 @@ test("the docs' code is in greys: every token's colour has equal red, green and 
   expect(tinted).toEqual([]);
 });
 
-/** Waits for every transition and entrance on the page to finish: all but the reel's clock, which runs as long as the reel plays. */
+/** Waits for every transition and entrance on the page to finish. */
 const settled = (page: Page) =>
-  expect.poll(() => page.evaluate(() => document.getAnimations().filter((a) => a.playState === "running" && !(a.effect as KeyframeEffect).target?.closest(".reel-ticks")).length)).toBe(0);
+  expect.poll(() => page.evaluate(() => document.getAnimations().filter((a) => a.playState === "running").length)).toBe(0);
 
 test("the home's entrance settles within 1.4s, with its hero blocks 70ms apart", async ({ page }) => {
   await page.goto("/");
@@ -105,61 +117,52 @@ test("the home's entrance settles within 1.4s, with its hero blocks 70ms apart",
   expect(timing.end).toBeLessThanOrEqual(1400);
 });
 
-test("the reel plays the figures in turn, holds under the pointer, and stops on a picked tick", async ({ page }) => {
+/** What the drawing shows now: each path's shape and how much of it is drawn, in order. */
+const drawing = (page: Page) =>
+  page.locator("[data-assembly] svg").evaluate((svg) => [...svg.querySelectorAll("path")].map((p) => `${p.getAttribute("d")} ${p.style.strokeDashoffset} ${p.style.opacity}`).join("\n"));
+
+test("the drawing builds the window in three plates, each adding its stage, then breathes", async ({ page }) => {
   await page.goto("/");
-  const reel = page.locator("[data-reel]");
-  const figure = reel.locator(".reel-stage");
-  const ticks = reel.getByRole("group", { name: "Figures" }).getByRole("button");
-  await expect(ticks).toHaveCount(IDS.length);
-  await expect(figure).toHaveAttribute("data-figure", "riffle");
-  await expect(ticks.first()).toHaveAttribute("aria-current", "true");
-  // the figure stands alone: no caption under it
-  await expect(reel.locator("p")).toHaveCount(0);
-
-  // the tick's fill is the clock: its end moves the reel on
-  const fill = reel.locator(".reel-tick[aria-current] .reel-fill");
-  await expect.poll(() => fill.evaluate((el) => el.getAnimations().length)).toBe(1);
-  await fill.evaluate((el) => el.getAnimations()[0].finish());
-  await expect(figure).toHaveAttribute("data-figure", "terrain");
-  await expect(ticks.nth(1)).toHaveAttribute("aria-current", "true");
-
-  await figure.hover();
-  await expect(reel).toHaveAttribute("data-paused", "");
-  await expect(fill).toHaveCSS("animation-play-state", "paused");
-  await expect(figure).toHaveAttribute("data-figure", "terrain");
-  await page.mouse.move(0, 0);
-  await expect(reel).not.toHaveAttribute("data-paused");
-
-  await ticks.nth(4).click();
-  await expect(figure).toHaveAttribute("data-figure", "slow");
-  await expect(reel).not.toHaveAttribute("data-playing");
-  // the clock is gone: no fill runs its keyframes (the picked tick only eases full)
-  expect(await reel.locator(".reel-fill").evaluateAll((els) => els.flatMap((el) => el.getAnimations()).filter((a) => a instanceof CSSAnimation).length)).toBe(0);
-  await expect(figure).toHaveAttribute("data-figure", "slow");
-  await expect(reel.locator("[data-hairline]")).toHaveCount(1);
+  const svg = page.locator("[data-assembly] svg");
+  // three plates; the frame's two lines on each, the blocks' nine on the upper two, the details' six on the top one
+  await expect(svg.locator(":scope > g:not([mask])")).toHaveCount(3);
+  await expect(svg.locator(".part, .lit")).toHaveCount(2 * 3 + 9 * 2 + 6);
+  // the last line drawn is the top plate's lit row: once it is in full, the whole window is
+  const lit = svg.locator(".lit");
+  await expect.poll(() => lit.evaluate((el: SVGPathElement) => Number(el.style.strokeDashoffset)), { timeout: 8000 }).toBe(0);
+  // every part and every rule is drawn in full
+  const undrawn = () => svg.evaluate((el) => [...el.querySelectorAll<SVGPathElement>(".part, .lit, .rule")].filter((p) => p.style.opacity !== "1" || Number(p.style.strokeDashoffset) !== 0).length);
+  expect(await undrawn()).toBe(0);
+  // at rest the stack keeps moving, slowly
+  const before = await drawing(page);
+  await page.waitForTimeout(400);
+  expect(await drawing(page)).not.toBe(before);
 });
 
-test("under reduced motion the reel never starts", async ({ page }) => {
+test("under reduced motion the drawing is at rest at once, and holds still", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
-  await expect(page.locator("[data-reel]")).not.toHaveAttribute("data-playing");
-  await expect(page.locator(".reel-stage")).toHaveAttribute("data-figure", "riffle");
+  await expect(page.locator("[data-assembly] .lit")).toHaveCSS("stroke-dashoffset", "0px");
+  const before = await drawing(page);
+  await page.waitForTimeout(500);
+  expect(await drawing(page)).toBe(before);
 });
 
-test("a change of figure never moves the page: the reel and the page hold their height through every figure", async ({ page }) => {
-  // every change waits out its dissolve, at three widths: the time grows with the figures
-  test.setTimeout(IDS.length * 3 * 1500 + 15_000);
+test("the drawing never moves the page: its box is the same height before it mounts and after it is built", async ({ browser }) => {
   for (const width of [1440, 390, 320]) {
-    await page.setViewportSize({ width, height: 800 });
+    const viewport = { width, height: 800 };
+    const height = (page: Page) => page.evaluate(() => `${document.documentElement.scrollHeight} ${Math.round(document.querySelector(".assembly")!.getBoundingClientRect().height)}`);
+    const off = await browser.newContext({ viewport, javaScriptEnabled: false });
+    const bare = await off.newPage();
+    await bare.goto("/");
+    const prerendered = await height(bare);
+    await off.close();
+    const on = await browser.newContext({ viewport, reducedMotion: "reduce" });
+    const page = await on.newPage();
     await page.goto("/");
-    const ticks = page.locator(".reel-tick");
-    const heights = new Set<string>();
-    for (let i = 0; i < IDS.length; i++) {
-      await ticks.nth(i).click();
-      await expect(page.locator(".reel-stage [data-hairline] > svg")).toHaveCount(1);
-      heights.add(await page.evaluate(() => `${document.documentElement.scrollHeight} ${Math.round(document.querySelector(".reel")!.getBoundingClientRect().height)}`));
-    }
-    expect([...heights], `${width}px`).toHaveLength(1);
+    await expect(page.locator("[data-assembly] > svg")).toHaveCount(1);
+    expect(await height(page), `${width}px`).toBe(prerendered);
+    await on.close();
   }
 });
 
@@ -317,7 +320,7 @@ test("robots.txt lets every crawler in and names the sitemap, which lists the fi
   expect([...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1])).toEqual([BASE, `${BASE}/figures`, `${BASE}/docs`, `${BASE}/skill`, `${BASE}/inspo`]);
 });
 
-test("the page fits a phone, with the longest install command, its buttons and the reel's ticks", async ({ page }) => {
+test("the page fits a phone, with the longest install command, and its buttons", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 800 });
   await page.goto("/");
   const width = () => page.evaluate(() => document.documentElement.scrollWidth);
@@ -328,15 +331,17 @@ test("the page fits a phone, with the longest install command, its buttons and t
   await expect(pill).toHaveAttribute("data-install", "shadcn");
   expect(await width()).toBeLessThanOrEqual(390);
 
-  const controls = page.locator(".hero-get .btn, .reel-tick");
-  await expect(controls).toHaveCount(1 + IDS.length);
+  const controls = page.locator(".hero-get .btn");
+  await expect(controls).toHaveCount(1);
   for (const control of await controls.all()) {
     const box = (await control.boundingBox())!;
     expect(box.x).toBeGreaterThanOrEqual(0);
     expect(box.x + box.width).toBeLessThanOrEqual(390);
   }
-  await page.getByRole("button", { name: "Keyboard" }).click();
-  expect(await width()).toBeLessThanOrEqual(390);
+  // the drawing keeps to the column, its floor fading out before the edge
+  const art = (await page.locator("[data-assembly]").boundingBox())!;
+  expect(art.x).toBeGreaterThanOrEqual(0);
+  expect(art.x + art.width).toBeLessThanOrEqual(390);
 });
 
 /** Every element that holds text of its own, outside code, the hero's serif word and the figures, with its family. */
