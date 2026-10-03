@@ -3,7 +3,9 @@ import { Footer, Topbar } from "@/components/chrome";
 import { Install } from "@/components/install";
 import { Reel } from "@/components/reel";
 import { SkillLink } from "@/components/skill-link";
+import { COUNT } from "@/lib/figures";
 import { install } from "@/lib/snippets";
+import { cap } from "@/lib/words";
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL!;
 
@@ -12,7 +14,7 @@ const at = (i: number) => ({ "--i": i }) as CSSProperties;
 
 /**
  * The home, as one column: the pitch, the command with the way in, the way to the
- * skill, then the six figures playing by themselves. A Server Component, so the figures
+ * skill, then the figures playing by themselves. A Server Component, so the figures
  * are the package's React components rendered from here, and every deploy
  * runs them through server rendering and hydration. The rest lives on /docs.
  */
@@ -25,7 +27,7 @@ export default function Page() {
           <h1 id="hairline" className="hero-title" style={at(0)}>
             Line drawings that <em>answer</em> the pointer.
           </h1>
-          <p className="hero-sub" style={at(1)}>Six isometric figures for the web. SVG, no dependencies, React or plain DOM.</p>
+          <p className="hero-sub" style={at(1)}>{cap(COUNT)} isometric figures for the web. SVG, no dependencies, React or plain DOM.</p>
           <div className="hero-get" style={at(2)}>
             <Install commands={install(SITE)} />
             <a className="btn btn-primary press" href="/docs">Get started</a>

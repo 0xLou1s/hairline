@@ -19,7 +19,7 @@ import { CDN, CSS, QUICKSTART, REACT, REACT_SIGNATURE, VANILLA, VANILLA_SIGNATUR
 const KEYS = { intensity: true, theme: true, label: true, onRead: true } satisfies Record<keyof HairlineOptions, true>;
 
 describe("the figures", () => {
-  it("are the package's six, each with a function and a component", () => {
+  it("are the package's, each with a function and a component", () => {
     expect(FIGURES.map((f) => f.id).sort()).toEqual(Object.keys(figures).sort());
     for (const doc of FIGURES) expect(components).toHaveProperty(doc.name);
   });

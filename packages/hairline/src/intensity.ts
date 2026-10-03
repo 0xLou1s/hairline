@@ -7,7 +7,7 @@
  * copy and its tests hold the two together.
  */
 
-export type FigureId = "riffle" | "terrain" | "exploded" | "phosphor" | "slow" | "turntable";
+export type FigureId = "riffle" | "terrain" | "exploded" | "phosphor" | "slow" | "turntable" | "keyboard" | "elevator" | "phone" | "laptop" | "terminal" | "cabinet" | "branches" | "vault" | "lockers" | "padlock" | "patch" | "dish" | "router";
 
 /** Each figure's number at intensity 0, 0.5 and 1. Slow's falls: a slower clock is a stronger answer. */
 export const TABLE: Record<FigureId, readonly [number, number, number]> = {
@@ -17,6 +17,19 @@ export const TABLE: Record<FigureId, readonly [number, number, number]> = {
   phosphor: [150, 520, 1500], // afterglow, ms
   slow: [0.6, 0.2, 0.05], // rate, × normal speed
   turntable: [200, 650, 1500], // coast, ms
+  keyboard: [1, 2, 3.5], // radius, keys
+  elevator: [40, 100, 220], // stiffness, spring units
+  phone: [16, 28, 40], // gap, viewBox units
+  laptop: [100, 125, 150], // lid, degrees
+  terminal: [1, 2, 3.5], // spread, lines
+  cabinet: [1.5, 3, 5], // reach, blades
+  branches: [1, 3, 6], // reach, commits
+  vault: [250, 600, 1500], // coast, ms
+  lockers: [55, 90, 120], // opening, degrees
+  padlock: [45, 90, 100], // swing, degrees
+  patch: [1, 2.5, 5], // radius, ports
+  dish: [30, 50, 70], // reach, degrees
+  router: [0.5, 1.5, 3], // spread, antennas
 };
 
 export const DEFAULT = 0.5;

@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-const IDS = ["riffle", "terrain", "exploded", "phosphor", "slow", "turntable"];
+const IDS = ["riffle", "terrain", "exploded", "phosphor", "slow", "turntable", "keyboard", "elevator", "phone", "laptop", "terminal", "cabinet", "branches", "vault", "lockers", "padlock", "patch", "dish", "router"];
 const MANAGERS = [
   ["npm", "npm i @lucasmarkes/hairline"],
   ["pnpm", "pnpm add @lucasmarkes/hairline"],
@@ -36,11 +36,12 @@ test("the home prerenders an empty box, then draws the reel's figure with a clea
   expect(noise).toEqual([]);
 });
 
-test("the top bar holds the skill, the docs, the story, the version and GitHub, and no llms.txt button", async ({ page }) => {
+test("the top bar holds the figures, the skill, the docs, the story, the version and GitHub, and no llms.txt button", async ({ page }) => {
   await page.goto("/");
-  await expect(page.locator(".topbar nav > *")).toHaveCount(5);
-  await expect(page.locator(".topbar nav > a").nth(0)).toHaveText("Skill");
-  await expect(page.locator(".topbar nav > a").nth(1)).toHaveText("Docs");
+  await expect(page.locator(".topbar nav > *")).toHaveCount(6);
+  await expect(page.locator(".topbar nav > a").nth(0)).toHaveText("Figures");
+  await expect(page.locator(".topbar nav > a").nth(1)).toHaveText("Skill");
+  await expect(page.locator(".topbar nav > a").nth(2)).toHaveText("Docs");
   await expect(page.locator(".topbar")).not.toContainText("llms.txt");
 });
 
@@ -55,7 +56,7 @@ test("the top bar's links sit as one row: one height, one centre line, one type,
     const style = getComputedStyle(el);
     return { height: box.height, middle: box.top + box.height / 2, left: ink.left, right: ink.right, type: [style.fontSize, style.fontWeight, style.color, style.backgroundColor].join(" ") };
   }));
-  expect(items).toHaveLength(5);
+  expect(items).toHaveLength(6);
   expect(new Set(items.map((i) => i.height)).size).toBe(1);
   for (const i of items) expect(Math.abs(i.middle - items[0].middle)).toBeLessThan(0.5);
   expect(new Set(items.map((i) => i.type)).size).toBe(1);
@@ -63,14 +64,14 @@ test("the top bar's links sit as one row: one height, one centre line, one type,
   for (const s of spaces) expect(Math.abs(s - spaces[0])).toBeLessThan(1.5);
 });
 
-test("the docs prerender six empty boxes, then draw one figure per row with a clean console", async ({ page, request }) => {
+test("the docs prerender an empty box per figure, then draw one figure per row with a clean console", async ({ page, request }) => {
   const html = await (await request.get("/docs")).text();
-  expect(html.match(/<div style="aspect-ratio:5 \/ 4"><\/div>/g)).toHaveLength(6);
+  expect(html.match(/<div style="aspect-ratio:5 \/ 4"><\/div>/g)).toHaveLength(IDS.length);
   expect(html).not.toMatch(/aspect-ratio:5 \/ 4"[^>]*><svg/);
 
   const noise = watch(page);
   await page.goto("/docs");
-  await expect(page.locator("[data-hairline] > svg")).toHaveCount(6);
+  await expect(page.locator("[data-hairline] > svg")).toHaveCount(IDS.length);
   for (const id of IDS) await expect(page.locator(`[data-row="${id}"] [data-hairline] > svg > *`).first()).toBeAttached();
   await expect(page.locator("[data-size]")).toHaveText(/^\d+\.\d kB$/);
   expect(noise).toEqual([]);
@@ -104,12 +105,12 @@ test("the home's entrance settles within 1.4s, with its hero blocks 70ms apart",
   expect(timing.end).toBeLessThanOrEqual(1400);
 });
 
-test("the reel plays the six figures in turn, holds under the pointer, and stops on a picked tick", async ({ page }) => {
+test("the reel plays the figures in turn, holds under the pointer, and stops on a picked tick", async ({ page }) => {
   await page.goto("/");
   const reel = page.locator("[data-reel]");
   const figure = reel.locator(".reel-stage");
   const ticks = reel.getByRole("group", { name: "Figures" }).getByRole("button");
-  await expect(ticks).toHaveCount(6);
+  await expect(ticks).toHaveCount(IDS.length);
   await expect(figure).toHaveAttribute("data-figure", "riffle");
   await expect(ticks.first()).toHaveAttribute("aria-current", "true");
   // the figure stands alone: no caption under it
@@ -145,13 +146,15 @@ test("under reduced motion the reel never starts", async ({ page }) => {
   await expect(page.locator(".reel-stage")).toHaveAttribute("data-figure", "riffle");
 });
 
-test("a change of figure never moves the page: the reel and the page hold their height through all six", async ({ page }) => {
+test("a change of figure never moves the page: the reel and the page hold their height through every figure", async ({ page }) => {
+  // every change waits out its dissolve, at three widths: the time grows with the figures
+  test.setTimeout(IDS.length * 3 * 1500 + 15_000);
   for (const width of [1440, 390, 320]) {
     await page.setViewportSize({ width, height: 800 });
     await page.goto("/");
     const ticks = page.locator(".reel-tick");
     const heights = new Set<string>();
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < IDS.length; i++) {
       await ticks.nth(i).click();
       await expect(page.locator(".reel-stage [data-hairline] > svg")).toHaveCount(1);
       heights.add(await page.evaluate(() => `${document.documentElement.scrollHeight} ${Math.round(document.querySelector(".reel")!.getBoundingClientRect().height)}`));
@@ -285,8 +288,9 @@ const BASE = "http://localhost:3000";
 
 test("a pasted link shows the page it leads to: each page's card has its own title, text and address", async ({ request }) => {
   const CARDS = [
-    ["/", "hairline", /^Six isometric line figures/],
-    ["/docs", "Docs", /^Six isometric line figures/],
+    ["/", "hairline", /^Nineteen isometric line figures/],
+    ["/figures", "Figures", /^Seven shelves, nineteen figures, grouped by what they draw/],
+    ["/docs", "Docs", /^Nineteen isometric line figures/],
     ["/skill", "Make your own figure", /^hairline-create is a skill/],
     ["/inspo", "How Hairline was made", /^A long brief/],
   ] as const;
@@ -304,13 +308,13 @@ test("a pasted link shows the page it leads to: each page's card has its own tit
   }
 });
 
-test("robots.txt lets every crawler in and names the sitemap, which lists the four pages", async ({ request }) => {
+test("robots.txt lets every crawler in and names the sitemap, which lists the five pages", async ({ request }) => {
   const robots = await (await request.get("/robots.txt")).text();
   expect(robots).toMatch(/^User-Agent: \*\nAllow: \/\n/);
   expect(robots).toContain(`Sitemap: ${BASE}/sitemap.xml`);
 
   const sitemap = await (await request.get("/sitemap.xml")).text();
-  expect([...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1])).toEqual([BASE, `${BASE}/docs`, `${BASE}/skill`, `${BASE}/inspo`]);
+  expect([...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1])).toEqual([BASE, `${BASE}/figures`, `${BASE}/docs`, `${BASE}/skill`, `${BASE}/inspo`]);
 });
 
 test("the page fits a phone, with the longest install command, its buttons and the reel's ticks", async ({ page }) => {
@@ -325,13 +329,13 @@ test("the page fits a phone, with the longest install command, its buttons and t
   expect(await width()).toBeLessThanOrEqual(390);
 
   const controls = page.locator(".hero-get .btn, .reel-tick");
-  await expect(controls).toHaveCount(7);
+  await expect(controls).toHaveCount(1 + IDS.length);
   for (const control of await controls.all()) {
     const box = (await control.boundingBox())!;
     expect(box.x).toBeGreaterThanOrEqual(0);
     expect(box.x + box.width).toBeLessThanOrEqual(390);
   }
-  await page.getByRole("button", { name: "Turntable" }).click();
+  await page.getByRole("button", { name: "Keyboard" }).click();
   expect(await width()).toBeLessThanOrEqual(390);
 });
 
@@ -435,11 +439,11 @@ test("the docs fit a phone down to 320px: rows stack text first, and wide code a
   }
 });
 
-test("the figures' link goes to the home's figure", async ({ page }) => {
+test("the figures' link goes to the figures page", async ({ page }) => {
   await page.goto("/docs");
-  await page.getByRole("link", { name: "Try them on the home page →" }).click();
-  await expect(page).toHaveURL(/\/#try$/);
-  await expect(page.locator("#try [data-reel]")).toBeInViewport();
+  await page.getByRole("link", { name: "Try each one on the figures page →" }).click();
+  await expect(page).toHaveURL(/\/figures$/);
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("Every figure");
 });
 
 test("the sidebar's links land on their section under the top bar and mark it, and scrolling moves the mark", async ({ page }) => {

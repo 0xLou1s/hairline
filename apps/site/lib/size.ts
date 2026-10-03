@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { gzipSync } from "node:zlib";
 
 /**
- * The vanilla entry's gzip size with all six figures, as the Tiny card says
+ * The vanilla entry's gzip size with every figure, as the Tiny card says
  * it: "16.3 kB". Measured at build from the package's own dist, which turbo
  * builds before the site. Next runs the build from apps/site.
  */

@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState, type CSSProperties } from "react";
-import { Exploded, Phosphor, Riffle, Slow, Terrain, Turntable } from "@lucasmarkes/hairline/react";
+import { Branches, Cabinet, Dish, Elevator, Exploded, Keyboard, Laptop, Lockers, Padlock, Patch, Phone, Phosphor, Riffle, Router, Slow, Terminal, Terrain, Turntable, Vault } from "@lucasmarkes/hairline/react";
 import { FIGURES } from "@/lib/figures";
 
-const COMPONENTS = { riffle: Riffle, terrain: Terrain, exploded: Exploded, phosphor: Phosphor, slow: Slow, turntable: Turntable };
+const COMPONENTS = { riffle: Riffle, terrain: Terrain, exploded: Exploded, phosphor: Phosphor, slow: Slow, turntable: Turntable, keyboard: Keyboard, elevator: Elevator, phone: Phone, laptop: Laptop, terminal: Terminal, cabinet: Cabinet, branches: Branches, vault: Vault, lockers: Lockers, padlock: Padlock, patch: Patch, dish: Dish, router: Router };
 
 /**
  * One pass of a pointer over each figure, in its viewBox (400 × 320): [x, y, ms]. Each path does the
@@ -17,6 +17,19 @@ const DEMO: Record<keyof typeof COMPONENTS, [number, number, number][]> = {
   phosphor: [[130, 100, 0], [270, 100, 700], [140, 160, 1400], [275, 165, 2100]],
   slow: [[120, 250, 0], [200, 165, 700], [206, 160, 2600]],
   turntable: [[100, 170, 0], [125, 168, 400], [310, 160, 620], [320, 158, 900]],
+  keyboard: [[126, 116, 0], [290, 198, 2000], [172, 165, 3000]],
+  elevator: [[200, 250, 0], [200, 60, 1400], [200, 175, 3400]],
+  phone: [[110, 170, 0], [290, 170, 1200], [290, 90, 1900], [290, 250, 2900]],
+  laptop: [[200, 270, 0], [200, 70, 1500], [200, 180, 3300]],
+  terminal: [[200, 250, 0], [200, 90, 1500], [200, 170, 3300]],
+  cabinet: [[200, 250, 0], [200, 120, 1600], [200, 200, 3300]],
+  branches: [[170, 192, 0], [124, 112, 1800], [332, 216, 3400]],
+  vault: [[214, 187, 0], [207, 216, 1100], [207, 216, 2300], [214, 187, 3400]],
+  lockers: [[200, 160, 0], [250, 230, 1800], [120, 110, 3200]],
+  padlock: [[40, 280, 0], [200, 170, 1500], [330, 100, 3000]],
+  patch: [[200, 160, 0], [120, 110, 1800], [230, 180, 3200]],
+  dish: [[100, 100, 0], [300, 100, 1200], [300, 250, 2400], [120, 240, 3500]],
+  router: [[80, 200, 0], [320, 200, 2000], [200, 120, 3200]],
 };
 
 /** Long enough for the slowest dissolve (the reel's own, 520ms) to finish before its leaver goes. */
@@ -25,7 +38,7 @@ const LEAVE_MS = 640;
 type Layer = { key: number; at: number; leaving: boolean };
 
 /**
- * The six figures, one at a time, standing on the page with no controls. Each
+ * The figures, one at a time, standing on the page with no controls. Each
  * plays for six seconds while its tick fills, then the next dissolves in over
  * it. A pointer on the figure pauses the reel, and so does a hidden tab;
  * picking a tick shows that figure and stops the reel for good. Under reduced

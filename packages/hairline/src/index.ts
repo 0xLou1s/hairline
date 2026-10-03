@@ -1,13 +1,26 @@
 import { create, type Figure, type HairlineOptions } from "./mount";
+import { mount as branchesEngine } from "./figures/branches";
+import { mount as cabinetEngine } from "./figures/cabinet";
+import { mount as dishEngine } from "./figures/dish";
+import { mount as elevatorEngine } from "./figures/elevator";
 import { mount as explodedEngine } from "./figures/exploded";
+import { mount as keyboardEngine } from "./figures/keyboard";
+import { mount as laptopEngine } from "./figures/laptop";
+import { mount as lockersEngine } from "./figures/lockers";
+import { mount as padlockEngine } from "./figures/padlock";
+import { mount as patchEngine } from "./figures/patch";
+import { mount as phoneEngine } from "./figures/phone";
 import { mount as phosphorEngine } from "./figures/phosphor";
 import { mount as riffleEngine } from "./figures/riffle";
+import { mount as routerEngine } from "./figures/router";
 import { mount as slowEngine } from "./figures/slow";
+import { mount as terminalEngine } from "./figures/terminal";
 import { mount as terrainEngine } from "./figures/terrain";
 import { mount as turntableEngine } from "./figures/turntable";
+import { mount as vaultEngine } from "./figures/vault";
 
 /**
- * @lucasmarkes/hairline — six isometric line figures that answer the pointer.
+ * @lucasmarkes/hairline — nineteen isometric line figures that answer the pointer.
  *
  * One function per figure. Each takes an element and the same options, draws
  * into the element, and returns `{ update, destroy }`. Each function names
@@ -74,5 +87,135 @@ export function turntable(el: HTMLElement, options?: HairlineOptions): Figure {
     label: "Blocks on a turntable. Flick across it to spin it; it settles on the nearest quarter turn.",
     rest: "az 045° · el 30°",
     engine: turntableEngine,
+  }, el, options);
+}
+
+/** A sixty-key board. The key under the pointer sinks, and its neighbours follow it down, less the further away. `intensity` widens how far the press reaches. */
+export function keyboard(el: HTMLElement, options?: HairlineOptions): Figure {
+  return create({
+    id: "keyboard",
+    label: "A sixty-key board. The key under the pointer sinks, and its neighbours follow it down, less the further away.",
+    rest: "rest",
+    engine: keyboardEngine,
+  }, el, options);
+}
+
+/** Four floors beside an open shaft. The pointer's height picks a floor, and the car travels there through the ones between. `intensity` makes the car travel faster. */
+export function elevator(el: HTMLElement, options?: HairlineOptions): Figure {
+  return create({
+    id: "elevator",
+    label: "Four floors beside an open shaft. The pointer's height picks a floor, and the car travels there through the ones between.",
+    rest: "rest",
+    engine: elevatorEngine,
+  }, el, options);
+}
+
+/** A phone in layers: glass, board, battery, shell. Moving across opens the gap; moving down picks a layer. `intensity` opens the layers further. */
+export function phone(el: HTMLElement, options?: HairlineOptions): Figure {
+  return create({
+    id: "phone",
+    label: "A phone in layers: glass, board, battery, shell. Moving across opens the gap; moving down picks a layer.",
+    rest: "rest",
+    engine: phoneEngine,
+  }, el, options);
+}
+
+/** A thin laptop: the pointer's height sets how far the lid stands open, and the lid follows it on a spring. `intensity` lets the lid open wider. */
+export function laptop(el: HTMLElement, options?: HairlineOptions): Figure {
+  return create({
+    id: "laptop",
+    label: "A thin laptop: the pointer's height sets how far the lid stands open, and the lid follows it on a spring.",
+    rest: "rest",
+    engine: laptopEngine,
+  }, el, options);
+}
+
+/** A terminal window: the pointer's height scrolls back through its history, and the line under it lifts off the screen. `intensity` spreads the lift over more lines. */
+export function terminal(el: HTMLElement, options?: HairlineOptions): Figure {
+  return create({
+    id: "terminal",
+    label: "A terminal window: the pointer's height scrolls back through its history, and the line under it lifts off the screen.",
+    rest: "rest",
+    engine: terminalEngine,
+  }, el, options);
+}
+
+/** A rack of twelve blades: the pointer's height pulls the nearest ones out on their rails, the farther the less. `intensity` pulls out more blades. */
+export function cabinet(el: HTMLElement, options?: HairlineOptions): Figure {
+  return create({
+    id: "cabinet",
+    label: "A rack of twelve blades: the pointer's height pulls the nearest ones out on their rails, the farther the less.",
+    rest: "rest",
+    engine: cabinetEngine,
+  }, el, options);
+}
+
+/** A commit graph on a board: the commit under the pointer rises, and its history rises after it, the farther back the less. `intensity` raises more of the history. */
+export function branches(el: HTMLElement, options?: HairlineOptions): Figure {
+  return create({
+    id: "branches",
+    label: "A commit graph on a board: the commit under the pointer rises, and its history rises after it, the farther back the less.",
+    rest: "rest",
+    engine: branchesEngine,
+  }, el, options);
+}
+
+/** A vault door: circling the pointer turns its dial, which coasts and catches every ten; on forty its three bolts draw back. `intensity` lets the dial coast longer. */
+export function vault(el: HTMLElement, options?: HairlineOptions): Figure {
+  return create({
+    id: "vault",
+    label: "A vault door: circling the pointer turns its dial, which coasts and catches every ten; on forty its three bolts draw back.",
+    rest: "rest",
+    engine: vaultEngine,
+  }, el, options);
+}
+
+/** A bank of twelve lockers, one ajar at rest: the locker under the pointer opens, and the one open before it swings shut. `intensity` opens the door wider. */
+export function lockers(el: HTMLElement, options?: HairlineOptions): Figure {
+  return create({
+    id: "lockers",
+    label: "A bank of twelve lockers, one ajar at rest: the locker under the pointer opens, and the one open before it swings shut.",
+    rest: "rest",
+    engine: lockersEngine,
+  }, el, options);
+}
+
+/** A padlock: as the pointer nears, the shackle springs up out of the body and swings open about its long leg. `intensity` swings the shackle further. */
+export function padlock(el: HTMLElement, options?: HairlineOptions): Figure {
+  return create({
+    id: "padlock",
+    label: "A padlock: as the pointer nears, the shackle springs up out of the body and swings open about its long leg.",
+    rest: "rest",
+    engine: padlockEngine,
+  }, el, options);
+}
+
+/** A patch panel of twenty-four ports: the cable under the pointer lifts, and its neighbours lean away, less the further away. `intensity` spreads the lean over more ports. */
+export function patch(el: HTMLElement, options?: HairlineOptions): Figure {
+  return create({
+    id: "patch",
+    label: "A patch panel of twenty-four ports: the cable under the pointer lifts, and its neighbours lean away, less the further away.",
+    rest: "rest",
+    engine: patchEngine,
+  }, el, options);
+}
+
+/** A parabolic dish on a two-axis gimbal: the pointer aims it, and it follows on a spring. `intensity` swings the dish further. */
+export function dish(el: HTMLElement, options?: HairlineOptions): Figure {
+  return create({
+    id: "dish",
+    label: "A parabolic dish on a two-axis gimbal: the pointer aims it, and it follows on a spring.",
+    rest: "rest",
+    engine: dishEngine,
+  }, el, options);
+}
+
+/** A wifi router whose antennas lean toward the pointer, the nearest the most and the others less the further away. `intensity` spreads the lean over more antennas. */
+export function router(el: HTMLElement, options?: HairlineOptions): Figure {
+  return create({
+    id: "router",
+    label: "A wifi router whose antennas lean toward the pointer, the nearest the most and the others less the further away.",
+    rest: "rest",
+    engine: routerEngine,
   }, el, options);
 }

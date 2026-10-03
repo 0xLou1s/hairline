@@ -41,3 +41,55 @@ export function Slow({ style, ...props }: ComponentProps<typeof Hairline.Slow>) 
 export function Turntable({ style, ...props }: ComponentProps<typeof Hairline.Turntable>) {
   return <Hairline.Turntable style={{ ...tokens, ...style }} {...props} />;
 }
+
+export function Keyboard({ style, ...props }: ComponentProps<typeof Hairline.Keyboard>) {
+  return <Hairline.Keyboard style={{ ...tokens, ...style }} {...props} />;
+}
+
+export function Elevator({ style, ...props }: ComponentProps<typeof Hairline.Elevator>) {
+  return <Hairline.Elevator style={{ ...tokens, ...style }} {...props} />;
+}
+
+export function Phone({ style, ...props }: ComponentProps<typeof Hairline.Phone>) {
+  return <Hairline.Phone style={{ ...tokens, ...style }} {...props} />;
+}
+
+export function Laptop({ style, ...props }: ComponentProps<typeof Hairline.Laptop>) {
+  return <Hairline.Laptop style={{ ...tokens, ...style }} {...props} />;
+}
+
+export function Terminal({ style, ...props }: ComponentProps<typeof Hairline.Terminal>) {
+  return <Hairline.Terminal style={{ ...tokens, ...style }} {...props} />;
+}
+
+export function Cabinet({ style, ...props }: ComponentProps<typeof Hairline.Cabinet>) {
+  return <Hairline.Cabinet style={{ ...tokens, ...style }} {...props} />;
+}
+
+export function Branches({ style, ...props }: ComponentProps<typeof Hairline.Branches>) {
+  return <Hairline.Branches style={{ ...tokens, ...style }} {...props} />;
+}
+
+export function Vault({ style, ...props }: ComponentProps<typeof Hairline.Vault>) {
+  return <Hairline.Vault style={{ ...tokens, ...style }} {...props} />;
+}
+
+export function Lockers({ style, ...props }: ComponentProps<typeof Hairline.Lockers>) {
+  return <Hairline.Lockers style={{ ...tokens, ...style }} {...props} />;
+}
+
+export function Padlock({ style, ...props }: ComponentProps<typeof Hairline.Padlock>) {
+  return <Hairline.Padlock style={{ ...tokens, ...style }} {...props} />;
+}
+
+export function Patch({ style, ...props }: ComponentProps<typeof Hairline.Patch>) {
+  return <Hairline.Patch style={{ ...tokens, ...style }} {...props} />;
+}
+
+export function Dish({ style, ...props }: ComponentProps<typeof Hairline.Dish>) {
+  return <Hairline.Dish style={{ ...tokens, ...style }} {...props} />;
+}
+
+export function Router({ style, ...props }: ComponentProps<typeof Hairline.Router>) {
+  return <Hairline.Router style={{ ...tokens, ...style }} {...props} />;
+}

@@ -3,11 +3,12 @@ import type { CSSProperties } from "react";
 import { Footer, Topbar } from "@/components/chrome";
 import { Rail, type RailGroup } from "@/components/rail";
 import { SECTIONS, type Group } from "@/lib/docs";
-import { LINKS } from "@/lib/figures";
+import { COUNT, LINKS } from "@/lib/figures";
 import { highlight } from "@/lib/highlight";
 import { share } from "@/lib/share";
 import { tiny } from "@/lib/size";
 import { CDN, CSS, QUICKSTART, REACT, REACT_SIGNATURE, VANILLA, VANILLA_SIGNATURE, install } from "@/lib/snippets";
+import { cap } from "@/lib/words";
 import { Api, GettingStarted, Reference } from "./sections";
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL!;
@@ -47,7 +48,7 @@ export default async function Docs() {
       <Rail label="Docs" groups={RAIL} />
       <main className="col">
         <header className="hero-rise">
-          <h1 className="col-h1" style={at(0)}>Six figures, one set of options.</h1>
+          <h1 className="col-h1" style={at(0)}>{cap(COUNT)} figures, one set of options.</h1>
           <p className="col-lede" style={at(1)}>
             Every figure takes the same four options and draws itself in SVG, with no dependencies. Install the package, paste a figure, and turn <code className="doc-code">intensity</code> up or down.
           </p>

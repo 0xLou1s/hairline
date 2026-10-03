@@ -2,10 +2,10 @@ import {
   forwardRef, useCallback, useEffect, useLayoutEffect, useRef,
   type ComponentPropsWithoutRef, type ForwardRefExoticComponent, type RefAttributes,
 } from "react";
-import { exploded, phosphor, riffle, slow, terrain, turntable, type Figure, type HairlineOptions } from "./index";
+import { branches, cabinet, dish, elevator, exploded, keyboard, laptop, lockers, padlock, patch, phone, phosphor, riffle, router, slow, terminal, terrain, turntable, vault, type Figure, type HairlineOptions } from "./index";
 
 /**
- * @lucasmarkes/hairline/react — the six figures as components.
+ * @lucasmarkes/hairline/react — the nineteen figures as components.
  *
  * A component renders one empty `<div>` and mounts the figure on it in a
  * layout effect, so on the server the box is there and the drawing is not.
@@ -65,3 +65,29 @@ export const Phosphor = make("Phosphor", phosphor);
 export const Slow = make("Slow", slow);
 /** Blocks on a turntable. A flick across it spins it; it settles on the nearest quarter turn. `intensity` makes the spin coast longer. */
 export const Turntable = make("Turntable", turntable);
+/** A sixty-key board. The key under the pointer sinks, and its neighbours follow it down, less the further away. `intensity` widens how far the press reaches. */
+export const Keyboard = make("Keyboard", keyboard);
+/** Four floors beside an open shaft. The pointer's height picks a floor, and the car travels there through the ones between. `intensity` makes the car travel faster. */
+export const Elevator = make("Elevator", elevator);
+/** A phone in layers: glass, board, battery, shell. Moving across opens the gap; moving down picks a layer. `intensity` opens the layers further. */
+export const Phone = make("Phone", phone);
+/** A thin laptop: the pointer's height sets how far the lid stands open, and the lid follows it on a spring. `intensity` lets the lid open wider. */
+export const Laptop = make("Laptop", laptop);
+/** A terminal window: the pointer's height scrolls back through its history, and the line under it lifts off the screen. `intensity` spreads the lift over more lines. */
+export const Terminal = make("Terminal", terminal);
+/** A rack of twelve blades: the pointer's height pulls the nearest ones out on their rails, the farther the less. `intensity` pulls out more blades. */
+export const Cabinet = make("Cabinet", cabinet);
+/** A commit graph on a board: the commit under the pointer rises, and its history rises after it, the farther back the less. `intensity` raises more of the history. */
+export const Branches = make("Branches", branches);
+/** A vault door: circling the pointer turns its dial, which coasts and catches every ten; on forty its three bolts draw back. `intensity` lets the dial coast longer. */
+export const Vault = make("Vault", vault);
+/** A bank of twelve lockers, one ajar at rest: the locker under the pointer opens, and the one open before it swings shut. `intensity` opens the door wider. */
+export const Lockers = make("Lockers", lockers);
+/** A padlock: as the pointer nears, the shackle springs up out of the body and swings open about its long leg. `intensity` swings the shackle further. */
+export const Padlock = make("Padlock", padlock);
+/** A patch panel of twenty-four ports: the cable under the pointer lifts, and its neighbours lean away, less the further away. `intensity` spreads the lean over more ports. */
+export const Patch = make("Patch", patch);
+/** A parabolic dish on a two-axis gimbal: the pointer aims it, and it follows on a spring. `intensity` swings the dish further. */
+export const Dish = make("Dish", dish);
+/** A wifi router whose antennas lean toward the pointer, the nearest the most and the others less the further away. `intensity` spreads the lean over more antennas. */
+export const Router = make("Router", router);

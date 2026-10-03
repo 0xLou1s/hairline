@@ -1,10 +1,10 @@
 // @vitest-environment jsdom
 import { describe, expect, it, vi } from "vitest";
 import { frames, host, observers, pending } from "./dom";
-import { exploded, phosphor, riffle, slow, terrain, turntable } from "../src/index";
+import { branches, cabinet, dish, elevator, exploded, keyboard, laptop, lockers, padlock, patch, phone, phosphor, riffle, router, slow, terminal, terrain, turntable, vault } from "../src/index";
 import { css } from "../src/core/styles";
 
-const ALL = { riffle, terrain, exploded, phosphor, slow, turntable };
+const ALL = { riffle, terrain, exploded, phosphor, slow, turntable, keyboard, elevator, phone, laptop, terminal, cabinet, branches, vault, lockers, padlock, patch, dish, router };
 const key = (el: Element, k: string) => el.dispatchEvent(new KeyboardEvent("keydown", { key: k, bubbles: true, cancelable: true }));
 
 describe("mount", () => {
@@ -142,6 +142,19 @@ describe("intensity", () => {
     phosphor: [[240, 140], 2, [260, 145], 2, [280, 150], 15],
     slow: [[200, 160], 60],
     turntable: [[50, 176], 1, [120, 176], 1, [200, 176], 1, [280, 176], 1, [350, 176], 40],
+    keyboard: [[200, 160], 20],
+    elevator: [[200, 60], 8],
+    phone: [[100, 80], 100],
+    laptop: [[200, 60], 60],
+    terminal: [[200, 120], 20],
+    cabinet: [[200, 120], 8],
+    branches: [[200, 160], 8],
+    vault: [[260, 170], 2, [200, 230], 2, [140, 170], 2, [200, 110], 8],
+    lockers: [[200, 160], 8],
+    padlock: [[200, 170], 60],
+    patch: [[200, 160], 8],
+    dish: [[300, 100], 12],
+    router: [[300, 120], 12],
   };
   const svg = (el: Element) => el.querySelector("svg")!.innerHTML.replace(/hl-fd\d+/g, "hl-fd");
 

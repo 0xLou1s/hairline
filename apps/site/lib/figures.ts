@@ -6,7 +6,9 @@
  * cannot describe a map the figures do not use.
  */
 
-export type FigureId = "riffle" | "terrain" | "exploded" | "phosphor" | "slow" | "turntable";
+import { spell } from "./words";
+
+export type FigureId = "riffle" | "terrain" | "exploded" | "phosphor" | "slow" | "turntable" | "keyboard" | "elevator" | "phone" | "laptop" | "terminal" | "cabinet" | "branches" | "vault" | "lockers" | "padlock" | "patch" | "dish" | "router";
 
 export type FigureDoc = {
   id: FigureId;
@@ -62,7 +64,101 @@ export const FIGURES: FigureDoc[] = [
     stronger: "The spin coasts longer.",
     parameter: { name: "coast", unit: "ms" },
   },
+  {
+    id: "keyboard",
+    name: "Keyboard",
+    summary: "Sixty keys in a block. The key under the pointer sinks and its neighbours follow it down, less the further away.",
+    stronger: "A wider patch of keys sinks.",
+    parameter: { name: "radius", unit: "keys" },
+  },
+  {
+    id: "elevator",
+    name: "Elevator",
+    summary: "Four floors with the shaft open and the car inside. The pointer's height picks the floor; the car travels there.",
+    stronger: "The car travels faster between floors.",
+    parameter: { name: "stiffness", unit: "spring units" },
+  },
+  {
+    id: "phone",
+    name: "Phone",
+    summary: "A phone in layers: glass, board, battery, shell. Moving across opens the gap; moving down picks a layer.",
+    stronger: "The layers open further.",
+    parameter: { name: "gap", unit: "viewBox units" },
+  },
+  {
+    id: "laptop",
+    name: "Laptop",
+    summary: "A thin laptop, open on its hinge. The pointer's height sets the lid; it follows on a spring.",
+    stronger: "The lid opens wider.",
+    parameter: { name: "lid", unit: "degrees" },
+  },
+  {
+    id: "terminal",
+    name: "Terminal",
+    summary: "A terminal window with its history in rows. The pointer's height scrolls back; the line under it lifts and its neighbours follow.",
+    stronger: "The lift spreads further.",
+    parameter: { name: "spread", unit: "lines" },
+  },
+  {
+    id: "cabinet",
+    name: "Cabinet",
+    summary: "A rack of twelve blades, a few half out. The pointer's height pulls the nearest ones out, the farther the less.",
+    stronger: "More blades come out.",
+    parameter: { name: "reach", unit: "blades" },
+  },
+  {
+    id: "branches",
+    name: "Branches",
+    summary: "A commit graph with a branch forking off main and merging back. The commit under the pointer rises, and its history rises after it.",
+    stronger: "More of the history rises.",
+    parameter: { name: "reach", unit: "commits" },
+  },
+  {
+    id: "vault",
+    name: "Vault",
+    summary: "A vault door with a dial and three bolts. The pointer turns the dial; detents catch every ten, and on the combination the bolts draw back.",
+    stronger: "The dial coasts longer.",
+    parameter: { name: "coast", unit: "ms" },
+  },
+  {
+    id: "lockers",
+    name: "Lockers",
+    summary: "A bank of twelve lockers, one ajar at rest. The locker under the pointer opens; the one at rest closes.",
+    stronger: "The door opens wider.",
+    parameter: { name: "opening", unit: "degrees" },
+  },
+  {
+    id: "padlock",
+    name: "Padlock",
+    summary: "A padlock with its shackle in. As the pointer comes near the shackle lifts out and swings open.",
+    stronger: "The shackle swings further.",
+    parameter: { name: "swing", unit: "degrees" },
+  },
+  {
+    id: "patch",
+    name: "Patch",
+    summary: "A patch panel of twenty-four ports with cables. The cable under the pointer lifts and its neighbours lean away.",
+    stronger: "The lean spreads further.",
+    parameter: { name: "radius", unit: "ports" },
+  },
+  {
+    id: "dish",
+    name: "Dish",
+    summary: "A parabolic dish on a two-axis gimbal. The pointer aims the dish; it follows on a spring.",
+    stronger: "The dish swings further.",
+    parameter: { name: "reach", unit: "degrees" },
+  },
+  {
+    id: "router",
+    name: "Router",
+    summary: "A router with its antennas up. Each antenna leans toward the pointer, the nearest most.",
+    stronger: "The lean spreads further.",
+    parameter: { name: "spread", unit: "antennas" },
+  },
 ];
+
+/** How many figures the package has, as the prose writes it: "nineteen". */
+export const COUNT = spell(FIGURES.length);
 
 /** Each figure's number at intensity 0, 0.5 and 1: a copy of the package's table. */
 export const INTENSITY: Record<FigureId, readonly [number, number, number]> = {
@@ -72,6 +168,19 @@ export const INTENSITY: Record<FigureId, readonly [number, number, number]> = {
   phosphor: [150, 520, 1500],
   slow: [0.6, 0.2, 0.05],
   turntable: [200, 650, 1500],
+  keyboard: [1, 2, 3.5],
+  elevator: [40, 100, 220],
+  phone: [16, 28, 40],
+  laptop: [100, 125, 150],
+  terminal: [1, 2, 3.5],
+  cabinet: [1.5, 3, 5],
+  branches: [1, 3, 6],
+  vault: [250, 600, 1500],
+  lockers: [55, 90, 120],
+  padlock: [45, 90, 100],
+  patch: [1, 2.5, 5],
+  dish: [30, 50, 70],
+  router: [0.5, 1.5, 3],
 };
 
 /** A number with its unit, as the docs' table and /llms.txt write it: "40 ms", "0.2× normal speed". */
