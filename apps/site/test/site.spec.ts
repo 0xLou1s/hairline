@@ -287,7 +287,7 @@ const BASE = "http://localhost:3000";
 test("a pasted link shows the page it leads to: each page's card has its own title, text and address", async ({ request }) => {
   const CARDS = [
     ["/", "hairline", /^Seven isometric line figures/],
-    ["/figures", "Figures", /^Seven shelves, twenty-one figures, grouped by what they draw/],
+    ["/figures", "Figures", /^Seven shelves, nineteen figures, grouped by what they draw/],
     ["/docs", "Docs", /^Seven isometric line figures/],
     ["/skill", "Make your own figure", /^hairline-create is a skill/],
     ["/inspo", "How Hairline was made", /^A long brief/],

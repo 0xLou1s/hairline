@@ -16,28 +16,28 @@ function watch(page: Page): string[] {
 const tiles = (page: Page) => page.locator(".fig-tile");
 const shelf = (page: Page, name: string) => page.locator(".shelves .shelf", { hasText: name });
 
-test("/figures prerenders seven empty boxes among twenty-one tiles, then draws them with a clean console", async ({ page, request }) => {
+test("/figures prerenders seven empty boxes among nineteen tiles, then draws them with a clean console", async ({ page, request }) => {
   const html = await (await request.get("/figures")).text();
   expect(html.match(/<div style="aspect-ratio:5 \/ 4"><\/div>/g)).toHaveLength(7);
-  expect(html.match(/class="fig-tile"/g)).toHaveLength(21);
-  expect(html.match(/class="fig-tile" data-planned=""/g)).toHaveLength(14);
+  expect(html.match(/class="fig-tile"/g)).toHaveLength(19);
+  expect(html.match(/class="fig-tile" data-planned=""/g)).toHaveLength(12);
 
   const noise = watch(page);
   await page.goto("/figures");
-  await expect(tiles(page)).toHaveCount(21);
+  await expect(tiles(page)).toHaveCount(19);
   await expect(page.locator(".fig-tile [data-hairline] > svg")).toHaveCount(7);
-  await expect(page.locator(".fig-tile .fig-ghost")).toHaveCount(14);
+  await expect(page.locator(".fig-tile .fig-ghost")).toHaveCount(12);
   await expect(page.locator("h1")).toHaveText("Every figure, by what it draws.");
   await expect(page.locator(".doc-section h2")).toHaveText(SHELVES);
   await expect(page.locator(".fig-name").first()).toHaveAccessibleName("Exploded");
-  await expect(page.locator(".fig-tile[data-planned] .fig-name").first()).toHaveAccessibleName("Funnel, planned");
+  await expect(page.locator(".fig-tile[data-planned] .fig-name").first()).toHaveAccessibleName("Elevator, planned");
   expect(noise).toEqual([]);
 });
 
 test("the shelves filter: All is pressed at first, a shelf shows only itself and names itself in the address", async ({ page }) => {
   await page.goto("/figures");
   await expect(shelf(page, "All")).toHaveAttribute("aria-pressed", "true");
-  await expect(page.locator(".shelves .shelf-n")).toHaveText(["21", "3", "3", "3", "3", "3", "3", "3"]);
+  await expect(page.locator(".shelves .shelf-n")).toHaveText(["19", "1", "3", "3", "3", "3", "3", "3"]);
 
   await shelf(page, "Machines").click();
   await expect(shelf(page, "Machines")).toHaveAttribute("aria-pressed", "true");
@@ -54,7 +54,7 @@ test("the shelves filter: All is pressed at first, a shelf shows only itself and
   })).toBeLessThan(1);
 
   await shelf(page, "All").click();
-  await expect(tiles(page)).toHaveCount(21);
+  await expect(tiles(page)).toHaveCount(19);
   expect(new URL(page.url()).hash).toBe("");
 });
 
@@ -131,6 +131,68 @@ test("a planned figure's drawer has its outline and a link to ask for it, and no
   await expect(drawer.getByRole("link", { name: "Request on GitHub" })).toHaveAttribute("href", "https://github.com/lucasmarkes/hairline/issues/new?title=Figure%3A%20Vault");
   await drawer.locator(".detail-close").click();
   await expect(drawer).not.toHaveAttribute("data-open");
+});
+
+test("closing the drawer returns focus to the tile's button, with its ring for the keyboard alone", async ({ page }) => {
+  await page.goto("/figures");
+  const drawer = page.locator("#figure-drawer");
+  const name = page.locator(".fig-name", { hasText: "Keyboard" });
+  const stage = page.locator(".fig-tile", { has: name }).locator(".fig-stage");
+  const ringed = () => name.evaluate((el) => el.matches(":focus-visible"));
+  const outline = () => name.evaluate((el) => getComputedStyle(el).outlineStyle === "none" || parseFloat(getComputedStyle(el).outlineWidth) === 0 ? "none" : "drawn");
+
+  // the mouse opened it: neither the × nor Escape brings the ring back with focus
+  for (const shut of [() => drawer.locator(".detail-close").click(), () => page.keyboard.press("Escape")]) {
+    await stage.click();
+    await expect(drawer).toHaveAttribute("data-open");
+    await shut();
+    await expect(drawer).not.toHaveAttribute("data-open");
+    await expect(name).toBeFocused();
+    expect(await ringed()).toBe(false);
+    expect(await outline()).toBe("none");
+  }
+
+  // the keyboard opened it, or took over inside it with Tab: Escape returns focus with its ring
+  for (const open of [async () => { await name.focus(); await page.keyboard.press("Enter"); }, async () => { await stage.click(); await page.keyboard.press("Tab"); }]) {
+    await open();
+    await expect(drawer).toHaveAttribute("data-open");
+    await page.keyboard.press("Escape");
+    await expect(drawer).not.toHaveAttribute("data-open");
+    await expect(name).toBeFocused();
+    expect(await ringed()).toBe(true);
+    expect(await outline()).toBe("drawn");
+  }
+});
+
+test("opening the drawer focuses its ×, with its ring for the keyboard alone", async ({ page }) => {
+  await page.goto("/figures");
+  const drawer = page.locator("#figure-drawer");
+  const close = drawer.locator(".detail-close");
+  const name = page.locator(".fig-name", { hasText: "Keyboard" });
+  const stage = page.locator(".fig-tile", { has: name }).locator(".fig-stage");
+  const ringed = () => close.evaluate((el) => el.matches(":focus-visible"));
+
+  for (const open of [() => stage.click(), () => name.click()]) {
+    await open();
+    await expect(drawer).toHaveAttribute("data-open");
+    await expect(close).toBeFocused();
+    expect(await ringed()).toBe(false);
+    await close.click();
+    await expect(drawer).not.toHaveAttribute("data-open");
+  }
+
+  // opened by the keyboard, shut by Escape or by the × pressed with Enter, focus goes back to the name with its ring
+  for (const [key, shut] of [["Enter", "Escape"], [" ", "Enter"]]) {
+    await name.focus();
+    await page.keyboard.press(key);
+    await expect(drawer).toHaveAttribute("data-open");
+    await expect(close).toBeFocused();
+    expect(await ringed()).toBe(true);
+    await page.keyboard.press(shut);
+    await expect(drawer).not.toHaveAttribute("data-open");
+    await expect(name).toBeFocused();
+    expect(await name.evaluate((el) => el.matches(":focus-visible"))).toBe(true);
+  }
 });
 
 test("on a phone the shelves are a strip under the top bar, and nothing scrolls sideways", async ({ page }) => {

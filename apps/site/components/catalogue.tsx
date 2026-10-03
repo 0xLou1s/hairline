@@ -34,9 +34,9 @@ const ICONS: Record<Filter, ReactNode> = {
   ),
   data: svg(
     <>
-      <rect x="2" y="8" width="3" height="6" rx="1" fill="currentColor" fillOpacity=".2" />
-      <rect x="6.5" y="4" width="3" height="10" rx="1" fill="currentColor" fillOpacity=".2" />
-      <rect x="11" y="6" width="3" height="8" rx="1" fill="currentColor" fillOpacity=".2" />
+      <rect x="2" y="7" width="3" height="6" rx="1" fill="currentColor" fillOpacity=".2" />
+      <rect x="6.5" y="3" width="3" height="10" rx="1" fill="currentColor" fillOpacity=".2" />
+      <rect x="11" y="5" width="3" height="8" rx="1" fill="currentColor" fillOpacity=".2" />
     </>,
   ),
   machines: svg(
@@ -125,6 +125,7 @@ export function Catalogue({ code, header, end }: { code: Record<FigureId, Tab[]>
   const head = useRef<HTMLDivElement>(null);
   const close = useRef<HTMLButtonElement>(null);
   const opener = useRef<HTMLElement | null>(null);
+  const keyed = useRef(false);
 
   // the hash is read after mount, so the server's All and the first render agree
   useEffect(() => {
@@ -188,8 +189,9 @@ export function Catalogue({ code, header, end }: { code: Record<FigureId, Tab[]>
     }
   };
 
-  const pick = (f: Entry, from: HTMLElement | null) => {
+  const pick = (f: Entry, from: HTMLElement | null, keyboard: boolean) => {
     opener.current = from;
+    keyed.current = keyboard;
     if (entry?.id !== f.id) {
       setIntensity(0.5);
       setReads("");
@@ -198,17 +200,21 @@ export function Catalogue({ code, header, end }: { code: Record<FigureId, Tab[]>
     setOpen(true);
   };
 
-  const shut = useCallback(() => {
+  // focus returns to the tile's button, and its ring shows only when the keyboard closed the drawer: a script's focus
+  // would otherwise draw it after a click on the ×; Escape counts as the keyboard only once it has been steering
+  const shut = useCallback((keyboard: boolean) => {
     setOpen(false);
     const back = opener.current;
-    if (back?.isConnected) back.focus({ preventScroll: true });
+    if (back?.isConnected) back.focus({ preventScroll: true, focusVisible: keyboard } as FocusOptions);
   }, []);
 
   useEffect(() => {
     if (!open) return;
-    close.current?.focus({ preventScroll: true });
+    // the × takes focus, with its ring only when the keyboard opened the drawer, as `shut` does on the way back
+    close.current?.focus({ preventScroll: true, focusVisible: keyed.current } as FocusOptions);
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") shut();
+      if (event.key === "Tab") keyed.current = true;
+      if (event.key === "Escape") shut(keyed.current);
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
@@ -272,7 +278,7 @@ export function Catalogue({ code, header, end }: { code: Record<FigureId, Tab[]>
   );
 }
 
-function ShelfSection({ shelf, picked, onPick }: { shelf: Shelf; picked?: string; onPick: (f: Entry, from: HTMLElement | null) => void }) {
+function ShelfSection({ shelf, picked, onPick }: { shelf: Shelf; picked?: string; onPick: (f: Entry, from: HTMLElement | null, keyboard: boolean) => void }) {
   const drawn = shelf.figures.filter((f) => f.drawn).length;
   return (
     <section id={`shelf-${shelf.id}`} className="doc-section" style={tint(shelf.color)} aria-labelledby={`shelf-${shelf.id}-h`}>
@@ -296,16 +302,16 @@ function ShelfSection({ shelf, picked, onPick }: { shelf: Shelf; picked?: string
  * One figure on its shelf. The whole tile takes a click, but the button is its name: the figure in the stage answers
  * the pointer and the keyboard itself, and Riffle's cards cannot sit inside a button.
  */
-function Tile({ entry, picked, onPick }: { entry: Entry; picked: boolean; onPick: (f: Entry, from: HTMLElement | null) => void }) {
+function Tile({ entry, picked, onPick }: { entry: Entry; picked: boolean; onPick: (f: Entry, from: HTMLElement | null, keyboard: boolean) => void }) {
   const button = useRef<HTMLButtonElement>(null);
   const Figure = entry.drawn ? COMPONENTS[entry.id] : null;
   return (
-    <div className="fig-tile" data-planned={entry.drawn ? undefined : ""} data-picked={picked ? "" : undefined} onClick={() => onPick(entry, button.current)}>
+    <div className="fig-tile" data-planned={entry.drawn ? undefined : ""} data-picked={picked ? "" : undefined} onClick={(event) => onPick(entry, button.current, event.detail === 0)}>
       <div className="fig-stage">{Figure ? <Figure /> : <Ghost />}</div>
       <div className="fig-foot">
         <button ref={button} type="button" className="fig-name" aria-label={entry.drawn ? undefined : `${entry.name}, planned`} aria-expanded={picked} aria-controls="figure-drawer" onClick={(event) => {
           event.stopPropagation();
-          onPick(entry, button.current);
+          onPick(entry, button.current, event.detail === 0);
         }}>
           {entry.name}
         </button>
@@ -318,7 +324,7 @@ function Detail({
   entry, code, intensity, setIntensity, reads, setReads, closeRef, onClose,
 }: {
   entry: Entry; code?: Tab[]; intensity: number; setIntensity: (n: number) => void; reads: string; setReads: (s: string) => void;
-  closeRef: React.RefObject<HTMLButtonElement | null>; onClose: () => void;
+  closeRef: React.RefObject<HTMLButtonElement | null>; onClose: (keyboard: boolean) => void;
 }) {
   const shelf = SHELF_OF.get(entry.id)!;
   const Figure = entry.drawn ? COMPONENTS[entry.id] : null;
@@ -332,7 +338,7 @@ function Detail({
             {entry.drawn ? null : <span className="detail-tag">planned</span>}
           </p>
         </div>
-        <button ref={closeRef} type="button" className="detail-close" aria-label="Close" onClick={onClose}>
+        <button ref={closeRef} type="button" className="detail-close" aria-label="Close" onClick={(event) => onClose(event.detail === 0)}>
           <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
             <path d="m4 4 8 8M12 4l-8 8" />
           </svg>

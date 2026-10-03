@@ -21,6 +21,8 @@
   --lift: 0 1px 2px #00000008, 0 10px 28px -16px #00000024;
   --lift-lg: 0 1px 2px #00000008, 0 2px 6px #00000008, 0 32px 64px -34px #00000038;
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  /* the iOS sheet's curve: off the mark at once, then a short glide home */
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
   /* a critically damped spring (no bounce, settles in 300ms), sampled: it leaves rest gently and eases home on a long tail, with no step in between */
   --spring-icon: linear(0, 0.057, 0.18, 0.32, 0.454, 0.572, 0.67, 0.749, 0.811, 0.859, 0.896, 0.923, 0.944, 0.959, 0.97, 0.979, 0.985, 0.989, 0.992, 0.994, 0.996, 0.997, 0.998, 0.999, 1);
   /* Code in greys, each at least 4.5:1 on the code frame's #fafafa. shiki writes these names. */
@@ -479,11 +481,20 @@ footer a::after { content: ""; position: absolute; inset: -12px -8px; }
 
 /* The drawer: a card fixed at the right under the top bar, a sheet from below on a phone. Its contents stay while it
    slides away and go once it is out of sight. */
-.drawer { position: fixed; z-index: 20; inset: auto 0 0 0; max-height: 86vh; overflow-y: auto; overscroll-behavior: contain; padding: 18px var(--gutter) calc(24px + env(safe-area-inset-bottom, 0px)); background: #fff; border-radius: 18px 18px 0 0; box-shadow: var(--lift-lg), 0 0 0 1px var(--color-line); transform: translateY(102%); visibility: hidden; transition: transform 320ms var(--ease-out), visibility 0s 320ms; font-size: 14px; line-height: 1.6; }
-/* hidden once it is out, or its shadow would show at the window's edge */
-.drawer[data-open] { transform: none; visibility: visible; transition-delay: 0s; }
-@media (min-width: 900px) { .drawer { inset: calc(var(--topbar) + 14px) 14px 14px auto; width: 360px; max-height: none; border-radius: 16px; padding: 18px 18px 22px; transform: translateX(calc(100% + 16px)); } }
+.drawer { position: fixed; z-index: 20; inset: auto 0 0 0; max-height: 86vh; overflow-y: auto; overscroll-behavior: contain; padding: 18px var(--gutter) calc(24px + env(safe-area-inset-bottom, 0px)); background: #fff; border-radius: 18px 18px 0 0; box-shadow: var(--lift-lg), 0 0 0 1px var(--color-line); transform: translateY(102%); visibility: hidden; transition: transform 200ms var(--ease-drawer), visibility 0s 200ms; font-size: 14px; line-height: 1.6; }
+/* hidden once it is out, or its shadow would show at the window's edge. It arrives in 320ms and leaves in 200ms: a
+   close answers the hand at once, moving from its first frame, and is gone before the eye has followed it */
+.drawer[data-open] { transform: none; visibility: visible; transition-duration: 320ms, 0s; transition-timing-function: var(--ease-out); transition-delay: 0s; }
+@media (min-width: 900px) { .drawer { inset: calc(var(--topbar) + 14px) 14px 14px auto; width: 360px; max-height: none; border-radius: 16px; padding: 18px 18px 22px; } }
 @media (min-width: 1280px) { .drawer { right: max(14px, calc((100% - 1080px) / 2 - 376px + var(--gutter))); } }
+/* On a desk the card does not slide out: its resting place moves with the window, and past ~1810px a slide of its own
+   width would stop it inside the window and cut it off there. It steps back 24px and fades where it is, the same on any
+   monitor, so the curve's tail passes while it is already clear, and it ends with the tile's ring (180ms). It opens
+   the same way back. The reduced-motion block below still wins: the same fade without the 24px. */
+@media (min-width: 900px) {
+  .drawer { transform: translateX(24px); opacity: 0; transition: transform 180ms var(--ease-out), opacity 150ms ease, visibility 0s 180ms; }
+  .drawer[data-open] { transform: none; opacity: 1; transition: transform 300ms var(--ease-out), opacity 200ms ease, visibility 0s; }
+}
 .detail { display: grid; gap: 16px; }
 .detail-h { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
 .detail-name { font-size: 16px; font-weight: 500; line-height: 1.3; letter-spacing: -0.01em; }
@@ -514,5 +525,7 @@ footer a::after { content: ""; position: absolute; inset: -12px -8px; }
 @media (prefers-reduced-motion: reduce) {
   .figs-body[data-enter] > section { animation: none; }
   .fig-tile, .shelf-list[data-live] .shelf-plate { transition: none; }
-  .drawer { transition-duration: 0s; }
+  /* the drawer stays where it rests and only fades in and out */
+  .drawer { transform: none; opacity: 0; transition: opacity 150ms ease, visibility 0s 150ms; }
+  .drawer[data-open] { opacity: 1; transition: opacity 150ms ease, visibility 0s; }
 }

@@ -16,12 +16,12 @@ describe("the catalogue", () => {
   it("names each figure once, on seven shelves of three", () => {
     expect(new Set(ENTRIES.map((e) => e.id)).size).toBe(ENTRIES.length);
     expect(new Set(ENTRIES.map((e) => e.name)).size).toBe(ENTRIES.length);
-    expect(SHELVES.map((s) => s.figures.length)).toEqual([3, 3, 3, 3, 3, 3, 3]);
+    expect(SHELVES.map((s) => s.figures.length)).toEqual([1, 3, 3, 3, 3, 3, 3]);
   });
 
   it("counts in words, read from the shelves", () => {
     expect([spell(7), spell(19), spell(20), spell(21), spell(40), spell(99)]).toEqual(["seven", "nineteen", "twenty", "twenty-one", "forty", "ninety-nine"]);
-    expect(tally()).toBe("Seven shelves, twenty-one figures");
+    expect(tally()).toBe("Seven shelves, nineteen figures");
   });
 
   it("pastes each figure three ways, and the docs' Terrain is the same as before", () => {
