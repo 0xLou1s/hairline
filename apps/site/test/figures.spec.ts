@@ -70,7 +70,7 @@ test("the shelves' marks sit on the name in the top bar, and the shelves start w
     await page.goto("/figures");
     const at = await page.evaluate(() => {
       const left = (el: Element | null) => el!.getBoundingClientRect().left;
-      return { mark: left(document.querySelector(".shelves .shelf svg")), name: left(document.querySelector(".topbar > a")), h1: left(document.querySelector("h1")) };
+      return { mark: left(document.querySelector(".shelves .shelf svg")), name: left(document.querySelector(".topbar-name")), h1: left(document.querySelector("h1")) };
     });
     expect(Math.abs(at.mark - at.name), `${width}`).toBeLessThan(0.5);
     expect(Math.abs(at.h1 - at.name - 260), `${width}`).toBeLessThan(0.5);
@@ -194,7 +194,7 @@ test("on a phone the shelves are a strip under the top bar, and nothing scrolls 
     // with Figures first, the name still stands clear of the links: the version goes under 400px
     const names = await page.evaluate(() => {
       const text = (el: Element) => { const r = document.createRange(); r.selectNodeContents(el); return r.getBoundingClientRect(); };
-      return text(document.querySelector(".topbar nav > a")!).left - text(document.querySelector(".topbar > a")!).right;
+      return text(document.querySelector(".topbar nav > a")!).left - text(document.querySelector(".topbar-name")!).right;
     });
     expect(names, `${width}`).toBeGreaterThanOrEqual(20);
 

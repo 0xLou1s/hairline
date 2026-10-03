@@ -1,7 +1,7 @@
 import type { CSSProperties } from "react";
+import { Assembly } from "@/components/assembly";
 import { Footer, Topbar } from "@/components/chrome";
 import { Install } from "@/components/install";
-import { Reel } from "@/components/reel";
 import { SkillLink } from "@/components/skill-link";
 import { COUNT } from "@/lib/figures";
 import { install } from "@/lib/snippets";
@@ -14,9 +14,8 @@ const at = (i: number) => ({ "--i": i }) as CSSProperties;
 
 /**
  * The home, as one column: the pitch, the command with the way in, the way to the
- * skill, then the figures playing by themselves. A Server Component, so the figures
- * are the package's React components rendered from here, and every deploy
- * runs them through server rendering and hydration. The rest lives on /docs.
+ * skill, then a window drawn in hairlines, assembling itself layer by layer. The
+ * figures live on /figures and /docs.
  */
 export default function Page() {
   return (
@@ -33,7 +32,7 @@ export default function Page() {
             <a className="btn btn-primary press" href="/docs">Get started</a>
           </div>
           <p className="hero-skill" style={at(3)}><SkillLink /></p>
-          <div id="try" className="hero-reel" style={at(4)}><Reel /></div>
+          <div className="hero-art" style={at(4)}><Assembly /></div>
         </section>
       </main>
       <Footer />
