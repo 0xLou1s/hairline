@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState, type CSSProperties } from "react";
-import { Branches, Cabinet, Elevator, Exploded, Keyboard, Laptop, Lockers, Padlock, Phone, Phosphor, Riffle, Slow, Terminal, Terrain, Turntable, Vault } from "@lucasmarkes/hairline/react";
+import { Branches, Cabinet, Dish, Elevator, Exploded, Keyboard, Laptop, Lockers, Padlock, Patch, Phone, Phosphor, Riffle, Router, Slow, Terminal, Terrain, Turntable, Vault } from "@lucasmarkes/hairline/react";
 import { FIGURES } from "@/lib/figures";
 
-const COMPONENTS = { riffle: Riffle, terrain: Terrain, exploded: Exploded, phosphor: Phosphor, slow: Slow, turntable: Turntable, keyboard: Keyboard, elevator: Elevator, phone: Phone, laptop: Laptop, terminal: Terminal, cabinet: Cabinet, branches: Branches, vault: Vault, lockers: Lockers, padlock: Padlock };
+const COMPONENTS = { riffle: Riffle, terrain: Terrain, exploded: Exploded, phosphor: Phosphor, slow: Slow, turntable: Turntable, keyboard: Keyboard, elevator: Elevator, phone: Phone, laptop: Laptop, terminal: Terminal, cabinet: Cabinet, branches: Branches, vault: Vault, lockers: Lockers, padlock: Padlock, patch: Patch, dish: Dish, router: Router };
 
 /**
  * One pass of a pointer over each figure, in its viewBox (400 × 320): [x, y, ms]. Each path does the
@@ -27,6 +27,9 @@ const DEMO: Record<keyof typeof COMPONENTS, [number, number, number][]> = {
   vault: [[214, 187, 0], [207, 216, 1100], [207, 216, 2300], [214, 187, 3400]],
   lockers: [[200, 160, 0], [250, 230, 1800], [120, 110, 3200]],
   padlock: [[40, 280, 0], [200, 170, 1500], [330, 100, 3000]],
+  patch: [[200, 160, 0], [120, 110, 1800], [230, 180, 3200]],
+  dish: [[100, 100, 0], [300, 100, 1200], [300, 250, 2400], [120, 240, 3500]],
+  router: [[80, 200, 0], [320, 200, 2000], [200, 120, 3200]],
 };
 
 /** Long enough for the slowest dissolve (the reel's own, 520ms) to finish before its leaver goes. */

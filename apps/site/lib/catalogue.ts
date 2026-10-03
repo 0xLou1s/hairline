@@ -65,9 +65,9 @@ export const SHELVES: Shelf[] = [
   },
   {
     id: "connectivity", title: "Connectivity", color: "#ec4899", figures: [
-      planned("patch", "Patch", "A patch panel of twenty-four ports with cables. The cable under the pointer lifts and its neighbours lean away.", "The lean spreads further."),
-      planned("dish", "Dish", "A parabolic dish on a two-axis gimbal. The pointer aims the dish; it follows on a spring.", "The dish swings further."),
-      planned("router", "Router", "A router with its antennas up. Each antenna leans toward the pointer, the nearest most.", "The lean spreads further."),
+      drawn("patch"),
+      drawn("dish"),
+      drawn("router"),
     ],
   },
 ];

@@ -1,15 +1,18 @@
 import { create, type Figure, type HairlineOptions } from "./mount";
 import { mount as branchesEngine } from "./figures/branches";
 import { mount as cabinetEngine } from "./figures/cabinet";
+import { mount as dishEngine } from "./figures/dish";
 import { mount as elevatorEngine } from "./figures/elevator";
 import { mount as explodedEngine } from "./figures/exploded";
 import { mount as keyboardEngine } from "./figures/keyboard";
 import { mount as laptopEngine } from "./figures/laptop";
 import { mount as lockersEngine } from "./figures/lockers";
 import { mount as padlockEngine } from "./figures/padlock";
+import { mount as patchEngine } from "./figures/patch";
 import { mount as phoneEngine } from "./figures/phone";
 import { mount as phosphorEngine } from "./figures/phosphor";
 import { mount as riffleEngine } from "./figures/riffle";
+import { mount as routerEngine } from "./figures/router";
 import { mount as slowEngine } from "./figures/slow";
 import { mount as terminalEngine } from "./figures/terminal";
 import { mount as terrainEngine } from "./figures/terrain";
@@ -17,7 +20,7 @@ import { mount as turntableEngine } from "./figures/turntable";
 import { mount as vaultEngine } from "./figures/vault";
 
 /**
- * @lucasmarkes/hairline — sixteen isometric line figures that answer the pointer.
+ * @lucasmarkes/hairline — nineteen isometric line figures that answer the pointer.
  *
  * One function per figure. Each takes an element and the same options, draws
  * into the element, and returns `{ update, destroy }`. Each function names
@@ -184,5 +187,35 @@ export function padlock(el: HTMLElement, options?: HairlineOptions): Figure {
     label: "A padlock: as the pointer nears, the shackle springs up out of the body and swings open about its long leg.",
     rest: "rest",
     engine: padlockEngine,
+  }, el, options);
+}
+
+/** A patch panel of twenty-four ports: the cable under the pointer lifts, and its neighbours lean away, less the further away. `intensity` spreads the lean over more ports. */
+export function patch(el: HTMLElement, options?: HairlineOptions): Figure {
+  return create({
+    id: "patch",
+    label: "A patch panel of twenty-four ports: the cable under the pointer lifts, and its neighbours lean away, less the further away.",
+    rest: "rest",
+    engine: patchEngine,
+  }, el, options);
+}
+
+/** A parabolic dish on a two-axis gimbal: the pointer aims it, and it follows on a spring. `intensity` swings the dish further. */
+export function dish(el: HTMLElement, options?: HairlineOptions): Figure {
+  return create({
+    id: "dish",
+    label: "A parabolic dish on a two-axis gimbal: the pointer aims it, and it follows on a spring.",
+    rest: "rest",
+    engine: dishEngine,
+  }, el, options);
+}
+
+/** A wifi router whose antennas lean toward the pointer, the nearest the most and the others less the further away. `intensity` spreads the lean over more antennas. */
+export function router(el: HTMLElement, options?: HairlineOptions): Figure {
+  return create({
+    id: "router",
+    label: "A wifi router whose antennas lean toward the pointer, the nearest the most and the others less the further away.",
+    rest: "rest",
+    engine: routerEngine,
   }, el, options);
 }

@@ -38,6 +38,15 @@ Every release of `@lucasmarkes/hairline`. The format follows
 - `padlock` and `Padlock`: a padlock. As the pointer nears, the shackle
   springs up out of the body and swings open about its long leg. A stronger
   `intensity` swings the shackle further.
+- `patch` and `Patch`: a patch panel of twenty-four ports. The cable under the
+  pointer lifts, and its neighbours lean away, less the further away. A
+  stronger `intensity` spreads the lean over more ports.
+- `dish` and `Dish`: a parabolic dish on a two-axis gimbal. The pointer aims
+  it, and it follows on a spring. A stronger `intensity` swings the dish
+  further.
+- `router` and `Router`: a wifi router. Its antennas lean toward the pointer,
+  the nearest the most and the others less the further away. A stronger
+  `intensity` spreads the lean over more antennas.
 
 ## 0.1.0 - 2026-10-01
 

@@ -8,7 +8,7 @@
 
 import { spell } from "./words";
 
-export type FigureId = "riffle" | "terrain" | "exploded" | "phosphor" | "slow" | "turntable" | "keyboard" | "elevator" | "phone" | "laptop" | "terminal" | "cabinet" | "branches" | "vault" | "lockers" | "padlock";
+export type FigureId = "riffle" | "terrain" | "exploded" | "phosphor" | "slow" | "turntable" | "keyboard" | "elevator" | "phone" | "laptop" | "terminal" | "cabinet" | "branches" | "vault" | "lockers" | "padlock" | "patch" | "dish" | "router";
 
 export type FigureDoc = {
   id: FigureId;
@@ -134,9 +134,30 @@ export const FIGURES: FigureDoc[] = [
     stronger: "The shackle swings further.",
     parameter: { name: "swing", unit: "degrees" },
   },
+  {
+    id: "patch",
+    name: "Patch",
+    summary: "A patch panel of twenty-four ports with cables. The cable under the pointer lifts and its neighbours lean away.",
+    stronger: "The lean spreads further.",
+    parameter: { name: "radius", unit: "ports" },
+  },
+  {
+    id: "dish",
+    name: "Dish",
+    summary: "A parabolic dish on a two-axis gimbal. The pointer aims the dish; it follows on a spring.",
+    stronger: "The dish swings further.",
+    parameter: { name: "reach", unit: "degrees" },
+  },
+  {
+    id: "router",
+    name: "Router",
+    summary: "A router with its antennas up. Each antenna leans toward the pointer, the nearest most.",
+    stronger: "The lean spreads further.",
+    parameter: { name: "spread", unit: "antennas" },
+  },
 ];
 
-/** How many figures the package has, as the prose writes it: "sixteen". */
+/** How many figures the package has, as the prose writes it: "nineteen". */
 export const COUNT = spell(FIGURES.length);
 
 /** Each figure's number at intensity 0, 0.5 and 1: a copy of the package's table. */
@@ -157,6 +178,9 @@ export const INTENSITY: Record<FigureId, readonly [number, number, number]> = {
   vault: [250, 600, 1500],
   lockers: [55, 90, 120],
   padlock: [45, 90, 100],
+  patch: [1, 2.5, 5],
+  dish: [30, 50, 70],
+  router: [0.5, 1.5, 3],
 };
 
 /** A number with its unit, as the docs' table and /llms.txt write it: "40 ms", "0.2× normal speed". */

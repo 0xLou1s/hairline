@@ -16,21 +16,20 @@ function watch(page: Page): string[] {
 const tiles = (page: Page) => page.locator(".fig-tile");
 const shelf = (page: Page, name: string) => page.locator(".shelves .shelf", { hasText: name });
 
-test("/figures prerenders sixteen empty boxes among nineteen tiles, then draws them with a clean console", async ({ page, request }) => {
+test("/figures prerenders nineteen empty boxes among nineteen tiles, then draws them with a clean console", async ({ page, request }) => {
   const html = await (await request.get("/figures")).text();
-  expect(html.match(/<div style="aspect-ratio:5 \/ 4"><\/div>/g)).toHaveLength(16);
+  expect(html.match(/<div style="aspect-ratio:5 \/ 4"><\/div>/g)).toHaveLength(19);
   expect(html.match(/class="fig-tile"/g)).toHaveLength(19);
-  expect(html.match(/class="fig-tile" data-planned=""/g)).toHaveLength(3);
+  expect(html).not.toContain("data-planned");
 
   const noise = watch(page);
   await page.goto("/figures");
   await expect(tiles(page)).toHaveCount(19);
-  await expect(page.locator(".fig-tile [data-hairline] > svg")).toHaveCount(16);
-  await expect(page.locator(".fig-tile .fig-ghost")).toHaveCount(3);
+  await expect(page.locator(".fig-tile [data-hairline] > svg")).toHaveCount(19);
+  await expect(page.locator(".fig-tile .fig-ghost, .fig-tile[data-planned]")).toHaveCount(0);
   await expect(page.locator("h1")).toHaveText("Every figure, by what it draws.");
   await expect(page.locator(".doc-section h2")).toHaveText(SHELVES);
   await expect(page.locator(".fig-name").first()).toHaveAccessibleName("Exploded");
-  await expect(page.locator(".fig-tile[data-planned] .fig-name").first()).toHaveAccessibleName("Patch, planned");
   expect(noise).toEqual([]);
 });
 
@@ -118,19 +117,6 @@ test("picking a figure opens the drawer: the figure large, the slider, what it r
   // the contents go once it is out of sight
   await expect(drawer.locator(".detail")).toHaveCount(0);
   expect(noise).toEqual([]);
-});
-
-test("a planned figure's drawer has its outline and a link to ask for it, and no code", async ({ page }) => {
-  await page.goto("/figures");
-  await page.locator(".fig-name", { hasText: "Patch" }).click();
-  const drawer = page.locator("#figure-drawer");
-  await expect(drawer).toHaveAttribute("data-open", "");
-  await expect(drawer.locator(".detail-tag")).toHaveText("planned");
-  await expect(drawer.locator(".fig-ghost")).toHaveCount(1);
-  await expect(drawer.locator(".code, input[type=range]")).toHaveCount(0);
-  await expect(drawer.getByRole("link", { name: "Request on GitHub" })).toHaveAttribute("href", "https://github.com/lucasmarkes/hairline/issues/new?title=Figure%3A%20Patch");
-  await drawer.locator(".detail-close").click();
-  await expect(drawer).not.toHaveAttribute("data-open");
 });
 
 test("closing the drawer returns focus to the tile's button, with its ring for the keyboard alone", async ({ page }) => {

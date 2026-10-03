@@ -2,10 +2,10 @@ import {
   forwardRef, useCallback, useEffect, useLayoutEffect, useRef,
   type ComponentPropsWithoutRef, type ForwardRefExoticComponent, type RefAttributes,
 } from "react";
-import { branches, cabinet, elevator, exploded, keyboard, laptop, lockers, padlock, phone, phosphor, riffle, slow, terminal, terrain, turntable, vault, type Figure, type HairlineOptions } from "./index";
+import { branches, cabinet, dish, elevator, exploded, keyboard, laptop, lockers, padlock, patch, phone, phosphor, riffle, router, slow, terminal, terrain, turntable, vault, type Figure, type HairlineOptions } from "./index";
 
 /**
- * @lucasmarkes/hairline/react — the sixteen figures as components.
+ * @lucasmarkes/hairline/react — the nineteen figures as components.
  *
  * A component renders one empty `<div>` and mounts the figure on it in a
  * layout effect, so on the server the box is there and the drawing is not.
@@ -85,3 +85,9 @@ export const Vault = make("Vault", vault);
 export const Lockers = make("Lockers", lockers);
 /** A padlock: as the pointer nears, the shackle springs up out of the body and swings open about its long leg. `intensity` swings the shackle further. */
 export const Padlock = make("Padlock", padlock);
+/** A patch panel of twenty-four ports: the cable under the pointer lifts, and its neighbours lean away, less the further away. `intensity` spreads the lean over more ports. */
+export const Patch = make("Patch", patch);
+/** A parabolic dish on a two-axis gimbal: the pointer aims it, and it follows on a spring. `intensity` swings the dish further. */
+export const Dish = make("Dish", dish);
+/** A wifi router whose antennas lean toward the pointer, the nearest the most and the others less the further away. `intensity` spreads the lean over more antennas. */
+export const Router = make("Router", router);

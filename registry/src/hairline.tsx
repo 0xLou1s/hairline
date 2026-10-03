@@ -81,3 +81,15 @@ export function Lockers({ style, ...props }: ComponentProps<typeof Hairline.Lock
 export function Padlock({ style, ...props }: ComponentProps<typeof Hairline.Padlock>) {
   return <Hairline.Padlock style={{ ...tokens, ...style }} {...props} />;
 }
+
+export function Patch({ style, ...props }: ComponentProps<typeof Hairline.Patch>) {
+  return <Hairline.Patch style={{ ...tokens, ...style }} {...props} />;
+}
+
+export function Dish({ style, ...props }: ComponentProps<typeof Hairline.Dish>) {
+  return <Hairline.Dish style={{ ...tokens, ...style }} {...props} />;
+}
+
+export function Router({ style, ...props }: ComponentProps<typeof Hairline.Router>) {
+  return <Hairline.Router style={{ ...tokens, ...style }} {...props} />;
+}

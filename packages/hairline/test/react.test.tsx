@@ -3,7 +3,7 @@ import { StrictMode, createRef } from "react";
 import { cleanup, render } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { frames, observers, pending } from "./dom";
-import { Branches, Cabinet, Elevator, Exploded, Keyboard, Laptop, Lockers, Padlock, Phone, Phosphor, Riffle, Slow, Terminal, Terrain, Turntable, Vault } from "../src/react";
+import { Branches, Cabinet, Dish, Elevator, Exploded, Keyboard, Laptop, Lockers, Padlock, Patch, Phone, Phosphor, Riffle, Router, Slow, Terminal, Terrain, Turntable, Vault } from "../src/react";
 
 afterEach(cleanup);
 
@@ -17,9 +17,9 @@ const svg = (el: Element) => el.querySelector("svg")!.innerHTML.replace(/hl-fd\d
 
 describe("components", () => {
   it("renders each figure into one div", () => {
-    const { container } = render(<><Riffle /><Terrain /><Exploded /><Phosphor /><Slow /><Turntable /><Keyboard /><Elevator /><Phone /><Laptop /><Terminal /><Cabinet /><Branches /><Vault /><Lockers /><Padlock /></>);
+    const { container } = render(<><Riffle /><Terrain /><Exploded /><Phosphor /><Slow /><Turntable /><Keyboard /><Elevator /><Phone /><Laptop /><Terminal /><Cabinet /><Branches /><Vault /><Lockers /><Padlock /><Patch /><Dish /><Router /></>);
     const ids = [...container.children].map((el) => el.getAttribute("data-hairline"));
-    expect(ids).toEqual(["riffle", "terrain", "exploded", "phosphor", "slow", "turntable", "keyboard", "elevator", "phone", "laptop", "terminal", "cabinet", "branches", "vault", "lockers", "padlock"]);
+    expect(ids).toEqual(["riffle", "terrain", "exploded", "phosphor", "slow", "turntable", "keyboard", "elevator", "phone", "laptop", "terminal", "cabinet", "branches", "vault", "lockers", "padlock", "patch", "dish", "router"]);
     for (const el of container.children) expect(el.querySelectorAll(":scope > svg")).toHaveLength(1);
   });
 
@@ -118,7 +118,7 @@ describe("components", () => {
   });
 
   it("names the components for the dev tools", () => {
-    expect([Riffle, Terrain, Exploded, Phosphor, Slow, Turntable, Keyboard, Elevator, Phone, Laptop, Terminal, Cabinet, Branches, Vault, Lockers, Padlock].map((c) => c.displayName))
-      .toEqual(["Riffle", "Terrain", "Exploded", "Phosphor", "Slow", "Turntable", "Keyboard", "Elevator", "Phone", "Laptop", "Terminal", "Cabinet", "Branches", "Vault", "Lockers", "Padlock"]);
+    expect([Riffle, Terrain, Exploded, Phosphor, Slow, Turntable, Keyboard, Elevator, Phone, Laptop, Terminal, Cabinet, Branches, Vault, Lockers, Padlock, Patch, Dish, Router].map((c) => c.displayName))
+      .toEqual(["Riffle", "Terrain", "Exploded", "Phosphor", "Slow", "Turntable", "Keyboard", "Elevator", "Phone", "Laptop", "Terminal", "Cabinet", "Branches", "Vault", "Lockers", "Padlock", "Patch", "Dish", "Router"]);
   });
 });
