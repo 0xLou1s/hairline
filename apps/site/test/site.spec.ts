@@ -36,11 +36,12 @@ test("the home prerenders an empty box, then draws the reel's figure with a clea
   expect(noise).toEqual([]);
 });
 
-test("the top bar holds the skill, the docs, the story, the version and GitHub, and no llms.txt button", async ({ page }) => {
+test("the top bar holds the figures, the skill, the docs, the story, the version and GitHub, and no llms.txt button", async ({ page }) => {
   await page.goto("/");
-  await expect(page.locator(".topbar nav > *")).toHaveCount(5);
-  await expect(page.locator(".topbar nav > a").nth(0)).toHaveText("Skill");
-  await expect(page.locator(".topbar nav > a").nth(1)).toHaveText("Docs");
+  await expect(page.locator(".topbar nav > *")).toHaveCount(6);
+  await expect(page.locator(".topbar nav > a").nth(0)).toHaveText("Figures");
+  await expect(page.locator(".topbar nav > a").nth(1)).toHaveText("Skill");
+  await expect(page.locator(".topbar nav > a").nth(2)).toHaveText("Docs");
   await expect(page.locator(".topbar")).not.toContainText("llms.txt");
 });
 
@@ -55,7 +56,7 @@ test("the top bar's links sit as one row: one height, one centre line, one type,
     const style = getComputedStyle(el);
     return { height: box.height, middle: box.top + box.height / 2, left: ink.left, right: ink.right, type: [style.fontSize, style.fontWeight, style.color, style.backgroundColor].join(" ") };
   }));
-  expect(items).toHaveLength(5);
+  expect(items).toHaveLength(6);
   expect(new Set(items.map((i) => i.height)).size).toBe(1);
   for (const i of items) expect(Math.abs(i.middle - items[0].middle)).toBeLessThan(0.5);
   expect(new Set(items.map((i) => i.type)).size).toBe(1);
@@ -286,6 +287,7 @@ const BASE = "http://localhost:3000";
 test("a pasted link shows the page it leads to: each page's card has its own title, text and address", async ({ request }) => {
   const CARDS = [
     ["/", "hairline", /^Six isometric line figures/],
+    ["/figures", "Figures", /^Seven shelves, twenty-one figures, grouped by what they draw/],
     ["/docs", "Docs", /^Six isometric line figures/],
     ["/skill", "Make your own figure", /^hairline-create is a skill/],
     ["/inspo", "How Hairline was made", /^A long brief/],
@@ -304,13 +306,13 @@ test("a pasted link shows the page it leads to: each page's card has its own tit
   }
 });
 
-test("robots.txt lets every crawler in and names the sitemap, which lists the four pages", async ({ request }) => {
+test("robots.txt lets every crawler in and names the sitemap, which lists the five pages", async ({ request }) => {
   const robots = await (await request.get("/robots.txt")).text();
   expect(robots).toMatch(/^User-Agent: \*\nAllow: \/\n/);
   expect(robots).toContain(`Sitemap: ${BASE}/sitemap.xml`);
 
   const sitemap = await (await request.get("/sitemap.xml")).text();
-  expect([...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1])).toEqual([BASE, `${BASE}/docs`, `${BASE}/skill`, `${BASE}/inspo`]);
+  expect([...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1])).toEqual([BASE, `${BASE}/figures`, `${BASE}/docs`, `${BASE}/skill`, `${BASE}/inspo`]);
 });
 
 test("the page fits a phone, with the longest install command, its buttons and the reel's ticks", async ({ page }) => {
@@ -435,11 +437,11 @@ test("the docs fit a phone down to 320px: rows stack text first, and wide code a
   }
 });
 
-test("the figures' link goes to the home's figure", async ({ page }) => {
+test("the figures' link goes to the figures page", async ({ page }) => {
   await page.goto("/docs");
-  await page.getByRole("link", { name: "Try them on the home page →" }).click();
-  await expect(page).toHaveURL(/\/#try$/);
-  await expect(page.locator("#try [data-reel]")).toBeInViewport();
+  await page.getByRole("link", { name: "Try each one on the figures page →" }).click();
+  await expect(page).toHaveURL(/\/figures$/);
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("Every figure");
 });
 
 test("the sidebar's links land on their section under the top bar and mark it, and scrolling moves the mark", async ({ page }) => {

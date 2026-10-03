@@ -122,7 +122,7 @@ export function Reference({ css }: { css: string }) {
             </tbody>
           </table>
         </div>
-        <a className="doc-more" href="/#try">Try them on the home page →</a>
+        <a className="doc-more" href="/figures">Try each one on the figures page →</a>
       </Section>
       <Section id="theme">
         <p className="doc-p">
