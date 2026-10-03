@@ -9,18 +9,19 @@ import { useCallback, useEffect, useState, type RefObject } from "react";
  * the text reached the clipboard.
  */
 export function useCopy(): [copied: boolean, copy: (text: string, fallback?: Element | null) => Promise<boolean>] {
-  const [copied, setCopied] = useState(false);
+  // counted, not flagged, so a copy made while the last one shows restarts its time
+  const [copies, setCopies] = useState(0);
 
   useEffect(() => {
-    if (!copied) return;
-    const timer = setTimeout(() => setCopied(false), 1600);
+    if (!copies) return;
+    const timer = setTimeout(() => setCopies(0), 1600);
     return () => clearTimeout(timer);
-  }, [copied]);
+  }, [copies]);
 
   const copy = useCallback(async (text: string, fallback?: Element | null) => {
     try {
       await navigator.clipboard.writeText(text);
-      setCopied(true);
+      setCopies((n) => n + 1);
       return true;
     } catch {
       if (!fallback) return false;
@@ -33,7 +34,7 @@ export function useCopy(): [copied: boolean, copy: (text: string, fallback?: Ele
     }
   }, []);
 
-  return [copied, copy];
+  return [copies > 0, copy];
 }
 
 /**
