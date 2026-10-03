@@ -51,9 +51,9 @@ export const SHELVES: Shelf[] = [
   },
   {
     id: "coding", title: "Coding", color: "#0ea5e9", figures: [
-      planned("terminal", "Terminal", "A terminal window with its history in rows. The pointer's height scrolls back; the line under it lifts and its neighbours follow.", "The lift spreads further."),
-      planned("cabinet", "Cabinet", "A rack of twelve blades, a few half out. The pointer's height pulls the nearest ones out, the farther the less.", "More blades come out."),
-      planned("branches", "Branches", "A commit graph with a branch forking off main and merging back. The commit under the pointer rises, and its history rises after it.", "More of the history rises."),
+      drawn("terminal"),
+      drawn("cabinet"),
+      drawn("branches"),
     ],
   },
   {

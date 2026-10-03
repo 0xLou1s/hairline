@@ -2,10 +2,10 @@ import {
   forwardRef, useCallback, useEffect, useLayoutEffect, useRef,
   type ComponentPropsWithoutRef, type ForwardRefExoticComponent, type RefAttributes,
 } from "react";
-import { elevator, exploded, keyboard, laptop, phone, phosphor, riffle, slow, terrain, turntable, type Figure, type HairlineOptions } from "./index";
+import { branches, cabinet, elevator, exploded, keyboard, laptop, phone, phosphor, riffle, slow, terminal, terrain, turntable, type Figure, type HairlineOptions } from "./index";
 
 /**
- * @lucasmarkes/hairline/react — the ten figures as components.
+ * @lucasmarkes/hairline/react — the thirteen figures as components.
  *
  * A component renders one empty `<div>` and mounts the figure on it in a
  * layout effect, so on the server the box is there and the drawing is not.
@@ -73,3 +73,9 @@ export const Elevator = make("Elevator", elevator);
 export const Phone = make("Phone", phone);
 /** A thin laptop: the pointer's height sets how far the lid stands open, and the lid follows it on a spring. `intensity` lets the lid open wider. */
 export const Laptop = make("Laptop", laptop);
+/** A terminal window: the pointer's height scrolls back through its history, and the line under it lifts off the screen. `intensity` spreads the lift over more lines. */
+export const Terminal = make("Terminal", terminal);
+/** A rack of twelve blades: the pointer's height pulls the nearest ones out on their rails, the farther the less. `intensity` pulls out more blades. */
+export const Cabinet = make("Cabinet", cabinet);
+/** A commit graph on a board: the commit under the pointer rises, and its history rises after it, the farther back the less. `intensity` raises more of the history. */
+export const Branches = make("Branches", branches);

@@ -1,4 +1,6 @@
 import { create, type Figure, type HairlineOptions } from "./mount";
+import { mount as branchesEngine } from "./figures/branches";
+import { mount as cabinetEngine } from "./figures/cabinet";
 import { mount as elevatorEngine } from "./figures/elevator";
 import { mount as explodedEngine } from "./figures/exploded";
 import { mount as keyboardEngine } from "./figures/keyboard";
@@ -7,11 +9,12 @@ import { mount as phoneEngine } from "./figures/phone";
 import { mount as phosphorEngine } from "./figures/phosphor";
 import { mount as riffleEngine } from "./figures/riffle";
 import { mount as slowEngine } from "./figures/slow";
+import { mount as terminalEngine } from "./figures/terminal";
 import { mount as terrainEngine } from "./figures/terrain";
 import { mount as turntableEngine } from "./figures/turntable";
 
 /**
- * @lucasmarkes/hairline — ten isometric line figures that answer the pointer.
+ * @lucasmarkes/hairline — thirteen isometric line figures that answer the pointer.
  *
  * One function per figure. Each takes an element and the same options, draws
  * into the element, and returns `{ update, destroy }`. Each function names
@@ -118,5 +121,35 @@ export function laptop(el: HTMLElement, options?: HairlineOptions): Figure {
     label: "A thin laptop: the pointer's height sets how far the lid stands open, and the lid follows it on a spring.",
     rest: "rest",
     engine: laptopEngine,
+  }, el, options);
+}
+
+/** A terminal window: the pointer's height scrolls back through its history, and the line under it lifts off the screen. `intensity` spreads the lift over more lines. */
+export function terminal(el: HTMLElement, options?: HairlineOptions): Figure {
+  return create({
+    id: "terminal",
+    label: "A terminal window: the pointer's height scrolls back through its history, and the line under it lifts off the screen.",
+    rest: "rest",
+    engine: terminalEngine,
+  }, el, options);
+}
+
+/** A rack of twelve blades: the pointer's height pulls the nearest ones out on their rails, the farther the less. `intensity` pulls out more blades. */
+export function cabinet(el: HTMLElement, options?: HairlineOptions): Figure {
+  return create({
+    id: "cabinet",
+    label: "A rack of twelve blades: the pointer's height pulls the nearest ones out on their rails, the farther the less.",
+    rest: "rest",
+    engine: cabinetEngine,
+  }, el, options);
+}
+
+/** A commit graph on a board: the commit under the pointer rises, and its history rises after it, the farther back the less. `intensity` raises more of the history. */
+export function branches(el: HTMLElement, options?: HairlineOptions): Figure {
+  return create({
+    id: "branches",
+    label: "A commit graph on a board: the commit under the pointer rises, and its history rises after it, the farther back the less.",
+    rest: "rest",
+    engine: branchesEngine,
   }, el, options);
 }

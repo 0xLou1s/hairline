@@ -8,7 +8,7 @@
 
 import { spell } from "./words";
 
-export type FigureId = "riffle" | "terrain" | "exploded" | "phosphor" | "slow" | "turntable" | "keyboard" | "elevator" | "phone" | "laptop";
+export type FigureId = "riffle" | "terrain" | "exploded" | "phosphor" | "slow" | "turntable" | "keyboard" | "elevator" | "phone" | "laptop" | "terminal" | "cabinet" | "branches";
 
 export type FigureDoc = {
   id: FigureId;
@@ -92,9 +92,30 @@ export const FIGURES: FigureDoc[] = [
     stronger: "The lid opens wider.",
     parameter: { name: "lid", unit: "degrees" },
   },
+  {
+    id: "terminal",
+    name: "Terminal",
+    summary: "A terminal window with its history in rows. The pointer's height scrolls back; the line under it lifts and its neighbours follow.",
+    stronger: "The lift spreads further.",
+    parameter: { name: "spread", unit: "lines" },
+  },
+  {
+    id: "cabinet",
+    name: "Cabinet",
+    summary: "A rack of twelve blades, a few half out. The pointer's height pulls the nearest ones out, the farther the less.",
+    stronger: "More blades come out.",
+    parameter: { name: "reach", unit: "blades" },
+  },
+  {
+    id: "branches",
+    name: "Branches",
+    summary: "A commit graph with a branch forking off main and merging back. The commit under the pointer rises, and its history rises after it.",
+    stronger: "More of the history rises.",
+    parameter: { name: "reach", unit: "commits" },
+  },
 ];
 
-/** How many figures the package has, as the prose writes it: "ten". */
+/** How many figures the package has, as the prose writes it: "thirteen". */
 export const COUNT = spell(FIGURES.length);
 
 /** Each figure's number at intensity 0, 0.5 and 1: a copy of the package's table. */
@@ -109,6 +130,9 @@ export const INTENSITY: Record<FigureId, readonly [number, number, number]> = {
   elevator: [40, 100, 220],
   phone: [16, 28, 40],
   laptop: [100, 125, 150],
+  terminal: [1, 2, 3.5],
+  cabinet: [1.5, 3, 5],
+  branches: [1, 3, 6],
 };
 
 /** A number with its unit, as the docs' table and /llms.txt write it: "40 ms", "0.2× normal speed". */

@@ -20,6 +20,15 @@ Every release of `@lucasmarkes/hairline`. The format follows
 - `laptop` and `Laptop`: a thin laptop. The pointer's height sets how far the
   lid stands open, and the lid follows it on a spring. A stronger `intensity`
   lets the lid open wider.
+- `terminal` and `Terminal`: a terminal window. The pointer's height scrolls
+  back through its history, and the line under it lifts off the screen. A
+  stronger `intensity` lifts more lines with it.
+- `cabinet` and `Cabinet`: a rack of twelve blades. The pointer's height pulls
+  the nearest ones out on their rails, the farther the less. A stronger
+  `intensity` pulls out more blades.
+- `branches` and `Branches`: a commit graph on a board. The commit under the
+  pointer rises, and its history rises after it, the farther back the less. A
+  stronger `intensity` raises more of the history.
 
 ## 0.1.0 - 2026-10-01
 

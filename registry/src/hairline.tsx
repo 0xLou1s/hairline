@@ -57,3 +57,15 @@ export function Phone({ style, ...props }: ComponentProps<typeof Hairline.Phone>
 export function Laptop({ style, ...props }: ComponentProps<typeof Hairline.Laptop>) {
   return <Hairline.Laptop style={{ ...tokens, ...style }} {...props} />;
 }
+
+export function Terminal({ style, ...props }: ComponentProps<typeof Hairline.Terminal>) {
+  return <Hairline.Terminal style={{ ...tokens, ...style }} {...props} />;
+}
+
+export function Cabinet({ style, ...props }: ComponentProps<typeof Hairline.Cabinet>) {
+  return <Hairline.Cabinet style={{ ...tokens, ...style }} {...props} />;
+}
+
+export function Branches({ style, ...props }: ComponentProps<typeof Hairline.Branches>) {
+  return <Hairline.Branches style={{ ...tokens, ...style }} {...props} />;
+}

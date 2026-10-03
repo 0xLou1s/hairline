@@ -1,6 +1,6 @@
-import { elevator, exploded, keyboard, laptop, phone, phosphor, riffle, slow, terrain, turntable, type Figure } from "@lucasmarkes/hairline";
+import { branches, cabinet, elevator, exploded, keyboard, laptop, phone, phosphor, riffle, slow, terminal, terrain, turntable, type Figure } from "@lucasmarkes/hairline";
 
-/** No framework: ten elements, ten calls. */
+/** No framework: thirteen elements, thirteen calls. */
 const el = (id: string) => document.getElementById(id)!;
 const read = el("read");
 
@@ -17,5 +17,8 @@ keyboard(el("keyboard"));
 elevator(el("elevator"));
 phone(el("phone"));
 laptop(el("laptop"));
+terminal(el("terminal"));
+cabinet(el("cabinet"));
+branches(el("branches"));
 
 cards.update({ intensity: 0.8 });

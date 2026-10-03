@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-const IDS = ["riffle", "terrain", "exploded", "phosphor", "slow", "turntable", "keyboard", "elevator", "phone", "laptop"];
+const IDS = ["riffle", "terrain", "exploded", "phosphor", "slow", "turntable", "keyboard", "elevator", "phone", "laptop", "terminal", "cabinet", "branches"];
 const MANAGERS = [
   ["npm", "npm i @lucasmarkes/hairline"],
   ["pnpm", "pnpm add @lucasmarkes/hairline"],
@@ -147,6 +147,8 @@ test("under reduced motion the reel never starts", async ({ page }) => {
 });
 
 test("a change of figure never moves the page: the reel and the page hold their height through every figure", async ({ page }) => {
+  // every change waits out its dissolve, at three widths: the time grows with the figures
+  test.setTimeout(IDS.length * 3 * 1500 + 15_000);
   for (const width of [1440, 390, 320]) {
     await page.setViewportSize({ width, height: 800 });
     await page.goto("/");
@@ -286,9 +288,9 @@ const BASE = "http://localhost:3000";
 
 test("a pasted link shows the page it leads to: each page's card has its own title, text and address", async ({ request }) => {
   const CARDS = [
-    ["/", "hairline", /^Ten isometric line figures/],
+    ["/", "hairline", /^Thirteen isometric line figures/],
     ["/figures", "Figures", /^Seven shelves, nineteen figures, grouped by what they draw/],
-    ["/docs", "Docs", /^Ten isometric line figures/],
+    ["/docs", "Docs", /^Thirteen isometric line figures/],
     ["/skill", "Make your own figure", /^hairline-create is a skill/],
     ["/inspo", "How Hairline was made", /^A long brief/],
   ] as const;

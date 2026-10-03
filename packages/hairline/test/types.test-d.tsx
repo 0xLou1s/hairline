@@ -4,10 +4,10 @@
  * an error. Vitest does not pick it up (it is not a `.test.` file).
  */
 import { createRef } from "react";
-import { elevator, exploded, keyboard, laptop, phone, phosphor, riffle, slow, terrain, turntable, type Figure, type HairlineOptions } from "../src/index";
+import { branches, cabinet, elevator, exploded, keyboard, laptop, phone, phosphor, riffle, slow, terminal, terrain, turntable, type Figure, type HairlineOptions } from "../src/index";
 import * as vanilla from "../src/index";
 import * as components from "../src/react";
-import { Elevator, Exploded, Keyboard, Laptop, Phone, Phosphor, Riffle, Slow, Terrain, Turntable, type HairlineProps } from "../src/react";
+import { Branches, Cabinet, Elevator, Exploded, Keyboard, Laptop, Phone, Phosphor, Riffle, Slow, Terminal, Terrain, Turntable, type HairlineProps } from "../src/react";
 
 declare const el: HTMLElement;
 type Equal<A, B> = (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2 ? true : false;
@@ -16,7 +16,7 @@ const yes = <T extends true>() => {};
 /* every figure takes the same options */
 riffle(el, { intensity: 0.8, theme: "dark", label: "Cards", onRead: (t: string) => t });
 riffle(el);
-for (const mount of [riffle, terrain, exploded, phosphor, slow, turntable, keyboard, elevator, phone, laptop]) {
+for (const mount of [riffle, terrain, exploded, phosphor, slow, turntable, keyboard, elevator, phone, laptop, terminal, cabinet, branches]) {
   yes<Equal<typeof mount, (el: HTMLElement, options?: HairlineOptions) => Figure>>();
   // @ts-expect-error the old per-figure options are gone
   mount(el, { stagger: 60 });
@@ -46,8 +46,8 @@ f.update({ stagger: 60 });
 f.update({ bands: true });
 
 /* the entries export the functions, the components and three types, and nothing of the old API */
-yes<Equal<keyof typeof vanilla, "riffle" | "terrain" | "exploded" | "phosphor" | "slow" | "turntable" | "keyboard" | "elevator" | "phone" | "laptop">>();
-yes<Equal<keyof typeof components, "Riffle" | "Terrain" | "Exploded" | "Phosphor" | "Slow" | "Turntable" | "Keyboard" | "Elevator" | "Phone" | "Laptop">>();
+yes<Equal<keyof typeof vanilla, "riffle" | "terrain" | "exploded" | "phosphor" | "slow" | "turntable" | "keyboard" | "elevator" | "phone" | "laptop" | "terminal" | "cabinet" | "branches">>();
+yes<Equal<keyof typeof components, "Riffle" | "Terrain" | "Exploded" | "Phosphor" | "Slow" | "Turntable" | "Keyboard" | "Elevator" | "Phone" | "Laptop" | "Terminal" | "Cabinet" | "Branches">>();
 // @ts-expect-error ranges is gone
 void vanilla.ranges;
 // @ts-expect-error the per-figure option types are gone
@@ -60,7 +60,7 @@ const ref = createRef<HTMLDivElement>();
 <Riffle ref={ref} intensity={0.8} theme="dark" className="w-80" id="cards" onClick={() => {}} onRead={(text) => text.length} />;
 <Terrain style={{ width: 320 }} aria-label="Dunes" data-x="1" />;
 <Riffle />;
-for (const C of [Riffle, Terrain, Exploded, Phosphor, Slow, Turntable, Keyboard, Elevator, Phone, Laptop]) {
+for (const C of [Riffle, Terrain, Exploded, Phosphor, Slow, Turntable, Keyboard, Elevator, Phone, Laptop, Terminal, Cabinet, Branches]) {
   // @ts-expect-error the old per-figure options are gone
   <C stagger={60} />;
   // @ts-expect-error the old per-figure options are gone

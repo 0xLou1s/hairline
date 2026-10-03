@@ -298,9 +298,10 @@ footer a::after { content: ""; position: absolute; inset: -12px -8px; }
 /* the demo pointer: a hairline ring, there only while it walks the figure */
 .reel-ghost { position: absolute; top: 0; left: 0; z-index: 1; width: 18px; height: 18px; margin: -9px 0 0 -9px; border-radius: 50%; border: 1px solid var(--color-ink); pointer-events: none; opacity: 0; transition: opacity 200ms ease; }
 .reel-ghost[data-on] { opacity: 0.4; }
-.reel-ticks { display: flex; margin-top: 10px; }
-.reel-tick { display: grid; place-items: center; width: 30px; height: 26px; border-radius: 6px; }
-.reel-tick::before, .reel-fill { grid-area: 1 / 1; width: 20px; height: 1.5px; border-radius: 1px; }
+/* a tick is 30px and gives way when the row would pass the figure's width, so nineteen ticks fit a phone */
+.reel-ticks { display: flex; width: 100%; max-width: 440px; justify-content: center; margin-top: 10px; }
+.reel-tick { display: grid; place-items: center; flex: 0 1 30px; min-width: 0; height: 26px; border-radius: 6px; }
+.reel-tick::before, .reel-fill { grid-area: 1 / 1; width: min(20px, 70%); height: 1.5px; border-radius: 1px; }
 .reel-tick::before { content: ""; background: rgba(0, 0, 0, 0.12); transition: background-color 150ms ease; }
 @media (hover: hover) { .reel-tick:hover::before { background: rgba(0, 0, 0, 0.3); } }
 .reel-fill { background: var(--color-ink); transform: scaleX(0); transform-origin: left; }
