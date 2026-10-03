@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Elevator, Exploded, Keyboard, Phosphor, Riffle, Slow, Terrain, Turntable } from "@lucasmarkes/hairline/react";
+import { Elevator, Exploded, Keyboard, Laptop, Phone, Phosphor, Riffle, Slow, Terrain, Turntable } from "@lucasmarkes/hairline/react";
 import { Anchor } from "@/components/anchor";
 import { CodeBlock } from "@/components/code-block";
 import { Install } from "@/components/install";
@@ -8,7 +8,7 @@ import { SECTIONS } from "@/lib/docs";
 import { COUNT, FIGURES, INTENSITY, OPTIONS, THEME, measure } from "@/lib/figures";
 import { PACKAGE } from "@/lib/snippets";
 
-const SMALL = { riffle: Riffle, terrain: Terrain, exploded: Exploded, phosphor: Phosphor, slow: Slow, turntable: Turntable, keyboard: Keyboard, elevator: Elevator };
+const SMALL = { riffle: Riffle, terrain: Terrain, exploded: Exploded, phosphor: Phosphor, slow: Slow, turntable: Turntable, keyboard: Keyboard, elevator: Elevator, phone: Phone, laptop: Laptop };
 
 /** A section takes its title from SECTIONS, the list the rail reads, so the two always agree. Its link copies from beside its title. */
 function Section({ id, children }: { id: string; children: ReactNode }) {

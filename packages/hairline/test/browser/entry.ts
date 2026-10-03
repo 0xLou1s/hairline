@@ -4,7 +4,7 @@ import * as hairline from "../../src/index";
  * The harness page's script: the package, on `window`, with one figure at a
  * time on #host. Tests drive it through page.evaluate.
  */
-type Id = "riffle" | "terrain" | "exploded" | "phosphor" | "slow" | "turntable" | "keyboard" | "elevator";
+type Id = "riffle" | "terrain" | "exploded" | "phosphor" | "slow" | "turntable" | "keyboard" | "elevator" | "phone" | "laptop";
 type Loose = Record<string, unknown>;
 type Mount = (el: HTMLElement, options?: Loose) => { update(o: Loose): void; destroy(): void };
 

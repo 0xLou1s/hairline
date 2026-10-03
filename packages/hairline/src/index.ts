@@ -2,6 +2,8 @@ import { create, type Figure, type HairlineOptions } from "./mount";
 import { mount as elevatorEngine } from "./figures/elevator";
 import { mount as explodedEngine } from "./figures/exploded";
 import { mount as keyboardEngine } from "./figures/keyboard";
+import { mount as laptopEngine } from "./figures/laptop";
+import { mount as phoneEngine } from "./figures/phone";
 import { mount as phosphorEngine } from "./figures/phosphor";
 import { mount as riffleEngine } from "./figures/riffle";
 import { mount as slowEngine } from "./figures/slow";
@@ -9,7 +11,7 @@ import { mount as terrainEngine } from "./figures/terrain";
 import { mount as turntableEngine } from "./figures/turntable";
 
 /**
- * @lucasmarkes/hairline — eight isometric line figures that answer the pointer.
+ * @lucasmarkes/hairline — ten isometric line figures that answer the pointer.
  *
  * One function per figure. Each takes an element and the same options, draws
  * into the element, and returns `{ update, destroy }`. Each function names
@@ -96,5 +98,25 @@ export function elevator(el: HTMLElement, options?: HairlineOptions): Figure {
     label: "Four floors beside an open shaft. The pointer's height picks a floor, and the car travels there through the ones between.",
     rest: "rest",
     engine: elevatorEngine,
+  }, el, options);
+}
+
+/** A phone in layers: glass, board, battery, shell. Moving across opens the gap; moving down picks a layer. `intensity` opens the layers further. */
+export function phone(el: HTMLElement, options?: HairlineOptions): Figure {
+  return create({
+    id: "phone",
+    label: "A phone in layers: glass, board, battery, shell. Moving across opens the gap; moving down picks a layer.",
+    rest: "rest",
+    engine: phoneEngine,
+  }, el, options);
+}
+
+/** A thin laptop: the pointer's height sets how far the lid stands open, and the lid follows it on a spring. `intensity` lets the lid open wider. */
+export function laptop(el: HTMLElement, options?: HairlineOptions): Figure {
+  return create({
+    id: "laptop",
+    label: "A thin laptop: the pointer's height sets how far the lid stands open, and the lid follows it on a spring.",
+    rest: "rest",
+    engine: laptopEngine,
   }, el, options);
 }

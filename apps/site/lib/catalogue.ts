@@ -45,8 +45,8 @@ export const SHELVES: Shelf[] = [
   {
     id: "devices", title: "Devices", color: "#10b981", figures: [
       drawn("keyboard"),
-      planned("phone", "Phone", "A phone in layers: glass, board, battery, shell. Moving across opens the gap; moving down picks a layer.", "The layers open further."),
-      planned("laptop", "Laptop", "A thin laptop, open on its hinge. The pointer's height sets the lid; it follows on a spring.", "The lid opens wider."),
+      drawn("phone"),
+      drawn("laptop"),
     ],
   },
   {

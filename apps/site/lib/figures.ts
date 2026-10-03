@@ -8,7 +8,7 @@
 
 import { spell } from "./words";
 
-export type FigureId = "riffle" | "terrain" | "exploded" | "phosphor" | "slow" | "turntable" | "keyboard" | "elevator";
+export type FigureId = "riffle" | "terrain" | "exploded" | "phosphor" | "slow" | "turntable" | "keyboard" | "elevator" | "phone" | "laptop";
 
 export type FigureDoc = {
   id: FigureId;
@@ -78,9 +78,23 @@ export const FIGURES: FigureDoc[] = [
     stronger: "The car travels faster between floors.",
     parameter: { name: "stiffness", unit: "spring units" },
   },
+  {
+    id: "phone",
+    name: "Phone",
+    summary: "A phone in layers: glass, board, battery, shell. Moving across opens the gap; moving down picks a layer.",
+    stronger: "The layers open further.",
+    parameter: { name: "gap", unit: "viewBox units" },
+  },
+  {
+    id: "laptop",
+    name: "Laptop",
+    summary: "A thin laptop, open on its hinge. The pointer's height sets the lid; it follows on a spring.",
+    stronger: "The lid opens wider.",
+    parameter: { name: "lid", unit: "degrees" },
+  },
 ];
 
-/** How many figures the package has, as the prose writes it: "eight". */
+/** How many figures the package has, as the prose writes it: "ten". */
 export const COUNT = spell(FIGURES.length);
 
 /** Each figure's number at intensity 0, 0.5 and 1: a copy of the package's table. */
@@ -93,6 +107,8 @@ export const INTENSITY: Record<FigureId, readonly [number, number, number]> = {
   turntable: [200, 650, 1500],
   keyboard: [1, 2, 3.5],
   elevator: [40, 100, 220],
+  phone: [16, 28, 40],
+  laptop: [100, 125, 150],
 };
 
 /** A number with its unit, as the docs' table and /llms.txt write it: "40 ms", "0.2× normal speed". */

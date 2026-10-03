@@ -49,3 +49,11 @@ export function Keyboard({ style, ...props }: ComponentProps<typeof Hairline.Key
 export function Elevator({ style, ...props }: ComponentProps<typeof Hairline.Elevator>) {
   return <Hairline.Elevator style={{ ...tokens, ...style }} {...props} />;
 }
+
+export function Phone({ style, ...props }: ComponentProps<typeof Hairline.Phone>) {
+  return <Hairline.Phone style={{ ...tokens, ...style }} {...props} />;
+}
+
+export function Laptop({ style, ...props }: ComponentProps<typeof Hairline.Laptop>) {
+  return <Hairline.Laptop style={{ ...tokens, ...style }} {...props} />;
+}

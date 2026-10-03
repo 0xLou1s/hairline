@@ -14,6 +14,12 @@ Every release of `@lucasmarkes/hairline`. The format follows
 - `elevator` and `Elevator`: four floors beside an open shaft. The pointer's
   height picks a floor, and the car travels there through the ones between.
   A stronger `intensity` makes the car travel faster.
+- `phone` and `Phone`: a phone in four layers. Moving across opens the gap
+  between them, and moving down picks a layer. A stronger `intensity` opens
+  the layers further.
+- `laptop` and `Laptop`: a thin laptop. The pointer's height sets how far the
+  lid stands open, and the lid follows it on a spring. A stronger `intensity`
+  lets the lid open wider.
 
 ## 0.1.0 - 2026-10-01
 

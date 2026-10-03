@@ -2,10 +2,10 @@ import {
   forwardRef, useCallback, useEffect, useLayoutEffect, useRef,
   type ComponentPropsWithoutRef, type ForwardRefExoticComponent, type RefAttributes,
 } from "react";
-import { elevator, exploded, keyboard, phosphor, riffle, slow, terrain, turntable, type Figure, type HairlineOptions } from "./index";
+import { elevator, exploded, keyboard, laptop, phone, phosphor, riffle, slow, terrain, turntable, type Figure, type HairlineOptions } from "./index";
 
 /**
- * @lucasmarkes/hairline/react — the eight figures as components.
+ * @lucasmarkes/hairline/react — the ten figures as components.
  *
  * A component renders one empty `<div>` and mounts the figure on it in a
  * layout effect, so on the server the box is there and the drawing is not.
@@ -69,3 +69,7 @@ export const Turntable = make("Turntable", turntable);
 export const Keyboard = make("Keyboard", keyboard);
 /** Four floors beside an open shaft. The pointer's height picks a floor, and the car travels there through the ones between. `intensity` makes the car travel faster. */
 export const Elevator = make("Elevator", elevator);
+/** A phone in layers: glass, board, battery, shell. Moving across opens the gap; moving down picks a layer. `intensity` opens the layers further. */
+export const Phone = make("Phone", phone);
+/** A thin laptop: the pointer's height sets how far the lid stands open, and the lid follows it on a spring. `intensity` lets the lid open wider. */
+export const Laptop = make("Laptop", laptop);
