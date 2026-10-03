@@ -11,6 +11,9 @@ Every release of `@lucasmarkes/hairline`. The format follows
 - `keyboard` and `Keyboard`: a sixty-key board. The key under the pointer
   sinks, and its neighbours follow it down, less the further away. A stronger
   `intensity` sinks a wider patch of keys.
+- `elevator` and `Elevator`: four floors beside an open shaft. The pointer's
+  height picks a floor, and the car travels there through the ones between.
+  A stronger `intensity` makes the car travel faster.
 
 ## 0.1.0 - 2026-10-01
 

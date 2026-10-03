@@ -3,7 +3,7 @@ import { StrictMode, createRef } from "react";
 import { cleanup, render } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { frames, observers, pending } from "./dom";
-import { Exploded, Keyboard, Phosphor, Riffle, Slow, Terrain, Turntable } from "../src/react";
+import { Elevator, Exploded, Keyboard, Phosphor, Riffle, Slow, Terrain, Turntable } from "../src/react";
 
 afterEach(cleanup);
 
@@ -17,9 +17,9 @@ const svg = (el: Element) => el.querySelector("svg")!.innerHTML.replace(/hl-fd\d
 
 describe("components", () => {
   it("renders each figure into one div", () => {
-    const { container } = render(<><Riffle /><Terrain /><Exploded /><Phosphor /><Slow /><Turntable /><Keyboard /></>);
+    const { container } = render(<><Riffle /><Terrain /><Exploded /><Phosphor /><Slow /><Turntable /><Keyboard /><Elevator /></>);
     const ids = [...container.children].map((el) => el.getAttribute("data-hairline"));
-    expect(ids).toEqual(["riffle", "terrain", "exploded", "phosphor", "slow", "turntable", "keyboard"]);
+    expect(ids).toEqual(["riffle", "terrain", "exploded", "phosphor", "slow", "turntable", "keyboard", "elevator"]);
     for (const el of container.children) expect(el.querySelectorAll(":scope > svg")).toHaveLength(1);
   });
 
@@ -118,7 +118,7 @@ describe("components", () => {
   });
 
   it("names the components for the dev tools", () => {
-    expect([Riffle, Terrain, Exploded, Phosphor, Slow, Turntable, Keyboard].map((c) => c.displayName))
-      .toEqual(["Riffle", "Terrain", "Exploded", "Phosphor", "Slow", "Turntable", "Keyboard"]);
+    expect([Riffle, Terrain, Exploded, Phosphor, Slow, Turntable, Keyboard, Elevator].map((c) => c.displayName))
+      .toEqual(["Riffle", "Terrain", "Exploded", "Phosphor", "Slow", "Turntable", "Keyboard", "Elevator"]);
   });
 });

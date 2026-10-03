@@ -16,21 +16,21 @@ function watch(page: Page): string[] {
 const tiles = (page: Page) => page.locator(".fig-tile");
 const shelf = (page: Page, name: string) => page.locator(".shelves .shelf", { hasText: name });
 
-test("/figures prerenders seven empty boxes among nineteen tiles, then draws them with a clean console", async ({ page, request }) => {
+test("/figures prerenders eight empty boxes among nineteen tiles, then draws them with a clean console", async ({ page, request }) => {
   const html = await (await request.get("/figures")).text();
-  expect(html.match(/<div style="aspect-ratio:5 \/ 4"><\/div>/g)).toHaveLength(7);
+  expect(html.match(/<div style="aspect-ratio:5 \/ 4"><\/div>/g)).toHaveLength(8);
   expect(html.match(/class="fig-tile"/g)).toHaveLength(19);
-  expect(html.match(/class="fig-tile" data-planned=""/g)).toHaveLength(12);
+  expect(html.match(/class="fig-tile" data-planned=""/g)).toHaveLength(11);
 
   const noise = watch(page);
   await page.goto("/figures");
   await expect(tiles(page)).toHaveCount(19);
-  await expect(page.locator(".fig-tile [data-hairline] > svg")).toHaveCount(7);
-  await expect(page.locator(".fig-tile .fig-ghost")).toHaveCount(12);
+  await expect(page.locator(".fig-tile [data-hairline] > svg")).toHaveCount(8);
+  await expect(page.locator(".fig-tile .fig-ghost")).toHaveCount(11);
   await expect(page.locator("h1")).toHaveText("Every figure, by what it draws.");
   await expect(page.locator(".doc-section h2")).toHaveText(SHELVES);
   await expect(page.locator(".fig-name").first()).toHaveAccessibleName("Exploded");
-  await expect(page.locator(".fig-tile[data-planned] .fig-name").first()).toHaveAccessibleName("Elevator, planned");
+  await expect(page.locator(".fig-tile[data-planned] .fig-name").first()).toHaveAccessibleName("Phone, planned");
   expect(noise).toEqual([]);
 });
 
@@ -44,7 +44,7 @@ test("the shelves filter: All is pressed at first, a shelf shows only itself and
   await expect(shelf(page, "All")).toHaveAttribute("aria-pressed", "false");
   await expect(page.locator(".doc-section h2")).toHaveText(["Machines"]);
   await expect(tiles(page)).toHaveCount(3);
-  await expect(page.locator(".fig-tile [data-hairline] > svg")).toHaveCount(2);
+  await expect(page.locator(".fig-tile [data-hairline] > svg")).toHaveCount(3);
   expect(new URL(page.url()).hash).toBe("#machines");
   // the plate sits under the pressed row
   await expect.poll(() => page.evaluate(() => {

@@ -39,7 +39,7 @@ export const SHELVES: Shelf[] = [
     id: "machines", title: "Machines", color: "#f59e0b", figures: [
       drawn("slow"),
       drawn("turntable"),
-      planned("elevator", "Elevator", "Four floors with the shaft open and the car inside. The pointer's height picks the floor; the car travels there.", "The car travels faster between floors."),
+      drawn("elevator"),
     ],
   },
   {

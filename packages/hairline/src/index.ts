@@ -1,4 +1,5 @@
 import { create, type Figure, type HairlineOptions } from "./mount";
+import { mount as elevatorEngine } from "./figures/elevator";
 import { mount as explodedEngine } from "./figures/exploded";
 import { mount as keyboardEngine } from "./figures/keyboard";
 import { mount as phosphorEngine } from "./figures/phosphor";
@@ -8,7 +9,7 @@ import { mount as terrainEngine } from "./figures/terrain";
 import { mount as turntableEngine } from "./figures/turntable";
 
 /**
- * @lucasmarkes/hairline — seven isometric line figures that answer the pointer.
+ * @lucasmarkes/hairline — eight isometric line figures that answer the pointer.
  *
  * One function per figure. Each takes an element and the same options, draws
  * into the element, and returns `{ update, destroy }`. Each function names
@@ -85,5 +86,15 @@ export function keyboard(el: HTMLElement, options?: HairlineOptions): Figure {
     label: "A sixty-key board. The key under the pointer sinks, and its neighbours follow it down, less the further away.",
     rest: "rest",
     engine: keyboardEngine,
+  }, el, options);
+}
+
+/** Four floors beside an open shaft. The pointer's height picks a floor, and the car travels there through the ones between. `intensity` makes the car travel faster. */
+export function elevator(el: HTMLElement, options?: HairlineOptions): Figure {
+  return create({
+    id: "elevator",
+    label: "Four floors beside an open shaft. The pointer's height picks a floor, and the car travels there through the ones between.",
+    rest: "rest",
+    engine: elevatorEngine,
   }, el, options);
 }

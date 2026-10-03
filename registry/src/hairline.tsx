@@ -45,3 +45,7 @@ export function Turntable({ style, ...props }: ComponentProps<typeof Hairline.Tu
 export function Keyboard({ style, ...props }: ComponentProps<typeof Hairline.Keyboard>) {
   return <Hairline.Keyboard style={{ ...tokens, ...style }} {...props} />;
 }
+
+export function Elevator({ style, ...props }: ComponentProps<typeof Hairline.Elevator>) {
+  return <Hairline.Elevator style={{ ...tokens, ...style }} {...props} />;
+}

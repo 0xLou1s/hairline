@@ -1,10 +1,10 @@
 // @vitest-environment jsdom
 import { describe, expect, it, vi } from "vitest";
 import { frames, host, observers, pending } from "./dom";
-import { exploded, keyboard, phosphor, riffle, slow, terrain, turntable } from "../src/index";
+import { elevator, exploded, keyboard, phosphor, riffle, slow, terrain, turntable } from "../src/index";
 import { css } from "../src/core/styles";
 
-const ALL = { riffle, terrain, exploded, phosphor, slow, turntable, keyboard };
+const ALL = { riffle, terrain, exploded, phosphor, slow, turntable, keyboard, elevator };
 const key = (el: Element, k: string) => el.dispatchEvent(new KeyboardEvent("keydown", { key: k, bubbles: true, cancelable: true }));
 
 describe("mount", () => {
@@ -143,6 +143,7 @@ describe("intensity", () => {
     slow: [[200, 160], 60],
     turntable: [[50, 176], 1, [120, 176], 1, [200, 176], 1, [280, 176], 1, [350, 176], 40],
     keyboard: [[200, 160], 20],
+    elevator: [[200, 60], 8],
   };
   const svg = (el: Element) => el.querySelector("svg")!.innerHTML.replace(/hl-fd\d+/g, "hl-fd");
 

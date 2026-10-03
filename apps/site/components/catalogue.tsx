@@ -1,12 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
-import { Exploded, Keyboard, Phosphor, Riffle, Slow, Terrain, Turntable } from "@lucasmarkes/hairline/react";
+import { Elevator, Exploded, Keyboard, Phosphor, Riffle, Slow, Terrain, Turntable } from "@lucasmarkes/hairline/react";
 import { ENTRIES, SHELVES, type Entry, type Shelf, type ShelfId } from "@/lib/catalogue";
 import { LINKS, type FigureId } from "@/lib/figures";
 import { Tabs, type Tab } from "./tabs";
 
-const COMPONENTS: Record<FigureId, typeof Riffle> = { riffle: Riffle, terrain: Terrain, exploded: Exploded, phosphor: Phosphor, slow: Slow, turntable: Turntable, keyboard: Keyboard };
+const COMPONENTS: Record<FigureId, typeof Riffle> = { riffle: Riffle, terrain: Terrain, exploded: Exploded, phosphor: Phosphor, slow: Slow, turntable: Turntable, keyboard: Keyboard, elevator: Elevator };
 
 type Filter = "all" | ShelfId;
 

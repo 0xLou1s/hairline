@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState, type CSSProperties } from "react";
-import { Exploded, Keyboard, Phosphor, Riffle, Slow, Terrain, Turntable } from "@lucasmarkes/hairline/react";
+import { Elevator, Exploded, Keyboard, Phosphor, Riffle, Slow, Terrain, Turntable } from "@lucasmarkes/hairline/react";
 import { FIGURES } from "@/lib/figures";
 
-const COMPONENTS = { riffle: Riffle, terrain: Terrain, exploded: Exploded, phosphor: Phosphor, slow: Slow, turntable: Turntable, keyboard: Keyboard };
+const COMPONENTS = { riffle: Riffle, terrain: Terrain, exploded: Exploded, phosphor: Phosphor, slow: Slow, turntable: Turntable, keyboard: Keyboard, elevator: Elevator };
 
 /**
  * One pass of a pointer over each figure, in its viewBox (400 × 320): [x, y, ms]. Each path does the
@@ -18,6 +18,7 @@ const DEMO: Record<keyof typeof COMPONENTS, [number, number, number][]> = {
   slow: [[120, 250, 0], [200, 165, 700], [206, 160, 2600]],
   turntable: [[100, 170, 0], [125, 168, 400], [310, 160, 620], [320, 158, 900]],
   keyboard: [[126, 116, 0], [290, 198, 2000], [172, 165, 3000]],
+  elevator: [[200, 250, 0], [200, 60, 1400], [200, 175, 3400]],
 };
 
 /** Long enough for the slowest dissolve (the reel's own, 520ms) to finish before its leaver goes. */
