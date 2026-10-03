@@ -281,7 +281,7 @@ footer a::after { content: ""; position: absolute; inset: -12px -8px; }
 .skill-link:focus-visible .skill-link-hex { stroke: var(--color-ink); }
 .skill-link:focus-visible .skill-link-edge { stroke-dashoffset: 0; }
 
-/* The reel: the figure on the page itself and six ticks under it. Every figure is 5:4 and the layers of a change
+/* The reel: the figure on the page itself and a tick per figure under it. Every figure is 5:4 and the layers of a change
    stack in one box, so a change of figure never moves the page. */
 .hero-reel { width: 100%; margin-top: 14px; scroll-margin-top: calc(var(--topbar) + 24px); }
 .reel { display: grid; justify-items: center; }

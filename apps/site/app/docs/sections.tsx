@@ -1,14 +1,14 @@
 import type { ReactNode } from "react";
-import { Exploded, Phosphor, Riffle, Slow, Terrain, Turntable } from "@lucasmarkes/hairline/react";
+import { Exploded, Keyboard, Phosphor, Riffle, Slow, Terrain, Turntable } from "@lucasmarkes/hairline/react";
 import { Anchor } from "@/components/anchor";
 import { CodeBlock } from "@/components/code-block";
 import { Install } from "@/components/install";
 import { Tabs, type Tab } from "@/components/tabs";
 import { SECTIONS } from "@/lib/docs";
-import { FIGURES, INTENSITY, OPTIONS, THEME, measure } from "@/lib/figures";
+import { COUNT, FIGURES, INTENSITY, OPTIONS, THEME, measure } from "@/lib/figures";
 import { PACKAGE } from "@/lib/snippets";
 
-const SMALL = { riffle: Riffle, terrain: Terrain, exploded: Exploded, phosphor: Phosphor, slow: Slow, turntable: Turntable };
+const SMALL = { riffle: Riffle, terrain: Terrain, exploded: Exploded, phosphor: Phosphor, slow: Slow, turntable: Turntable, keyboard: Keyboard };
 
 /** A section takes its title from SECTIONS, the list the rail reads, so the two always agree. Its link copies from beside its title. */
 function Section({ id, children }: { id: string; children: ReactNode }) {
@@ -33,7 +33,7 @@ export function GettingStarted({ commands, size, quickstart }: { commands: { lab
         <p className="doc-p">Install the package, then import a figure wherever your interface runs.</p>
         <div className="max-w-[460px]"><Install commands={commands} /></div>
         <p className="doc-note">
-          Click the command to switch package manager. ESM only, no dependencies, <span data-size>{size}</span> gzipped for all six; a bundle that imports one carries one.
+          Click the command to switch package manager. ESM only, no dependencies, <span data-size>{size}</span> gzipped for all {COUNT}; a bundle that imports one carries one.
         </p>
       </Section>
       <Section id="quick-start">
@@ -67,7 +67,7 @@ export function Api({ code }: { code: { reactSignature: string; react: string; v
       <Section id="react">
         <CodeBlock title="Signature" html={code.reactSignature} plain />
         <p className="doc-p">
-          Import any of the six from <C>{PACKAGE}/react</C>. Each renders a <C>&lt;div&gt;</C>, takes any <C>&lt;div&gt;</C> attribute and forwards its ref. The entry is a client module, so a Server Component renders it without writing <C>&quot;use client&quot;</C>.
+          Import any of the {COUNT} from <C>{PACKAGE}/react</C>. Each renders a <C>&lt;div&gt;</C>, takes any <C>&lt;div&gt;</C> attribute and forwards its ref. The entry is a client module, so a Server Component renders it without writing <C>&quot;use client&quot;</C>.
         </p>
         <CodeBlock title="app/page.tsx" html={code.react} />
       </Section>

@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-const IDS = ["riffle", "terrain", "exploded", "phosphor", "slow", "turntable"];
+const IDS = ["riffle", "terrain", "exploded", "phosphor", "slow", "turntable", "keyboard"];
 const MANAGERS = [
   ["npm", "npm i @lucasmarkes/hairline"],
   ["pnpm", "pnpm add @lucasmarkes/hairline"],
@@ -64,14 +64,14 @@ test("the top bar's links sit as one row: one height, one centre line, one type,
   for (const s of spaces) expect(Math.abs(s - spaces[0])).toBeLessThan(1.5);
 });
 
-test("the docs prerender six empty boxes, then draw one figure per row with a clean console", async ({ page, request }) => {
+test("the docs prerender an empty box per figure, then draw one figure per row with a clean console", async ({ page, request }) => {
   const html = await (await request.get("/docs")).text();
-  expect(html.match(/<div style="aspect-ratio:5 \/ 4"><\/div>/g)).toHaveLength(6);
+  expect(html.match(/<div style="aspect-ratio:5 \/ 4"><\/div>/g)).toHaveLength(IDS.length);
   expect(html).not.toMatch(/aspect-ratio:5 \/ 4"[^>]*><svg/);
 
   const noise = watch(page);
   await page.goto("/docs");
-  await expect(page.locator("[data-hairline] > svg")).toHaveCount(6);
+  await expect(page.locator("[data-hairline] > svg")).toHaveCount(IDS.length);
   for (const id of IDS) await expect(page.locator(`[data-row="${id}"] [data-hairline] > svg > *`).first()).toBeAttached();
   await expect(page.locator("[data-size]")).toHaveText(/^\d+\.\d kB$/);
   expect(noise).toEqual([]);
@@ -105,12 +105,12 @@ test("the home's entrance settles within 1.4s, with its hero blocks 70ms apart",
   expect(timing.end).toBeLessThanOrEqual(1400);
 });
 
-test("the reel plays the six figures in turn, holds under the pointer, and stops on a picked tick", async ({ page }) => {
+test("the reel plays the figures in turn, holds under the pointer, and stops on a picked tick", async ({ page }) => {
   await page.goto("/");
   const reel = page.locator("[data-reel]");
   const figure = reel.locator(".reel-stage");
   const ticks = reel.getByRole("group", { name: "Figures" }).getByRole("button");
-  await expect(ticks).toHaveCount(6);
+  await expect(ticks).toHaveCount(IDS.length);
   await expect(figure).toHaveAttribute("data-figure", "riffle");
   await expect(ticks.first()).toHaveAttribute("aria-current", "true");
   // the figure stands alone: no caption under it
@@ -146,13 +146,13 @@ test("under reduced motion the reel never starts", async ({ page }) => {
   await expect(page.locator(".reel-stage")).toHaveAttribute("data-figure", "riffle");
 });
 
-test("a change of figure never moves the page: the reel and the page hold their height through all six", async ({ page }) => {
+test("a change of figure never moves the page: the reel and the page hold their height through every figure", async ({ page }) => {
   for (const width of [1440, 390, 320]) {
     await page.setViewportSize({ width, height: 800 });
     await page.goto("/");
     const ticks = page.locator(".reel-tick");
     const heights = new Set<string>();
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < IDS.length; i++) {
       await ticks.nth(i).click();
       await expect(page.locator(".reel-stage [data-hairline] > svg")).toHaveCount(1);
       heights.add(await page.evaluate(() => `${document.documentElement.scrollHeight} ${Math.round(document.querySelector(".reel")!.getBoundingClientRect().height)}`));
@@ -286,9 +286,9 @@ const BASE = "http://localhost:3000";
 
 test("a pasted link shows the page it leads to: each page's card has its own title, text and address", async ({ request }) => {
   const CARDS = [
-    ["/", "hairline", /^Six isometric line figures/],
+    ["/", "hairline", /^Seven isometric line figures/],
     ["/figures", "Figures", /^Seven shelves, twenty-one figures, grouped by what they draw/],
-    ["/docs", "Docs", /^Six isometric line figures/],
+    ["/docs", "Docs", /^Seven isometric line figures/],
     ["/skill", "Make your own figure", /^hairline-create is a skill/],
     ["/inspo", "How Hairline was made", /^A long brief/],
   ] as const;
@@ -327,13 +327,13 @@ test("the page fits a phone, with the longest install command, its buttons and t
   expect(await width()).toBeLessThanOrEqual(390);
 
   const controls = page.locator(".hero-get .btn, .reel-tick");
-  await expect(controls).toHaveCount(7);
+  await expect(controls).toHaveCount(1 + IDS.length);
   for (const control of await controls.all()) {
     const box = (await control.boundingBox())!;
     expect(box.x).toBeGreaterThanOrEqual(0);
     expect(box.x + box.width).toBeLessThanOrEqual(390);
   }
-  await page.getByRole("button", { name: "Turntable" }).click();
+  await page.getByRole("button", { name: "Keyboard" }).click();
   expect(await width()).toBeLessThanOrEqual(390);
 });
 

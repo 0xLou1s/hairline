@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState, type CSSProperties } from "react";
-import { Exploded, Phosphor, Riffle, Slow, Terrain, Turntable } from "@lucasmarkes/hairline/react";
+import { Exploded, Keyboard, Phosphor, Riffle, Slow, Terrain, Turntable } from "@lucasmarkes/hairline/react";
 import { FIGURES } from "@/lib/figures";
 
-const COMPONENTS = { riffle: Riffle, terrain: Terrain, exploded: Exploded, phosphor: Phosphor, slow: Slow, turntable: Turntable };
+const COMPONENTS = { riffle: Riffle, terrain: Terrain, exploded: Exploded, phosphor: Phosphor, slow: Slow, turntable: Turntable, keyboard: Keyboard };
 
 /**
  * One pass of a pointer over each figure, in its viewBox (400 × 320): [x, y, ms]. Each path does the
@@ -17,6 +17,7 @@ const DEMO: Record<keyof typeof COMPONENTS, [number, number, number][]> = {
   phosphor: [[130, 100, 0], [270, 100, 700], [140, 160, 1400], [275, 165, 2100]],
   slow: [[120, 250, 0], [200, 165, 700], [206, 160, 2600]],
   turntable: [[100, 170, 0], [125, 168, 400], [310, 160, 620], [320, 158, 900]],
+  keyboard: [[126, 116, 0], [290, 198, 2000], [172, 165, 3000]],
 };
 
 /** Long enough for the slowest dissolve (the reel's own, 520ms) to finish before its leaver goes. */
@@ -25,7 +26,7 @@ const LEAVE_MS = 640;
 type Layer = { key: number; at: number; leaving: boolean };
 
 /**
- * The six figures, one at a time, standing on the page with no controls. Each
+ * The figures, one at a time, standing on the page with no controls. Each
  * plays for six seconds while its tick fills, then the next dissolves in over
  * it. A pointer on the figure pauses the reel, and so does a hidden tab;
  * picking a tick shows that figure and stops the reel for good. Under reduced

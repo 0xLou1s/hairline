@@ -4,6 +4,14 @@ Every release of `@lucasmarkes/hairline`. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow
 [semver](https://semver.org/).
 
+## 0.2.0 - Unreleased
+
+### Added
+
+- `keyboard` and `Keyboard`: a sixty-key board. The key under the pointer
+  sinks, and its neighbours follow it down, less the further away. A stronger
+  `intensity` sinks a wider patch of keys.
+
 ## 0.1.0 - 2026-10-01
 
 First release.

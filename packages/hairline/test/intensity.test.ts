@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT, TABLE, intensity, parameter, type FigureId } from "../src/intensity";
-import { INTENSITY, OPTION } from "./parity/scripts.mjs";
+import { FIGURES, INTENSITY, OPTION } from "./parity/scripts.mjs";
 
 const IDS = Object.keys(TABLE) as FigureId[];
 
@@ -47,8 +47,8 @@ describe("parameter", () => {
     expect(parameter("terrain", "fast")).toBe(3);
   });
 
-  /* the parity goldens were captured with raw values; these intensities must land on them exactly */
-  it.each(IDS)("lands %s on the golden's value at its parity intensity", (id) => {
+  /* the parity goldens were captured with raw values; these intensities must land on them exactly. Only the six the site drew have one */
+  it.each(FIGURES as Array<keyof typeof OPTION>)("lands %s on the golden's value at its parity intensity", (id) => {
     const raw = OPTION[id][1];
     expect(parameter(id, INTENSITY[id])).toBe(raw);
   });

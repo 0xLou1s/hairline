@@ -5,7 +5,7 @@ import { Footer, Topbar } from "@/components/chrome";
 import { Command } from "@/components/command";
 import { ExampleFrame } from "@/components/example-frame";
 import { Rail } from "@/components/rail";
-import { LINKS } from "@/lib/figures";
+import { COUNT, LINKS } from "@/lib/figures";
 import { share } from "@/lib/share";
 import { COMMAND, FOLDER, INSTALL, STEPS, SUMMARY, USE, examples } from "@/lib/skill";
 
@@ -113,7 +113,7 @@ export default function Skill() {
         </Section>
 
         <p className="col-end">
-          The six figures and their options are in <a className="doc-more" href="/docs">the docs</a>. The skill&rsquo;s files are in <a className="doc-more" href={`${LINKS.github}/tree/main/skills/hairline-create`}>its folder on GitHub</a>.
+          The {COUNT} figures and their options are in <a className="doc-more" href="/docs">the docs</a>. The skill&rsquo;s files are in <a className="doc-more" href={`${LINKS.github}/tree/main/skills/hairline-create`}>its folder on GitHub</a>.
         </p>
       </main>
       <Footer />

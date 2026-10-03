@@ -7,7 +7,7 @@
  * copy and its tests hold the two together.
  */
 
-export type FigureId = "riffle" | "terrain" | "exploded" | "phosphor" | "slow" | "turntable";
+export type FigureId = "riffle" | "terrain" | "exploded" | "phosphor" | "slow" | "turntable" | "keyboard";
 
 /** Each figure's number at intensity 0, 0.5 and 1. Slow's falls: a slower clock is a stronger answer. */
 export const TABLE: Record<FigureId, readonly [number, number, number]> = {
@@ -17,6 +17,7 @@ export const TABLE: Record<FigureId, readonly [number, number, number]> = {
   phosphor: [150, 520, 1500], // afterglow, ms
   slow: [0.6, 0.2, 0.05], // rate, × normal speed
   turntable: [200, 650, 1500], // coast, ms
+  keyboard: [1, 2, 3.5], // radius, keys
 };
 
 export const DEFAULT = 0.5;

@@ -41,3 +41,7 @@ export function Slow({ style, ...props }: ComponentProps<typeof Hairline.Slow>) 
 export function Turntable({ style, ...props }: ComponentProps<typeof Hairline.Turntable>) {
   return <Hairline.Turntable style={{ ...tokens, ...style }} {...props} />;
 }
+
+export function Keyboard({ style, ...props }: ComponentProps<typeof Hairline.Keyboard>) {
+  return <Hairline.Keyboard style={{ ...tokens, ...style }} {...props} />;
+}

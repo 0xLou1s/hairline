@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
-import { LINKS } from "./figures";
+import { COUNT, LINKS } from "./figures";
+import { cap } from "./words";
 
 /** What a page says of itself where it has nothing closer to say. */
-export const DESCRIPTION = "Six isometric line figures that answer the pointer. SVG, no dependencies, for React and for everything else.";
+export const DESCRIPTION = `${cap(COUNT)} isometric line figures that answer the pointer. SVG, no dependencies, for React and for everything else.`;
 
 /** The pages a reader can land on, in the top bar's order: the sitemap lists these. /og is left out, a picture to photograph. */
 export const PAGES = ["/", "/figures", "/docs", "/skill", "/inspo"] as const;

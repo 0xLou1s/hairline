@@ -16,21 +16,21 @@ function watch(page: Page): string[] {
 const tiles = (page: Page) => page.locator(".fig-tile");
 const shelf = (page: Page, name: string) => page.locator(".shelves .shelf", { hasText: name });
 
-test("/figures prerenders six empty boxes among twenty-one tiles, then draws them with a clean console", async ({ page, request }) => {
+test("/figures prerenders seven empty boxes among twenty-one tiles, then draws them with a clean console", async ({ page, request }) => {
   const html = await (await request.get("/figures")).text();
-  expect(html.match(/<div style="aspect-ratio:5 \/ 4"><\/div>/g)).toHaveLength(6);
+  expect(html.match(/<div style="aspect-ratio:5 \/ 4"><\/div>/g)).toHaveLength(7);
   expect(html.match(/class="fig-tile"/g)).toHaveLength(21);
-  expect(html.match(/class="fig-tile" data-planned=""/g)).toHaveLength(15);
+  expect(html.match(/class="fig-tile" data-planned=""/g)).toHaveLength(14);
 
   const noise = watch(page);
   await page.goto("/figures");
   await expect(tiles(page)).toHaveCount(21);
-  await expect(page.locator(".fig-tile [data-hairline] > svg")).toHaveCount(6);
-  await expect(page.locator(".fig-tile .fig-ghost")).toHaveCount(15);
+  await expect(page.locator(".fig-tile [data-hairline] > svg")).toHaveCount(7);
+  await expect(page.locator(".fig-tile .fig-ghost")).toHaveCount(14);
   await expect(page.locator("h1")).toHaveText("Every figure, by what it draws.");
   await expect(page.locator(".doc-section h2")).toHaveText(SHELVES);
   await expect(page.locator(".fig-name").first()).toHaveAccessibleName("Exploded");
-  await expect(page.locator(".fig-tile[data-planned] .fig-name").first()).toHaveAccessibleName("Keyboard, planned");
+  await expect(page.locator(".fig-tile[data-planned] .fig-name").first()).toHaveAccessibleName("Funnel, planned");
   expect(noise).toEqual([]);
 });
 

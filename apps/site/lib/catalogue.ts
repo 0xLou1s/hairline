@@ -1,4 +1,7 @@
 import { FIGURES, type FigureId } from "./figures";
+import { cap, spell } from "./words";
+
+export { spell };
 
 /**
  * /figures: every figure on its shelf, by what it draws. A drawn figure takes
@@ -24,7 +27,7 @@ export const SHELVES: Shelf[] = [
     id: "interfaces", title: "Interfaces", color: "#3b82f6", figures: [
       drawn("exploded"),
       drawn("riffle"),
-      planned("keyboard", "Keyboard", "Sixty keys in a block. The key under the pointer sinks and its neighbours follow it down, less the further away.", "A wider patch of keys sinks."),
+      drawn("keyboard"),
     ],
   },
   {
@@ -72,17 +75,6 @@ export const SHELVES: Shelf[] = [
 ];
 
 export const ENTRIES: Entry[] = SHELVES.flatMap((s) => s.figures);
-
-const ONES = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen"];
-const TENS = ["", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"];
-
-/** A count as the page's prose writes it, "twenty-one", so the lede is read from the shelves and cannot fall behind them. Up to 99. */
-export function spell(n: number): string {
-  if (n < 20) return ONES[n];
-  return TENS[Math.floor(n / 10)] + (n % 10 ? `-${ONES[n % 10]}` : "");
-}
-
-const cap = (s: string) => s[0].toUpperCase() + s.slice(1);
 
 /** "Seven shelves, twenty-one figures" */
 export function tally(): string {

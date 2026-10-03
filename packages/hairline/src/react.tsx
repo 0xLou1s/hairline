@@ -2,10 +2,10 @@ import {
   forwardRef, useCallback, useEffect, useLayoutEffect, useRef,
   type ComponentPropsWithoutRef, type ForwardRefExoticComponent, type RefAttributes,
 } from "react";
-import { exploded, phosphor, riffle, slow, terrain, turntable, type Figure, type HairlineOptions } from "./index";
+import { exploded, keyboard, phosphor, riffle, slow, terrain, turntable, type Figure, type HairlineOptions } from "./index";
 
 /**
- * @lucasmarkes/hairline/react — the six figures as components.
+ * @lucasmarkes/hairline/react — the seven figures as components.
  *
  * A component renders one empty `<div>` and mounts the figure on it in a
  * layout effect, so on the server the box is there and the drawing is not.
@@ -65,3 +65,5 @@ export const Phosphor = make("Phosphor", phosphor);
 export const Slow = make("Slow", slow);
 /** Blocks on a turntable. A flick across it spins it; it settles on the nearest quarter turn. `intensity` makes the spin coast longer. */
 export const Turntable = make("Turntable", turntable);
+/** A sixty-key board. The key under the pointer sinks, and its neighbours follow it down, less the further away. `intensity` widens how far the press reaches. */
+export const Keyboard = make("Keyboard", keyboard);

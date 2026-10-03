@@ -1,4 +1,4 @@
-import { FIGURES, INTENSITY, LINKS, OPTIONS, THEME, measure, type Row } from "./figures";
+import { COUNT, FIGURES, INTENSITY, LINKS, OPTIONS, THEME, measure, type Row } from "./figures";
 import { CDN, PACKAGE, REACT, VANILLA, install } from "./snippets";
 import { COMMAND, EXAMPLES, INSTALL, SUMMARY } from "./skill";
 
@@ -17,7 +17,7 @@ export function llms(base: string): string {
   const out: string[] = [
     "# hairline",
     "",
-    `> ${PACKAGE}: six isometric line figures that answer the pointer. SVG, no dependencies, ESM only. A function per figure, and a React component per figure. Every figure takes the same four options.`,
+    `> ${PACKAGE}: ${COUNT} isometric line figures that answer the pointer. SVG, no dependencies, ESM only. A function per figure, and a React component per figure. Every figure takes the same four options.`,
     "",
     "## Install",
     "",

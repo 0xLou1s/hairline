@@ -1,6 +1,6 @@
-import { exploded, phosphor, riffle, slow, terrain, turntable, type Figure } from "@lucasmarkes/hairline";
+import { exploded, keyboard, phosphor, riffle, slow, terrain, turntable, type Figure } from "@lucasmarkes/hairline";
 
-/** No framework: six elements, six calls. */
+/** No framework: seven elements, seven calls. */
 const el = (id: string) => document.getElementById(id)!;
 const read = el("read");
 
@@ -13,5 +13,6 @@ exploded(el("exploded"));
 phosphor(el("phosphor"), { theme: "dark" });
 slow(el("slow"));
 turntable(el("turntable"));
+keyboard(el("keyboard"));
 
 cards.update({ intensity: 0.8 });
