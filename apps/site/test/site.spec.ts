@@ -244,6 +244,25 @@ test("the install pill copies every manager's command", async ({ page, context }
   await expect(pill).toHaveAttribute("data-install", "npm");
 });
 
+test("a second copy keeps Copied up for its own full time, not what was left of the first", async ({ page, context }) => {
+  await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+  await page.clock.install();
+  await page.goto("/");
+  const pill = page.locator("[data-install]").first();
+  const copy = pill.getByRole("button", { name: "Copy install command" });
+  await copy.click();
+  await expect(copy).toHaveAttribute("data-copied", "true");
+  await page.clock.runFor(1000);
+  await pill.getByRole("button", { name: /\(npm\): switch to/ }).click();
+  await copy.click();
+  // the second copy has landed once the clipboard holds its command
+  await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toBe(MANAGERS[1][1]);
+  await page.clock.runFor(1000);
+  await expect(pill.getByText("Copied")).toBeAttached();
+  await page.clock.runFor(700);
+  await expect(copy).not.toHaveAttribute("data-copied");
+});
+
 test("without a clipboard, copy selects the text instead and throws nothing", async ({ page }) => {
   await page.addInitScript(() => {
     Object.defineProperty(navigator, "clipboard", { value: { writeText: () => Promise.reject(new DOMException("denied", "NotAllowedError")) } });
