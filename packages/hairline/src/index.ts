@@ -5,6 +5,8 @@ import { mount as elevatorEngine } from "./figures/elevator";
 import { mount as explodedEngine } from "./figures/exploded";
 import { mount as keyboardEngine } from "./figures/keyboard";
 import { mount as laptopEngine } from "./figures/laptop";
+import { mount as lockersEngine } from "./figures/lockers";
+import { mount as padlockEngine } from "./figures/padlock";
 import { mount as phoneEngine } from "./figures/phone";
 import { mount as phosphorEngine } from "./figures/phosphor";
 import { mount as riffleEngine } from "./figures/riffle";
@@ -12,9 +14,10 @@ import { mount as slowEngine } from "./figures/slow";
 import { mount as terminalEngine } from "./figures/terminal";
 import { mount as terrainEngine } from "./figures/terrain";
 import { mount as turntableEngine } from "./figures/turntable";
+import { mount as vaultEngine } from "./figures/vault";
 
 /**
- * @lucasmarkes/hairline — thirteen isometric line figures that answer the pointer.
+ * @lucasmarkes/hairline — sixteen isometric line figures that answer the pointer.
  *
  * One function per figure. Each takes an element and the same options, draws
  * into the element, and returns `{ update, destroy }`. Each function names
@@ -151,5 +154,35 @@ export function branches(el: HTMLElement, options?: HairlineOptions): Figure {
     label: "A commit graph on a board: the commit under the pointer rises, and its history rises after it, the farther back the less.",
     rest: "rest",
     engine: branchesEngine,
+  }, el, options);
+}
+
+/** A vault door: circling the pointer turns its dial, which coasts and catches every ten; on forty its three bolts draw back. `intensity` lets the dial coast longer. */
+export function vault(el: HTMLElement, options?: HairlineOptions): Figure {
+  return create({
+    id: "vault",
+    label: "A vault door: circling the pointer turns its dial, which coasts and catches every ten; on forty its three bolts draw back.",
+    rest: "rest",
+    engine: vaultEngine,
+  }, el, options);
+}
+
+/** A bank of twelve lockers, one ajar at rest: the locker under the pointer opens, and the one open before it swings shut. `intensity` opens the door wider. */
+export function lockers(el: HTMLElement, options?: HairlineOptions): Figure {
+  return create({
+    id: "lockers",
+    label: "A bank of twelve lockers, one ajar at rest: the locker under the pointer opens, and the one open before it swings shut.",
+    rest: "rest",
+    engine: lockersEngine,
+  }, el, options);
+}
+
+/** A padlock: as the pointer nears, the shackle springs up out of the body and swings open about its long leg. `intensity` swings the shackle further. */
+export function padlock(el: HTMLElement, options?: HairlineOptions): Figure {
+  return create({
+    id: "padlock",
+    label: "A padlock: as the pointer nears, the shackle springs up out of the body and swings open about its long leg.",
+    rest: "rest",
+    engine: padlockEngine,
   }, el, options);
 }

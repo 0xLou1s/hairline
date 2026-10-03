@@ -29,6 +29,15 @@ Every release of `@lucasmarkes/hairline`. The format follows
 - `branches` and `Branches`: a commit graph on a board. The commit under the
   pointer rises, and its history rises after it, the farther back the less. A
   stronger `intensity` raises more of the history.
+- `vault` and `Vault`: a vault door. Circling the pointer turns its dial,
+  which coasts and catches every ten; on forty its three bolts draw back. A
+  stronger `intensity` lets the dial coast longer.
+- `lockers` and `Lockers`: a bank of twelve lockers, one ajar at rest. The
+  locker under the pointer opens, and the one open before it swings shut. A
+  stronger `intensity` opens the door wider.
+- `padlock` and `Padlock`: a padlock. As the pointer nears, the shackle
+  springs up out of the body and swings open about its long leg. A stronger
+  `intensity` swings the shackle further.
 
 ## 0.1.0 - 2026-10-01
 

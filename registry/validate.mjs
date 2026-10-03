@@ -29,7 +29,7 @@ const [source] = item.files ?? [];
 if (item.dependencies?.join() !== "@lucasmarkes/hairline") problems.push("dependencies must be exactly @lucasmarkes/hairline");
 if (source?.path !== "components/ui/hairline.tsx") problems.push("the file must be components/ui/hairline.tsx");
 if (!source?.content?.startsWith('"use client";')) problems.push('the file must start with "use client"');
-for (const name of ["Riffle", "Terrain", "Exploded", "Phosphor", "Slow", "Turntable", "Keyboard", "Elevator", "Phone", "Laptop", "Terminal", "Cabinet", "Branches"]) {
+for (const name of ["Riffle", "Terrain", "Exploded", "Phosphor", "Slow", "Turntable", "Keyboard", "Elevator", "Phone", "Laptop", "Terminal", "Cabinet", "Branches", "Vault", "Lockers", "Padlock"]) {
   if (!source?.content?.includes(`export function ${name}(`)) problems.push(`the file does not export ${name}`);
 }
 if (/localhost/.test(JSON.stringify(item)) && process.env.VERCEL) problems.push("the item points at localhost in a deployed build");

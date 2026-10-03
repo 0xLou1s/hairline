@@ -69,3 +69,15 @@ export function Cabinet({ style, ...props }: ComponentProps<typeof Hairline.Cabi
 export function Branches({ style, ...props }: ComponentProps<typeof Hairline.Branches>) {
   return <Hairline.Branches style={{ ...tokens, ...style }} {...props} />;
 }
+
+export function Vault({ style, ...props }: ComponentProps<typeof Hairline.Vault>) {
+  return <Hairline.Vault style={{ ...tokens, ...style }} {...props} />;
+}
+
+export function Lockers({ style, ...props }: ComponentProps<typeof Hairline.Lockers>) {
+  return <Hairline.Lockers style={{ ...tokens, ...style }} {...props} />;
+}
+
+export function Padlock({ style, ...props }: ComponentProps<typeof Hairline.Padlock>) {
+  return <Hairline.Padlock style={{ ...tokens, ...style }} {...props} />;
+}

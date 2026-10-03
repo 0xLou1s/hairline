@@ -7,7 +7,7 @@
  * copy and its tests hold the two together.
  */
 
-export type FigureId = "riffle" | "terrain" | "exploded" | "phosphor" | "slow" | "turntable" | "keyboard" | "elevator" | "phone" | "laptop" | "terminal" | "cabinet" | "branches";
+export type FigureId = "riffle" | "terrain" | "exploded" | "phosphor" | "slow" | "turntable" | "keyboard" | "elevator" | "phone" | "laptop" | "terminal" | "cabinet" | "branches" | "vault" | "lockers" | "padlock";
 
 /** Each figure's number at intensity 0, 0.5 and 1. Slow's falls: a slower clock is a stronger answer. */
 export const TABLE: Record<FigureId, readonly [number, number, number]> = {
@@ -24,6 +24,9 @@ export const TABLE: Record<FigureId, readonly [number, number, number]> = {
   terminal: [1, 2, 3.5], // spread, lines
   cabinet: [1.5, 3, 5], // reach, blades
   branches: [1, 3, 6], // reach, commits
+  vault: [250, 600, 1500], // coast, ms
+  lockers: [55, 90, 120], // opening, degrees
+  padlock: [45, 90, 100], // swing, degrees
 };
 
 export const DEFAULT = 0.5;

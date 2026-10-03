@@ -58,9 +58,9 @@ export const SHELVES: Shelf[] = [
   },
   {
     id: "security", title: "Security", color: "#ef4444", figures: [
-      planned("vault", "Vault", "A vault door with a dial and three bolts. The pointer turns the dial; detents catch every ten, and on the combination the bolts draw back.", "The dial coasts longer."),
-      planned("lockers", "Lockers", "A bank of twelve lockers, one ajar at rest. The locker under the pointer opens; the one at rest closes.", "The door opens wider."),
-      planned("padlock", "Padlock", "A padlock with its shackle in. As the pointer comes near the shackle lifts out and swings open.", "The shackle swings further."),
+      drawn("vault"),
+      drawn("lockers"),
+      drawn("padlock"),
     ],
   },
   {

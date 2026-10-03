@@ -1,6 +1,6 @@
 # hairline
 
-Thirteen isometric line figures that answer the pointer. For React and for anything with a DOM.
+Sixteen isometric line figures that answer the pointer. For React and for anything with a DOM.
 
 [![npm](https://img.shields.io/npm/v/@lucasmarkes/hairline)](https://www.npmjs.com/package/@lucasmarkes/hairline)
 [![CI](https://github.com/lucasmarkes/hairline/actions/workflows/ci.yml/badge.svg)](https://github.com/lucasmarkes/hairline/actions/workflows/ci.yml)
@@ -68,6 +68,9 @@ A figure draws into the element you give it, at the element's width and a 5:4 as
 | `terminal` | `Terminal` | A terminal window with its history in rows. The pointer's height scrolls back; the line under it lifts and its neighbours follow. | The lift spreads further. |
 | `cabinet` | `Cabinet` | A rack of twelve blades, a few half out. The pointer's height pulls the nearest ones out, the farther the less. | More blades come out. |
 | `branches` | `Branches` | A commit graph with a branch forking off main and merging back. The commit under the pointer rises, and its history rises after it. | More of the history rises. |
+| `vault` | `Vault` | A vault door with a dial and three bolts. The pointer turns the dial; detents catch every ten, and on the combination the bolts draw back. | The dial coasts longer. |
+| `lockers` | `Lockers` | A bank of twelve lockers, one ajar at rest. The locker under the pointer opens; the one at rest closes. | The door opens wider. |
+| `padlock` | `Padlock` | A padlock with its shackle in. As the pointer comes near the shackle lifts out and swings open. | The shackle swings further. |
 
 ## Options
 
@@ -111,7 +114,7 @@ The figure's styles have no specificity, so any rule of yours wins without `!imp
 
 ## Make your own
 
-`hairline-create` is a skill for coding agents. Give it an idea and it draws a new figure to Hairline's ten rules, on the same engine as the thirteen above, as one HTML file.
+`hairline-create` is a skill for coding agents. Give it an idea and it draws a new figure to Hairline's ten rules, on the same engine as the sixteen above, as one HTML file.
 
 ```sh
 npx skills add lucasmarkes/hairline

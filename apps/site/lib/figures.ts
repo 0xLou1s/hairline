@@ -8,7 +8,7 @@
 
 import { spell } from "./words";
 
-export type FigureId = "riffle" | "terrain" | "exploded" | "phosphor" | "slow" | "turntable" | "keyboard" | "elevator" | "phone" | "laptop" | "terminal" | "cabinet" | "branches";
+export type FigureId = "riffle" | "terrain" | "exploded" | "phosphor" | "slow" | "turntable" | "keyboard" | "elevator" | "phone" | "laptop" | "terminal" | "cabinet" | "branches" | "vault" | "lockers" | "padlock";
 
 export type FigureDoc = {
   id: FigureId;
@@ -113,9 +113,30 @@ export const FIGURES: FigureDoc[] = [
     stronger: "More of the history rises.",
     parameter: { name: "reach", unit: "commits" },
   },
+  {
+    id: "vault",
+    name: "Vault",
+    summary: "A vault door with a dial and three bolts. The pointer turns the dial; detents catch every ten, and on the combination the bolts draw back.",
+    stronger: "The dial coasts longer.",
+    parameter: { name: "coast", unit: "ms" },
+  },
+  {
+    id: "lockers",
+    name: "Lockers",
+    summary: "A bank of twelve lockers, one ajar at rest. The locker under the pointer opens; the one at rest closes.",
+    stronger: "The door opens wider.",
+    parameter: { name: "opening", unit: "degrees" },
+  },
+  {
+    id: "padlock",
+    name: "Padlock",
+    summary: "A padlock with its shackle in. As the pointer comes near the shackle lifts out and swings open.",
+    stronger: "The shackle swings further.",
+    parameter: { name: "swing", unit: "degrees" },
+  },
 ];
 
-/** How many figures the package has, as the prose writes it: "thirteen". */
+/** How many figures the package has, as the prose writes it: "sixteen". */
 export const COUNT = spell(FIGURES.length);
 
 /** Each figure's number at intensity 0, 0.5 and 1: a copy of the package's table. */
@@ -133,6 +154,9 @@ export const INTENSITY: Record<FigureId, readonly [number, number, number]> = {
   terminal: [1, 2, 3.5],
   cabinet: [1.5, 3, 5],
   branches: [1, 3, 6],
+  vault: [250, 600, 1500],
+  lockers: [55, 90, 120],
+  padlock: [45, 90, 100],
 };
 
 /** A number with its unit, as the docs' table and /llms.txt write it: "40 ms", "0.2× normal speed". */
