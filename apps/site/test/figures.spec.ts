@@ -247,6 +247,8 @@ test("Escape pressed inside a made page's frame closes the drawer, as it does ou
 test("a made tile keeps its box when its page is missing", async ({ page }) => {
   await page.route("**/skill/hairline-mastra.html*", (route) => route.fulfill({ status: 404, body: "" }));
   await page.goto("/figures#marks");
+  // the hash is read after mount and the shelves are built again for it: measure the frame that stays
+  await expect(page.locator('.shelf[data-filter="marks"]')).toHaveAttribute("aria-pressed", "true");
   const box = (await page.locator("#shelf-marks .fig-tile").nth(1).locator("iframe.made-frame").boundingBox())!;
   expect(box.width / box.height).toBeCloseTo(5 / 4, 1);
 });
