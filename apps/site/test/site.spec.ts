@@ -248,6 +248,8 @@ test("a second copy keeps Copied up for its own full time, not what was left of 
   await context.grantPermissions(["clipboard-read", "clipboard-write"]);
   await page.clock.install();
   await page.goto("/");
+  // from here time moves only when the test moves it: on a slow machine the real time between steps would add to it
+  await page.clock.pauseAt(await page.evaluate(() => Date.now() + 1000));
   const pill = page.locator("[data-install]").first();
   const copy = pill.getByRole("button", { name: "Copy install command" });
   await copy.click();
