@@ -248,6 +248,8 @@ test("a second copy keeps Copied up for its own full time, not what was left of 
   await context.grantPermissions(["clipboard-read", "clipboard-write"]);
   await page.clock.install();
   await page.goto("/");
+  // from here time moves only when the test moves it: on a slow machine the real time between steps would add to it
+  await page.clock.pauseAt(await page.evaluate(() => Date.now() + 1000));
   const pill = page.locator("[data-install]").first();
   const copy = pill.getByRole("button", { name: "Copy install command" });
   await copy.click();
@@ -740,6 +742,32 @@ test("a click in the sidebar still scrolls smoothly to its section", async ({ pa
   // just after the click the page is still on its way
   expect(await page.evaluate(() => scrollY)).toBeLessThan(final - 100);
   await expect.poll(() => page.evaluate(() => scrollY)).toBeGreaterThan(final - 2);
+});
+
+test("a glide longer than a second keeps the mark on the link picked, every frame of the way", async ({ page }) => {
+  await page.goto("/docs");
+  const nav = page.locator(".doc-sidebar");
+  await nav.getByRole("link", { name: "Install" }).waitFor();
+  // every frame from the click's mark on, the marked link, until the page has come to rest
+  const watching = page.evaluate(() => new Promise<{ marks: string[]; ms: number }>((done) => {
+    const marks = new Set<string>();
+    let t0 = 0, last = -1, still = 0;
+    const tick = () => {
+      const on = document.querySelector(".doc-sidebar a[aria-current]")?.textContent;
+      if (on === "Theme" && !t0) t0 = performance.now();
+      if (t0 && on) marks.add(on);
+      still = scrollY === last ? still + 1 : 0;
+      last = scrollY;
+      if (still > 30 && scrollY > 0) done({ marks: [...marks], ms: performance.now() - t0 });
+      else requestAnimationFrame(tick);
+    };
+    tick();
+  }));
+  await nav.getByRole("link", { name: "Theme" }).click();
+  const { marks, ms } = await watching;
+  // Install to Theme is a long way: the glide outlasts the second a click used to hold the mark for
+  expect(ms).toBeGreaterThan(1000);
+  expect(marks).toEqual(["Theme"]);
 });
 
 test("the top bar's Inspo link opens the story of how Hairline was made, with a clean console", async ({ page }) => {

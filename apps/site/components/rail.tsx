@@ -138,6 +138,16 @@ export function Rail({ label, groups }: { label: string; groups: RailGroup[] }) 
       held.current = 0;
       pick();
     };
+    // a long glide outlasts the first second: while the page still moves, the mark stays held
+    const scrolled = () => {
+      if (held.current) {
+        held.current = Math.max(held.current, performance.now() + 200);
+        clearTimeout(timer);
+        timer = window.setTimeout(release, held.current - performance.now());
+        return;
+      }
+      pick();
+    };
     const hold = (event: MouseEvent) => {
       const a = (event.target as Element | null)?.closest<HTMLAnchorElement>("a[href^='#']");
       const id = a?.hash.slice(1);
@@ -148,7 +158,7 @@ export function Rail({ label, groups }: { label: string; groups: RailGroup[] }) 
       timer = window.setTimeout(release, 1000);
     };
     pick();
-    window.addEventListener("scroll", pick, { passive: true });
+    window.addEventListener("scroll", scrolled, { passive: true });
     window.addEventListener("scrollend", release);
     window.addEventListener("resize", pick);
     document.addEventListener("click", hold);
@@ -156,7 +166,7 @@ export function Rail({ label, groups }: { label: string; groups: RailGroup[] }) 
     document.documentElement.dataset.smooth = "";
     return () => {
       clearTimeout(timer);
-      window.removeEventListener("scroll", pick);
+      window.removeEventListener("scroll", scrolled);
       window.removeEventListener("scrollend", release);
       window.removeEventListener("resize", pick);
       document.removeEventListener("click", hold);
