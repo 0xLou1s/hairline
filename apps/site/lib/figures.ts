@@ -8,7 +8,7 @@
 
 import { spell } from "./words";
 
-export type FigureId = "riffle" | "terrain" | "exploded" | "phosphor" | "slow" | "turntable" | "keyboard" | "elevator" | "phone" | "laptop" | "terminal" | "cabinet" | "branches" | "vault" | "lockers" | "padlock" | "patch" | "dish" | "router";
+export type FigureId = "riffle" | "terrain" | "exploded" | "phosphor" | "slow" | "turntable" | "keyboard" | "elevator" | "phone" | "laptop" | "terminal" | "cabinet" | "branches" | "vault" | "lockers" | "padlock" | "patch" | "dish" | "router" | "loupe" | "sieve" | "rail" | "plug" | "query" | "drawer" | "basket" | "plot";
 
 export type FigureDoc = {
   id: FigureId;
@@ -155,9 +155,65 @@ export const FIGURES: FigureDoc[] = [
     stronger: "The lean spreads further.",
     parameter: { name: "spread", unit: "antennas" },
   },
+  {
+    id: "loupe",
+    name: "Loupe",
+    summary: "A stand loupe on a blank ruled sheet. The pointer drags it across; the rules pass enlarged under the glass, with nothing between them.",
+    stronger: "The glass magnifies more.",
+    parameter: { name: "magnification", unit: "×" },
+  },
+  {
+    id: "sieve",
+    name: "Sieve",
+    summary: "Three test sieves stacked over a pan. The pointer's height picks one; it rises clear of the stack, and every mesh is bare.",
+    stronger: "The gap opens further.",
+    parameter: { name: "gap", unit: "viewBox units" },
+  },
+  {
+    id: "rail",
+    name: "Rail",
+    summary: "A garment rail with seven bare hangers. The pointer brushes them; each rocks away, the nearest most, and settles.",
+    stronger: "The brush reaches more hangers.",
+    parameter: { name: "radius", unit: "hangers" },
+  },
+  {
+    id: "plug",
+    name: "Plug",
+    summary: "A wall socket, and a plug lying on the floor at the end of its cord. The pointer draws the plug up toward the socket; it stops short, and falls back.",
+    stronger: "The plug comes closer to the socket.",
+    parameter: { name: "pull", unit: "of the way" },
+  },
+  {
+    id: "query",
+    name: "Query",
+    summary: "A question mark built as a bent bar over a loose ball. The hook turns toward the pointer, and the ball rolls after it.",
+    stronger: "The hook turns further.",
+    parameter: { name: "turn", unit: "degrees" },
+  },
+  {
+    id: "drawer",
+    name: "Drawer",
+    summary: "A cabinet of three drawers. The pointer's height picks one; it slides out and shows two dividers with nothing between them.",
+    stronger: "The drawer opens further.",
+    parameter: { name: "pull", unit: "viewBox units" },
+  },
+  {
+    id: "basket",
+    name: "Basket",
+    summary: "A wire basket under a bail handle. It tilts toward the pointer and shows its bare floor; the handle swings after it.",
+    stronger: "The basket tilts further.",
+    parameter: { name: "tilt", unit: "degrees" },
+  },
+  {
+    id: "plot",
+    name: "Plot",
+    summary: "A bar chart with seven flat tabs where the bars would stand. The pointer brushes them; each lifts a little and drops back to zero.",
+    stronger: "The tabs lift higher.",
+    parameter: { name: "lift", unit: "viewBox units" },
+  },
 ];
 
-/** How many figures the package has, as the prose writes it: "nineteen". */
+/** How many figures the package has, as the prose writes it: "twenty-seven". */
 export const COUNT = spell(FIGURES.length);
 
 /** Each figure's number at intensity 0, 0.5 and 1: a copy of the package's table. */
@@ -181,6 +237,14 @@ export const INTENSITY: Record<FigureId, readonly [number, number, number]> = {
   patch: [1, 2.5, 5],
   dish: [30, 50, 70],
   router: [0.5, 1.5, 3],
+  loupe: [1.3, 1.8, 2.6],
+  sieve: [6, 14, 24],
+  rail: [1, 2, 3.5],
+  plug: [0.35, 0.6, 0.9],
+  query: [20, 40, 55],
+  drawer: [12, 22, 34],
+  basket: [8, 16, 28],
+  plot: [3, 6, 12],
 };
 
 /** A number with its unit, as the docs' table and /llms.txt write it: "40 ms", "0.2× normal speed". */

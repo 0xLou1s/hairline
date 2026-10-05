@@ -1,6 +1,6 @@
 # hairline
 
-Nineteen isometric line figures that answer the pointer. For React and for anything with a DOM.
+Twenty-seven isometric line figures that answer the pointer. For React and for anything with a DOM.
 
 [![npm](https://img.shields.io/npm/v/@lucasmarkes/hairline)](https://www.npmjs.com/package/@lucasmarkes/hairline)
 [![CI](https://github.com/lucasmarkes/hairline/actions/workflows/ci.yml/badge.svg)](https://github.com/lucasmarkes/hairline/actions/workflows/ci.yml)
@@ -74,6 +74,14 @@ A figure draws into the element you give it, at the element's width and a 5:4 as
 | `patch` | `Patch` | A patch panel of twenty-four ports with cables. The cable under the pointer lifts and its neighbours lean away. | The lean spreads further. |
 | `dish` | `Dish` | A parabolic dish on a two-axis gimbal. The pointer aims the dish; it follows on a spring. | The dish swings further. |
 | `router` | `Router` | A router with its antennas up. Each antenna leans toward the pointer, the nearest most. | The lean spreads further. |
+| `loupe` | `Loupe` | A stand loupe on a blank ruled sheet. The pointer drags it across; the rules pass enlarged under the glass, with nothing between them. | The glass magnifies more. |
+| `sieve` | `Sieve` | Three test sieves stacked over a pan. The pointer's height picks one; it rises clear of the stack, and every mesh is bare. | The gap opens further. |
+| `rail` | `Rail` | A garment rail with seven bare hangers. The pointer brushes them; each rocks away, the nearest most, and settles. | The brush reaches more hangers. |
+| `plug` | `Plug` | A wall socket, and a plug lying on the floor at the end of its cord. The pointer draws the plug up toward the socket; it stops short, and falls back. | The plug comes closer to the socket. |
+| `query` | `Query` | A question mark built as a bent bar over a loose ball. The hook turns toward the pointer, and the ball rolls after it. | The hook turns further. |
+| `drawer` | `Drawer` | A cabinet of three drawers. The pointer's height picks one; it slides out and shows two dividers with nothing between them. | The drawer opens further. |
+| `basket` | `Basket` | A wire basket under a bail handle. It tilts toward the pointer and shows its bare floor; the handle swings after it. | The basket tilts further. |
+| `plot` | `Plot` | A bar chart with seven flat tabs where the bars would stand. The pointer brushes them; each lifts a little and drops back to zero. | The tabs lift higher. |
 
 ## Options
 
@@ -117,7 +125,7 @@ The figure's styles have no specificity, so any rule of yours wins without `!imp
 
 ## Make your own
 
-`hairline-create` is a skill for coding agents. Give it an idea and it draws a new figure to Hairline's ten rules, on the same engine as the nineteen above, as one HTML file.
+`hairline-create` is a skill for coding agents. Give it an idea and it draws a new figure to Hairline's ten rules, on the same engine as the twenty-seven above, as one HTML file.
 
 ```sh
 npx skills add lucasmarkes/hairline

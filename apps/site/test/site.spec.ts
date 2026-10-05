@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-const IDS = ["riffle", "terrain", "exploded", "phosphor", "slow", "turntable", "keyboard", "elevator", "phone", "laptop", "terminal", "cabinet", "branches", "vault", "lockers", "padlock", "patch", "dish", "router"];
+const IDS = ["riffle", "terrain", "exploded", "phosphor", "slow", "turntable", "keyboard", "elevator", "phone", "laptop", "terminal", "cabinet", "branches", "vault", "lockers", "padlock", "patch", "dish", "router", "loupe", "sieve", "rail", "plug", "query", "drawer", "basket", "plot"];
 const MANAGERS = [
   ["npm", "npm i @lucasmarkes/hairline"],
   ["pnpm", "pnpm add @lucasmarkes/hairline"],
@@ -79,20 +79,40 @@ test("the top bar's links sit as one row: one height, one centre line, one type,
 test("the docs prerender an empty box per figure, then draw one figure per row with a clean console", async ({ page, request }) => {
   const html = await (await request.get("/docs")).text();
   expect(html.match(/<div style="aspect-ratio:5 \/ 4"><\/div>/g)).toHaveLength(IDS.length);
-  expect(html).not.toMatch(/aspect-ratio:5 \/ 4"[^>]*><svg/);
+  // the empty state's figure is the one more, at its own width
+  expect(html.match(/<div style="aspect-ratio:5 \/ 4;width:200px"><\/div>/g)).toHaveLength(1);
+  expect(html).not.toMatch(/aspect-ratio:5 \/ 4[^"]*"[^>]*><svg/);
 
   const noise = watch(page);
   await page.goto("/docs");
-  await expect(page.locator("[data-hairline] > svg")).toHaveCount(IDS.length);
+  await expect(page.locator("[data-hairline] > svg")).toHaveCount(IDS.length + 1);
   for (const id of IDS) await expect(page.locator(`[data-row="${id}"] [data-hairline] > svg > *`).first()).toBeAttached();
   await expect(page.locator("[data-size]")).toHaveText(/^\d+\.\d kB$/);
   expect(noise).toEqual([]);
 });
 
+test("the empty-states section draws its snippet live: a sieve at 200px over a heading and a button, then the code", async ({ page }) => {
+  await page.goto("/docs");
+  const section = page.locator("#empty-states");
+  const demo = section.locator("[data-empty]");
+  const figure = demo.locator("[data-hairline]");
+  await expect(figure.locator("> svg > *").first()).toBeAttached();
+  await expect(figure).toHaveAttribute("aria-label", /empty sieve/i);
+  expect((await figure.boundingBox())!.width).toBeCloseTo(200, 0);
+  await expect(demo.getByRole("heading", { level: 3 })).toHaveText("No results match these filters");
+  await expect(demo.getByRole("button", { name: "Clear filters" })).toBeVisible();
+  // the live block comes first, the code after it, and the code says the same words
+  const code = section.locator("pre");
+  expect((await demo.boundingBox())!.y).toBeLessThan((await code.boundingBox())!.y);
+  await expect(code).toContainText('<Sieve style={{ width: 200 }} label="An empty sieve" />');
+  await expect(code).toContainText("<h2>No results match these filters</h2>");
+  await expect(code).toContainText("Clear filters</button>");
+});
+
 test("the docs' code is in greys: every token's colour has equal red, green and blue", async ({ page }) => {
   await page.goto("/docs");
   const colours = await page.locator("main pre span").evaluateAll((spans) => spans.map((s) => getComputedStyle(s).color));
-  // seven blocks of highlighted code, nearly two hundred spans: a page that lost its highlighting falls far short
+  // eight blocks of highlighted code, some two hundred spans: a page that lost its highlighting falls far short
   expect(colours.length).toBeGreaterThan(150);
   const tinted = colours.filter((c) => {
     const [r, g, b] = c.match(/\d+(\.\d+)?/g)!.map(Number);
@@ -312,9 +332,9 @@ const BASE = "http://localhost:3000";
 
 test("a pasted link shows the page it leads to: each page's card has its own title, text and address", async ({ request }) => {
   const CARDS = [
-    ["/", "hairline", /^Nineteen isometric line figures/],
-    ["/figures", "Figures", /^Seven shelves, nineteen figures, grouped by what they draw/],
-    ["/docs", "Docs", /^Nineteen isometric line figures/],
+    ["/", "hairline", /^Twenty-seven isometric line figures/],
+    ["/figures", "Figures", /^Eight shelves, twenty-seven figures, grouped by what they draw/],
+    ["/docs", "Docs", /^Twenty-seven isometric line figures/],
     ["/skill", "Make your own figure", /^hairline-create is a skill/],
     ["/inspo", "How Hairline was made", /^A long brief/],
   ] as const;
@@ -475,7 +495,7 @@ test("the figures' link goes to the figures page", async ({ page }) => {
 test("the sidebar's links land on their section under the top bar and mark it, and scrolling moves the mark", async ({ page }) => {
   await page.goto("/docs");
   const nav = page.getByRole("navigation", { name: "Docs" });
-  await expect(nav.getByRole("link")).toHaveText(["Install", "Quick start", "Options", "React", "Vanilla", "CDN", "Figures", "Theme", "Accessibility"]);
+  await expect(nav.getByRole("link")).toHaveText(["Install", "Quick start", "Options", "Empty states", "React", "Vanilla", "CDN", "Figures", "Theme", "Accessibility"]);
   await expect(nav.getByRole("link", { name: "Install" })).toHaveAttribute("aria-current", "location");
 
   await nav.getByRole("link", { name: "Theme" }).click();
@@ -549,7 +569,7 @@ test("the sidebar draws the line to its section in its group's colour, and only 
     const other = nav.querySelector(".rail-group:not(:has([aria-current]))")!;
     const scale = (ul: Element) => {
       const after = style(ul, "::after");
-      const bottom = after.clipPath.match(/^inset\(\S+ \S+ (\S+)/)?.[1] ?? "0px";
+      const bottom = after.clipPath.match(/^inset\(\S+ \S+ ([^\s)]+)/)?.[1] ?? "0px";
       return 1 - (bottom.endsWith("%") ? parseFloat(bottom) / 100 : parseFloat(bottom) / parseFloat(after.height));
     };
     return {
@@ -592,7 +612,7 @@ test("the line draws from section to section instead of jumping, and under reduc
     const tick = () => {
       // the trunk is a border uncovered from the top: its reach is what the clip-path's bottom inset leaves
       const after = getComputedStyle(ul, "::after");
-      const bottom = after.clipPath.match(/^inset\(\S+ \S+ (\S+)/)?.[1] ?? "0px";
+      const bottom = after.clipPath.match(/^inset\(\S+ \S+ ([^\s)]+)/)?.[1] ?? "0px";
       ys.push(1 - (bottom.endsWith("%") ? parseFloat(bottom) / 100 : parseFloat(bottom) / parseFloat(after.height)));
       if (performance.now() - t0 < 700) requestAnimationFrame(tick);
       else done(ys);

@@ -10,6 +10,19 @@ const QUIET = "hl-site-quiet";
 const HIDDEN = "#name, #read, #rules { display: none !important; }";
 
 /**
+ * Hands an Escape pressed inside a frame's document on to the frame element,
+ * where it bubbles to the site's document: a key pressed in the frame never
+ * reaches it otherwise, so the drawer would not close. Returns its remover.
+ */
+export function forwardEscape(el: HTMLIFrameElement, doc: Document): () => void {
+  const onKey = (event: KeyboardEvent) => {
+    if (event.key === "Escape") el.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+  };
+  doc.addEventListener("keydown", onKey);
+  return () => doc.removeEventListener("keydown", onKey);
+}
+
+/**
  * A page the skill wrote, in a frame as tall as that page: the frame never
  * scrolls inside. Its height is reserved in CSS before it loads, then fitted
  * to the page's column and kept fitted as the column's text wraps. The pages
@@ -29,16 +42,20 @@ export function ExampleFrame({ src, title }: { src: string; title: string }) {
     const el = frame.current;
     if (!el) return;
     let watch: ResizeObserver | undefined;
+    let unkey: (() => void) | undefined;
     const fit = () => {
       const view = el.contentWindow as (Window & typeof globalThis) | null;
       const doc = el.contentDocument;
       const main = doc?.querySelector("main");
       if (!view || !doc || !main) return;
+      // once a document: the style and the Escape go in together
       if (!doc.getElementById(QUIET)) {
         const style = doc.createElement("style");
         style.id = QUIET;
         style.textContent = HIDDEN;
         doc.head.append(style);
+        unkey?.();
+        unkey = forwardEscape(el, doc);
       }
       const size = () => { el.style.height = `${Math.ceil(main.getBoundingClientRect().height) + PAD}px`; };
       size();
@@ -52,6 +69,7 @@ export function ExampleFrame({ src, title }: { src: string; title: string }) {
     return () => {
       el.removeEventListener("load", fit);
       watch?.disconnect();
+      unkey?.();
     };
   }, []);
 

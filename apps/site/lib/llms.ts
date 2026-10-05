@@ -1,5 +1,6 @@
+import { NOTICE } from "./catalogue";
 import { COUNT, FIGURES, INTENSITY, LINKS, OPTIONS, THEME, measure, type Row } from "./figures";
-import { CDN, PACKAGE, REACT, VANILLA, install } from "./snippets";
+import { CDN, EMPTY, PACKAGE, REACT, VANILLA, install } from "./snippets";
 import { COMMAND, EXAMPLES, INSTALL, SUMMARY } from "./skill";
 
 /** The page as plain text, for a model to read: the same data, the same copy. */
@@ -43,6 +44,12 @@ export function llms(base: string): string {
     "",
     table(OPTIONS),
     "",
+    "## Empty states",
+    "",
+    "A figure works as an empty state at 160 to 240px, above a heading and one action. Its rest pose is the picture; the pointer is a bonus.",
+    "",
+    fence("tsx", EMPTY),
+    "",
     "## Figures",
     "",
     "What a higher `intensity` does to each figure, and the number it sets inside the figure (two straight lines through these three points):",
@@ -59,8 +66,9 @@ export function llms(base: string): string {
     "", "## Make your own", "",
     SUMMARY,
     "", fence("sh", INSTALL),
-    "", `Then type \`${COMMAND} <idea>\` in the agent. Four ideas, each with the page the skill wrote for it, and the change asked for next where there was one:`,
+    "", `Then type \`${COMMAND} <idea>\` in the agent. Seven ideas, each with the page the skill wrote for it, and the change asked for next where there was one:`,
     "", EXAMPLES.map((e) => `- \`${COMMAND} ${e.idea}\`${e.followUp ? `, then "${e.followUp}"` : ""}: ${base}/skill/${e.file}`).join("\n"),
+    "", NOTICE,
     "", `More: ${base}/skill`,
     "", "## Links", "",
     `- Site: ${base}`, `- Source: ${LINKS.github}`, `- npm: ${LINKS.npm}`, `- The essay the figures come from: ${LINKS.essay}`, `- shadcn registry item: ${base}/r/hairline.json`, "",

@@ -1,12 +1,15 @@
 "use client";
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
-import { Branches, Cabinet, Dish, Elevator, Exploded, Keyboard, Laptop, Lockers, Padlock, Patch, Phone, Phosphor, Riffle, Router, Slow, Terminal, Terrain, Turntable, Vault } from "@lucasmarkes/hairline/react";
-import { ENTRIES, SHELVES, type Entry, type Shelf, type ShelfId } from "@/lib/catalogue";
+import { Basket, Branches, Cabinet, Dish, Drawer, Elevator, Exploded, Keyboard, Laptop, Lockers, Loupe, Padlock, Patch, Phone, Phosphor, Plot, Plug, Query, Rail, Riffle, Router, Sieve, Slow, Terminal, Terrain, Turntable, Vault } from "@lucasmarkes/hairline/react";
+import { ENTRIES, NOTICE, SHELVES, type Entry, type Shelf, type ShelfId } from "@/lib/catalogue";
 import { LINKS, type FigureId } from "@/lib/figures";
+import { Command } from "./command";
+import { ExampleFrame } from "./example-frame";
+import { MadeFrame } from "./made-frame";
 import { Tabs, type Tab } from "./tabs";
 
-const COMPONENTS: Record<FigureId, typeof Riffle> = { riffle: Riffle, terrain: Terrain, exploded: Exploded, phosphor: Phosphor, slow: Slow, turntable: Turntable, keyboard: Keyboard, elevator: Elevator, phone: Phone, laptop: Laptop, terminal: Terminal, cabinet: Cabinet, branches: Branches, vault: Vault, lockers: Lockers, padlock: Padlock, patch: Patch, dish: Dish, router: Router };
+const COMPONENTS: Record<FigureId, typeof Riffle> = { riffle: Riffle, terrain: Terrain, exploded: Exploded, phosphor: Phosphor, slow: Slow, turntable: Turntable, keyboard: Keyboard, elevator: Elevator, phone: Phone, laptop: Laptop, terminal: Terminal, cabinet: Cabinet, branches: Branches, vault: Vault, lockers: Lockers, padlock: Padlock, patch: Patch, dish: Dish, router: Router, loupe: Loupe, sieve: Sieve, rail: Rail, plug: Plug, query: Query, drawer: Drawer, basket: Basket, plot: Plot };
 
 type Filter = "all" | ShelfId;
 
@@ -71,6 +74,18 @@ const ICONS: Record<Filter, ReactNode> = {
       <path d="m5.6 10 4.8-4.1" />
     </>,
   ),
+  empty: svg(
+    <>
+      <rect x="2.25" y="2.25" width="11.5" height="11.5" rx="3" fill="currentColor" fillOpacity=".2" stroke="none" />
+      <rect x="2.25" y="2.25" width="11.5" height="11.5" rx="3" strokeDasharray="2 2.4" />
+    </>,
+  ),
+  marks: svg(
+    <>
+      <path d="M8 2.5 13.5 12h-11L8 2.5Z" fill="currentColor" fillOpacity=".2" />
+      <circle cx="12.25" cy="4.25" r="1.5" />
+    </>,
+  ),
 };
 
 /** The rows of the filter: All, then each shelf, each in its colour with how many figures it holds. */
@@ -109,7 +124,8 @@ function Ghost() {
  *
  * A tile shows its figure live. Picking one opens a drawer with the figure large, an intensity slider, what the figure
  * reads, and its code three ways, highlighted on the server. A planned figure has its outline instead, and a link to
- * ask for it. The header and the closing note come from the server, around the shelves.
+ * ask for it. A figure the skill made shows its page's stage, and its drawer the page with its own controls and the
+ * prompt that drew it. The header and the closing note come from the server, around the shelves.
  */
 export function Catalogue({ code, header, end }: { code: Record<FigureId, Tab[]>; header: ReactNode; end: ReactNode }) {
   const [filter, setFilterState] = useState<Filter>("all");
@@ -285,8 +301,7 @@ function ShelfSection({ shelf, picked, onPick }: { shelf: Shelf; picked?: string
       <div className="doc-head figs-head">
         <h2 id={`shelf-${shelf.id}-h`} className="doc-h2">{shelf.title}</h2>
         <span className="figs-count">
-          {drawn} of {shelf.figures.length}
-          <span className="sr-only"> drawn</span>
+          {shelf.id === "marks" ? "made with the skill" : <>{drawn} of {shelf.figures.length}<span className="sr-only"> drawn</span></>}
         </span>
       </div>
       <div className="fig-grid">
@@ -294,22 +309,25 @@ function ShelfSection({ shelf, picked, onPick }: { shelf: Shelf; picked?: string
           <Tile key={f.id} entry={f} picked={picked === f.id} onPick={onPick} />
         ))}
       </div>
+      {shelf.id === "marks" ? <p className="doc-p figs-notice">{NOTICE}</p> : null}
     </section>
   );
 }
 
 /**
  * One figure on its shelf. The whole tile takes a click, but the button is its name: the figure in the stage answers
- * the pointer and the keyboard itself, and Riffle's cards cannot sit inside a button.
+ * the pointer and the keyboard itself, and Riffle's cards cannot sit inside a button. A click inside a made figure's
+ * frame stays in the frame, so that tile opens from its name.
  */
 function Tile({ entry, picked, onPick }: { entry: Entry; picked: boolean; onPick: (f: Entry, from: HTMLElement | null, keyboard: boolean) => void }) {
   const button = useRef<HTMLButtonElement>(null);
   const Figure = entry.drawn ? COMPONENTS[entry.id] : null;
+  const made = entry.drawn ? undefined : entry.made;
   return (
-    <div className="fig-tile" data-planned={entry.drawn ? undefined : ""} data-picked={picked ? "" : undefined} onClick={(event) => onPick(entry, button.current, event.detail === 0)}>
-      <div className="fig-stage">{Figure ? <Figure /> : <Ghost />}</div>
+    <div className="fig-tile" data-planned={entry.drawn || made ? undefined : ""} data-picked={picked ? "" : undefined} onClick={(event) => onPick(entry, button.current, event.detail === 0)}>
+      <div className="fig-stage">{Figure ? <Figure /> : made ? <MadeFrame src={`/skill/${made.file}?theme=light`} title={entry.summary} /> : <Ghost />}</div>
       <div className="fig-foot">
-        <button ref={button} type="button" className="fig-name" aria-label={entry.drawn ? undefined : `${entry.name}, planned`} aria-expanded={picked} aria-controls="figure-drawer" onClick={(event) => {
+        <button ref={button} type="button" className="fig-name" aria-label={entry.drawn || made ? undefined : `${entry.name}, planned`} aria-expanded={picked} aria-controls="figure-drawer" onClick={(event) => {
           event.stopPropagation();
           onPick(entry, button.current, event.detail === 0);
         }}>
@@ -328,6 +346,7 @@ function Detail({
 }) {
   const shelf = SHELF_OF.get(entry.id)!;
   const Figure = entry.drawn ? COMPONENTS[entry.id] : null;
+  const made = entry.drawn ? undefined : entry.made;
   return (
     <div className="detail">
       <div className="detail-h">
@@ -335,7 +354,7 @@ function Detail({
           <h2 id="figure-drawer-name" className="detail-name">{entry.name}</h2>
           <p className="detail-meta">
             <span className="detail-shelf" style={tint(shelf.color)}>{ICONS[shelf.id]}{shelf.title}</span>
-            {entry.drawn ? null : <span className="detail-tag">planned</span>}
+            {entry.drawn || made ? null : <span className="detail-tag">planned</span>}
           </p>
         </div>
         <button ref={closeRef} type="button" className="detail-close" aria-label="Close" onClick={(event) => onClose(event.detail === 0)}>
@@ -344,11 +363,22 @@ function Detail({
           </svg>
         </button>
       </div>
-      <div className="fig-stage detail-stage">{Figure ? <Figure intensity={intensity} onRead={setReads} /> : <Ghost />}</div>
+      {/* a made page brings its own plate and controls, so it sits outside the stage's box */}
+      {made ? (
+        <div className="detail-page"><ExampleFrame src={`/skill/${made.file}?theme=light`} title={entry.summary} /></div>
+      ) : (
+        <div className="fig-stage detail-stage">{Figure ? <Figure intensity={intensity} onRead={setReads} /> : <Ghost />}</div>
+      )}
       <p className="detail-sum">
         {entry.summary} <b>Higher intensity:</b> {entry.stronger}
       </p>
-      {Figure ? (
+      {made ? (
+        <div className="detail-made">
+          <Command code={made.prompt} kind="prompt" label={`Copy prompt: ${entry.name}`} />
+          <p className="doc-p">Made with <a className="doc-more" href="/skill">hairline-create</a>. It is not in the package: the page is one file, and the prompt above draws it again.</p>
+          <p className="doc-p figs-notice">{NOTICE}</p>
+        </div>
+      ) : Figure ? (
         <>
           <label className="slider">
             <span>intensity</span>

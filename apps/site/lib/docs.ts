@@ -11,6 +11,7 @@ export const SECTIONS: Section[] = [
   { id: "install", group: "Getting started", title: "Install" },
   { id: "quick-start", group: "Getting started", title: "Quick start" },
   { id: "options", group: "Getting started", title: "Options" },
+  { id: "empty-states", group: "Getting started", title: "Empty states" },
   { id: "react", group: "API", title: "React" },
   { id: "vanilla", group: "API", title: "Vanilla" },
   { id: "cdn", group: "API", title: "CDN" },

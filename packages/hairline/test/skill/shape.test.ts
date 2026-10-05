@@ -80,3 +80,29 @@ it("look.mjs reads points as world or viewBox points, and keeps its cache outsid
   expect(look.cacheDir({}, "linux", "/h")).toBe(join("/h", ".cache", "hairline-look"));
   expect(look.SHOTS.map((s: string[]) => s[0])).toEqual(["rest", "answer", "small", "small-answer", "low", "high", "dark", "light"]);
 });
+
+it("concepts.md says how to draw an empty state and how to draw from a mark, and the rules make room for both", () => {
+  const concepts = text("concepts.md"), rules = text("rules.md"), look = text("look.md");
+  const empty = concepts.split("## An empty state")[1].split("\n## ")[0];
+  expect(empty).toMatch(/The subject is absence/);
+  expect(empty).toMatch(/160px/);
+  expect(empty).toMatch(/smaller than `look\.mjs`'s small picture, so judge that picture as if it were two-thirds its size/);
+  expect(empty).toMatch(/counts to zero/);
+  const mark = concepts.split("## From a mark")[1].split("\n## ")[0];
+  expect(mark).toMatch(/The mark is the object/);
+  expect(mark).toMatch(/never trace it/);
+  expect(mark).toMatch(/theirs to use/);
+  const r05 = rules.split("## 05")[1].split("## 06")[0];
+  expect(r05).toMatch(/when emptiness is the concept/);
+  const r09 = rules.split("## 09")[1].split("## 10")[0];
+  expect(r09).toMatch(/\*\*Keep it, for a mark:\*\* a mark keeps its own corners/);
+  const r10 = rules.split("## 10")[1].split("## The frame")[0];
+  expect(r10).toMatch(/a figure made from a mark/);
+  expect(r10).toMatch(/logos/);
+  expect(r10.split("- **Rejected when:**")[1].split("\n")[0]).toMatch(/other than the mark, and a glyph that belongs to it, in a figure made from a mark/);
+  expect(look.split(/^11\. /m)[1].split("\n")[0]).toMatch(/In a figure made from a mark, the mark itself and a glyph that is part of it are the exception/);
+  /* the glyph-as-subject case the Keep-it line allows is exempt where it is checked, too */
+  for (const line of [r10.split("- **Rejected when:**")[1].split("\n")[0], look.split(/^11\. /m)[1].split("\n")[0]]) expect(line).toMatch(/a glyph built as a solid that is the figure's whole subject/);
+  expect(look).toMatch(/^13\. \*\*An empty state says something is missing\.\*\*/m);
+  expect(text("SKILL.md").split("\n").length).toBeLessThan(120);
+});

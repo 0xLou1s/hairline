@@ -5,13 +5,14 @@ import * as components from "@lucasmarkes/hairline/react";
 import * as figures from "@lucasmarkes/hairline";
 import type { HairlineOptions } from "@lucasmarkes/hairline";
 import { TABLE } from "../../../packages/hairline/src/intensity";
+import { NOTICE } from "@/lib/catalogue";
 import { SECTIONS } from "@/lib/docs";
 import { FIGURES, INTENSITY, OPTIONS, measure } from "@/lib/figures";
 import { llms, scale } from "@/lib/llms";
 import { tiny } from "@/lib/size";
 import { COMMAND, EXAMPLES, INSTALL } from "@/lib/skill";
 import { highlight } from "@/lib/highlight";
-import { CDN, CSS, QUICKSTART, REACT, REACT_SIGNATURE, VANILLA, VANILLA_SIGNATURE, install } from "@/lib/snippets";
+import { CDN, CSS, EMPTY, QUICKSTART, REACT, REACT_SIGNATURE, VANILLA, VANILLA_SIGNATURE, install } from "@/lib/snippets";
 
 /** The docs describe the package, and these check that nothing was written by hand around it. */
 
@@ -92,12 +93,12 @@ describe("the Install note's size", () => {
 });
 
 describe("the docs' sections", () => {
-  it("are nine, in three groups in order, with unique ids that work as fragments", () => {
-    expect(SECTIONS.map((s) => s.id)).toEqual(["install", "quick-start", "options", "react", "vanilla", "cdn", "figures", "theme", "accessibility"]);
-    expect(new Set(SECTIONS.map((s) => s.id)).size).toBe(9);
+  it("are ten, in three groups in order, with unique ids that work as fragments", () => {
+    expect(SECTIONS.map((s) => s.id)).toEqual(["install", "quick-start", "options", "empty-states", "react", "vanilla", "cdn", "figures", "theme", "accessibility"]);
+    expect(new Set(SECTIONS.map((s) => s.id)).size).toBe(10);
     for (const s of SECTIONS) expect(s.id).toMatch(/^[a-z-]+$/);
     expect(SECTIONS.map((s) => s.group)).toEqual([
-      "Getting started", "Getting started", "Getting started",
+      "Getting started", "Getting started", "Getting started", "Getting started",
       "API", "API", "API",
       "Reference", "Reference", "Reference",
     ]);
@@ -105,7 +106,7 @@ describe("the docs' sections", () => {
 
   it("share their headings with /llms.txt", () => {
     const text = llms("https://example.test");
-    for (const title of ["Install", "Options", "Figures", "Theme", "Accessibility"]) {
+    for (const title of ["Install", "Options", "Empty states", "Figures", "Theme", "Accessibility"]) {
       expect(SECTIONS.map((s) => s.title)).toContain(title);
       expect(text).toContain(`\n## ${title}\n`);
     }
@@ -137,6 +138,11 @@ describe("/llms.txt", () => {
     expect(text.indexOf("## Make your own")).toBeLessThan(text.indexOf("## Links"));
   });
 
+  it("says, right after the examples drawn from a company's mark, that the marks are their owners'", () => {
+    const last = EXAMPLES.at(-1)!;
+    expect(text).toContain(`https://example.test/skill/${last.file}\n\n${NOTICE}\n`);
+  });
+
   it.each(FIGURES)("names $name with its row of the intensity table", (doc) => {
     expect(text).toContain(`### ${doc.name}`);
     expect(text).toContain(doc.stronger);
@@ -162,7 +168,7 @@ describe("/llms.txt", () => {
 });
 
 /** Every snippet the docs highlight, with its language. */
-const SAMPLES: [code: string, lang: string][] = [[REACT, "tsx"], [VANILLA, "ts"], [CDN, "html"], [CSS, "css"], [REACT_SIGNATURE, "tsx"], [VANILLA_SIGNATURE, "ts"]];
+const SAMPLES: [code: string, lang: string][] = [[REACT, "tsx"], [VANILLA, "ts"], [CDN, "html"], [CSS, "css"], [REACT_SIGNATURE, "tsx"], [VANILLA_SIGNATURE, "ts"], [EMPTY, "tsx"]];
 
 describe("highlighting", () => {
   it("colours tokens with the --code- variables only, and leaves the block one tab stop", async () => {

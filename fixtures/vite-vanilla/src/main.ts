@@ -1,6 +1,6 @@
-import { branches, cabinet, dish, elevator, exploded, keyboard, laptop, lockers, padlock, patch, phone, phosphor, riffle, router, slow, terminal, terrain, turntable, vault, type Figure } from "@lucasmarkes/hairline";
+import { basket, branches, cabinet, dish, drawer, elevator, exploded, keyboard, laptop, lockers, loupe, padlock, patch, phone, phosphor, plot, plug, query, rail, riffle, router, sieve, slow, terminal, terrain, turntable, vault, type Figure } from "@lucasmarkes/hairline";
 
-/** No framework: nineteen elements, nineteen calls. */
+/** No framework: twenty-seven elements, twenty-seven calls. */
 const el = (id: string) => document.getElementById(id)!;
 const read = el("read");
 
@@ -26,5 +26,13 @@ padlock(el("padlock"));
 patch(el("patch"));
 dish(el("dish"));
 router(el("router"));
+loupe(el("loupe"));
+sieve(el("sieve"));
+rail(el("rail"));
+plug(el("plug"));
+query(el("query"));
+drawer(el("drawer"));
+basket(el("basket"));
+plot(el("plot"));
 
 cards.update({ intensity: 0.8 });

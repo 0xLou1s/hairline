@@ -1,14 +1,14 @@
 import type { ReactNode } from "react";
-import { Branches, Cabinet, Dish, Elevator, Exploded, Keyboard, Laptop, Lockers, Padlock, Patch, Phone, Phosphor, Riffle, Router, Slow, Terminal, Terrain, Turntable, Vault } from "@lucasmarkes/hairline/react";
+import { Basket, Branches, Cabinet, Dish, Drawer, Elevator, Exploded, Keyboard, Laptop, Lockers, Loupe, Padlock, Patch, Phone, Phosphor, Plot, Plug, Query, Rail, Riffle, Router, Sieve, Slow, Terminal, Terrain, Turntable, Vault } from "@lucasmarkes/hairline/react";
 import { Anchor } from "@/components/anchor";
 import { CodeBlock } from "@/components/code-block";
 import { Install } from "@/components/install";
 import { Tabs, type Tab } from "@/components/tabs";
 import { SECTIONS } from "@/lib/docs";
 import { COUNT, FIGURES, INTENSITY, OPTIONS, THEME, measure } from "@/lib/figures";
-import { PACKAGE } from "@/lib/snippets";
+import { NO_RESULTS, PACKAGE } from "@/lib/snippets";
 
-const SMALL = { riffle: Riffle, terrain: Terrain, exploded: Exploded, phosphor: Phosphor, slow: Slow, turntable: Turntable, keyboard: Keyboard, elevator: Elevator, phone: Phone, laptop: Laptop, terminal: Terminal, cabinet: Cabinet, branches: Branches, vault: Vault, lockers: Lockers, padlock: Padlock, patch: Patch, dish: Dish, router: Router };
+const SMALL = { riffle: Riffle, terrain: Terrain, exploded: Exploded, phosphor: Phosphor, slow: Slow, turntable: Turntable, keyboard: Keyboard, elevator: Elevator, phone: Phone, laptop: Laptop, terminal: Terminal, cabinet: Cabinet, branches: Branches, vault: Vault, lockers: Lockers, padlock: Padlock, patch: Patch, dish: Dish, router: Router, loupe: Loupe, sieve: Sieve, rail: Rail, plug: Plug, query: Query, drawer: Drawer, basket: Basket, plot: Plot };
 
 /** A section takes its title from SECTIONS, the list the rail reads, so the two always agree. Its link copies from beside its title. */
 function Section({ id, children }: { id: string; children: ReactNode }) {
@@ -26,7 +26,7 @@ function Section({ id, children }: { id: string; children: ReactNode }) {
 
 const C = ({ children }: { children: ReactNode }) => <code className="doc-code">{children}</code>;
 
-export function GettingStarted({ commands, size, quickstart }: { commands: { label: string; code: string }[]; size: string; quickstart: Tab[] }) {
+export function GettingStarted({ commands, size, quickstart, empty }: { commands: { label: string; code: string }[]; size: string; quickstart: Tab[]; empty: string }) {
   return (
     <>
       <Section id="install">
@@ -56,6 +56,15 @@ export function GettingStarted({ commands, size, quickstart }: { commands: { lab
             </tbody>
           </table>
         </div>
+      </Section>
+      <Section id="empty-states">
+        <p className="doc-p">A figure works as an empty state at 160 to 240px, above a heading and one action. Its rest pose is the picture; the pointer is a bonus.</p>
+        <div className="empty-demo" data-empty>
+          <Sieve style={{ width: 200 }} label={NO_RESULTS.label} />
+          <h3 className="empty-demo-title">{NO_RESULTS.heading}</h3>
+          <button type="button" className="btn press">{NO_RESULTS.action}</button>
+        </div>
+        <CodeBlock title="no-results.tsx" html={empty} />
       </Section>
     </>
   );

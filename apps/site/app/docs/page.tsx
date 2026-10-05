@@ -7,7 +7,7 @@ import { COUNT, LINKS } from "@/lib/figures";
 import { highlight } from "@/lib/highlight";
 import { share } from "@/lib/share";
 import { tiny } from "@/lib/size";
-import { CDN, CSS, QUICKSTART, REACT, REACT_SIGNATURE, VANILLA, VANILLA_SIGNATURE, install } from "@/lib/snippets";
+import { CDN, CSS, EMPTY, QUICKSTART, REACT, REACT_SIGNATURE, VANILLA, VANILLA_SIGNATURE, install } from "@/lib/snippets";
 import { cap } from "@/lib/words";
 import { Api, GettingStarted, Reference } from "./sections";
 
@@ -32,8 +32,9 @@ const RAIL: RailGroup[] = (Object.keys(MARK) as Group[]).map((group) => ({ title
  * hydration on every deploy, as on the home.
  */
 export default async function Docs() {
-  const [quickstart, reactSignature, react, vanillaSignature, vanilla, cdn, css] = await Promise.all([
+  const [quickstart, empty, reactSignature, react, vanillaSignature, vanilla, cdn, css] = await Promise.all([
     Promise.all(QUICKSTART.map(async (q) => ({ label: q.label, file: q.file, html: await highlight(q.code, q.lang) }))),
+    highlight(EMPTY, "tsx"),
     highlight(REACT_SIGNATURE, "tsx"),
     highlight(REACT, "tsx"),
     highlight(VANILLA_SIGNATURE, "ts"),
@@ -53,7 +54,7 @@ export default async function Docs() {
             Every figure takes the same four options and draws itself in SVG, with no dependencies. Install the package, paste a figure, and turn <code className="doc-code">intensity</code> up or down.
           </p>
         </header>
-        <GettingStarted commands={install(SITE)} size={tiny()} quickstart={quickstart} />
+        <GettingStarted commands={install(SITE)} size={tiny()} quickstart={quickstart} empty={empty} />
         <Api code={{ reactSignature, react, vanillaSignature, vanilla, cdn }} />
         <Reference css={css} />
         <p className="col-end">

@@ -134,6 +134,10 @@ footer a::after { content: ""; position: absolute; inset: -12px -8px; }
 .figure-text { margin-top: 4px; font-size: 13px; line-height: 1.55; color: var(--color-muted); text-wrap: pretty; }
 .figure-text b { font-weight: 500; color: var(--color-ink); }
 .figure-row .tile { box-shadow: inset 0 0 0 1px var(--color-stone); }
+/* the empty state drawn live: the figure at 200px, a heading and one action under it, on a card */
+.empty-demo { display: grid; justify-items: center; gap: 12px; padding: 32px 16px; border-radius: 12px; background: #fff; box-shadow: var(--card); text-align: center; }
+.empty-demo > [data-hairline] { max-width: 100%; }
+.empty-demo-title { font-size: 14px; font-weight: 500; line-height: 1.4; text-wrap: balance; }
 .props, .intensity { width: 100%; border-collapse: collapse; font-size: 13px; }
 :is(.props, .intensity) th { padding: 8px 14px 8px 0; text-align: left; font-size: 13px; font-weight: 500; color: var(--color-muted); }
 :is(.props, .intensity) td { padding: 12px 14px 12px 0; vertical-align: top; border-top: 1px solid var(--color-line); line-height: 1.5; }
@@ -158,7 +162,7 @@ footer a::after { content: ""; position: absolute; inset: -12px -8px; }
 .col header > .col-h1:first-child { margin-top: 0; }
 .col-lede { margin-top: 12px; max-width: 60ch; color: var(--color-muted); text-wrap: pretty; }
 .col-end { margin-top: 64px; padding-top: 20px; border-top: 1px solid var(--color-line); font-size: 13px; color: var(--color-muted); text-wrap: pretty; }
-.col-end .doc-more { font-size: inherit; }
+.col-end .doc-more, .col-lede .doc-more { font-size: inherit; }
 
 /* A section opens 56px under the last, its title beside a link that shows when the pointer is on the title. */
 .doc-section { display: grid; gap: 14px; padding-top: 56px; scroll-margin-top: calc(var(--topbar) + 44px); }
@@ -410,6 +414,12 @@ footer a::after { content: ""; position: absolute; inset: -12px -8px; }
    column less its sides up to 640px, a 5:4 stage, and the 148px of controls and lines under it, which wrap onto more
    lines in a column narrower than 360px. */
 .example-frame { display: block; width: 100%; height: calc(min(100cqw - 32px, 640px) * 0.8 + 148px + 48px + max(0px, 392px - 100cqw) * 0.75); border: 0; }
+/* a figure the skill made, on its tile: only the page's stage, in the figures' own box, so a page that does not load
+   leaves the tile its shape */
+.made-frame { display: block; width: 100%; aspect-ratio: 5 / 4; border: 0; background: transparent; transition: opacity 180ms ease-out; }
+/* until the page in it shows only its stage, the frame shows nothing: its controls never flash in the tile */
+.made-frame:not([data-quiet]) { opacity: 0; }
+@media (prefers-reduced-motion: reduce) { .made-frame { transition: none; } }
 
 /* /figures. The shelves are a filter: from 1100px a list by the column's left edge, sticky inside the page's grid so it
    stops where the column ends and never runs over the footer; below that the docs' strip under the top bar. The list's
@@ -500,6 +510,13 @@ footer a::after { content: ""; position: absolute; inset: -12px -8px; }
 .detail-reads b { font: 400 11.5px/1 var(--font-mono); letter-spacing: 0.02em; color: var(--color-ink); }
 .detail-ask { display: grid; gap: 6px; padding: 14px 16px; border-radius: 12px; background: var(--color-stone); font-size: 13px; color: var(--color-muted); text-wrap: pretty; }
 .detail-ask .doc-more { font-size: 13px; }
+/* a made figure's drawer: its page as /skill shows it, a container so the frame's height is reserved for the drawer's
+   width, then the prompt that drew it */
+.detail-page { container-type: inline-size; margin-inline: -16px; }
+.detail-made { display: grid; gap: 10px; }
+.detail-made .pill { font-size: 12.5px; }
+.detail-made .doc-p { font-size: 13px; color: var(--color-muted); }
+.figs-notice { font-size: 12.5px; color: var(--color-muted); }
 .drawer .code { background: #fff; box-shadow: var(--card); }
 .drawer .code-bar { border-bottom-color: var(--color-line); }
 .drawer .code-body { font-size: 12.5px; }
