@@ -1,10 +1,10 @@
 // @vitest-environment jsdom
 import { describe, expect, it, vi } from "vitest";
 import { frames, host, observers, pending } from "./dom";
-import { branches, cabinet, dish, elevator, exploded, keyboard, laptop, lockers, padlock, patch, phone, phosphor, riffle, router, slow, terminal, terrain, turntable, vault } from "../src/index";
+import { basket, branches, cabinet, dish, drawer, elevator, exploded, keyboard, laptop, lockers, loupe, padlock, patch, phone, phosphor, plot, plug, query, rail, riffle, router, sieve, slow, terminal, terrain, turntable, vault } from "../src/index";
 import { css } from "../src/core/styles";
 
-const ALL = { riffle, terrain, exploded, phosphor, slow, turntable, keyboard, elevator, phone, laptop, terminal, cabinet, branches, vault, lockers, padlock, patch, dish, router };
+const ALL = { riffle, terrain, exploded, phosphor, slow, turntable, keyboard, elevator, phone, laptop, terminal, cabinet, branches, vault, lockers, padlock, patch, dish, router, loupe, sieve, rail, plug, query, drawer, basket, plot };
 const key = (el: Element, k: string) => el.dispatchEvent(new KeyboardEvent("keydown", { key: k, bubbles: true, cancelable: true }));
 
 describe("mount", () => {
@@ -92,6 +92,26 @@ describe("mount", () => {
     const sheets = document.adoptedStyleSheets?.length ?? 0;
     expect(sheets + document.querySelectorAll("style[data-hairline-style]").length).toBe(1);
   });
+
+  // Review Focus 2 and 3: the new figures at both ends of the slider, with the pointer at the stage's corners, then gone
+  it.each(["loupe", "sieve", "rail", "plug", "query", "drawer", "basket", "plot"] as const)("%s stays whole at the corners and returns to rest", async (id) => {
+    for (const intensity of [0, 1]) {
+      const el = host(), reads: string[] = [];
+      const f = ALL[id](el, { intensity, onRead: (t) => reads.push(t) });
+      for (const [x, y] of [[0, 0], [400, 0], [0, 320], [400, 320], [200, 160]]) {
+        el.dispatchEvent(new MouseEvent("pointermove", { clientX: x, clientY: y, bubbles: true }));
+        frames(4);
+      }
+      expect(reads[reads.length - 1]).not.toBe("rest");
+      /* a mouse leaving acts on the next task; jsdom's MouseEvent has no pointerType of its own */
+      el.dispatchEvent(Object.assign(new MouseEvent("pointerleave"), { pointerType: "mouse" }));
+      await new Promise((r) => setTimeout(r, 0));
+      frames(240);
+      expect(reads[reads.length - 1]).toBe("rest");
+      expect(el.querySelector("svg")!.innerHTML).not.toMatch(/NaN|Infinity|undefined/);
+      f.destroy();
+    }
+  });
 });
 
 describe("options", () => {
@@ -151,10 +171,18 @@ describe("intensity", () => {
     branches: [[200, 160], 8],
     vault: [[260, 170], 2, [200, 230], 2, [140, 170], 2, [200, 110], 8],
     lockers: [[200, 160], 8],
+    loupe: [[200, 170], 60],
     padlock: [[200, 170], 60],
     patch: [[200, 160], 8],
     dish: [[300, 100], 12],
     router: [[300, 120], 12],
+    sieve: [[200, 90], 80],
+    rail: [[200, 150], 12],
+    plug: [[140, 125], 60],
+    query: [[330, 120], 60],
+    drawer: [[200, 90], 60],
+    basket: [[90, 260], 60],
+    plot: [[200, 160], 6],
   };
   const svg = (el: Element) => el.querySelector("svg")!.innerHTML.replace(/hl-fd\d+/g, "hl-fd");
 
@@ -292,3 +320,337 @@ describe("teardown", () => {
     expect(onRead).not.toHaveBeenCalled();
   });
 });
+
+describe("sieve", () => {
+  /* the sieves' silhouettes, bottom to top: the pan's is first */
+  const sils = (el: Element) => [...el.querySelectorAll("svg .sil")].slice(1) as SVGPathElement[];
+  /** The middle of a silhouette's box: for a drum, the point over its axis halfway up. */
+  const centre = (p: SVGPathElement): [number, number] => {
+    const n = p.getAttribute("d")!.match(/-?\d+(\.\d+)?/g)!.map(Number), xs = n.filter((_, i) => i % 2 === 0), ys = n.filter((_, i) => i % 2 === 1);
+    return [(Math.min(...xs) + Math.max(...xs)) / 2, (Math.min(...ys) + Math.max(...ys)) / 2];
+  };
+
+  it.each([0, 0.5, 1])("picks the sieve drawn under the pointer at rest, at intensity %s", (intensity) => {
+    const el = host(), onRead = vi.fn();
+    sieve(el, { intensity, onRead });
+    frames(2);
+    const at = sils(el).map(centre);
+    expect(at).toHaveLength(3);
+    for (const [i, [x, y]] of at.entries()) {
+      el.dispatchEvent(new MouseEvent("pointermove", { clientX: x, clientY: y, bubbles: true }));
+      expect(onRead).toHaveBeenLastCalledWith(`sieve ${3 - i} · 0`);
+      frames(60);
+    }
+  });
+
+  it("leaves a sieve alone while only the ones above it move", () => {
+    const el = host(), onRead = vi.fn();
+    sieve(el, { onRead });
+    frames(2);
+    const bottom = sils(el)[0], d = bottom.getAttribute("d"), set = vi.spyOn(bottom, "setAttribute");
+    el.dispatchEvent(new MouseEvent("pointermove", { clientX: 200, clientY: 90, bubbles: true }));
+    expect(onRead).toHaveBeenLastCalledWith("sieve 1 · 0");
+    frames(60);
+    expect(set).not.toHaveBeenCalled();
+    expect(bottom.getAttribute("d")).toBe(d);
+  });
+});
+
+describe("loupe", () => {
+  it("reads every row from the far rule to the near one", () => {
+    const el = host(), onRead = vi.fn();
+    loupe(el, { onRead });
+    for (let y = 0; y <= 320; y += 4) el.dispatchEvent(new MouseEvent("pointermove", { clientX: 200, clientY: y, bubbles: true }));
+    const rows = new Set(onRead.mock.calls.map((c) => c[0]));
+    expect([...rows].filter((t) => t !== "rest")).toEqual(["row 1 · 0", "row 2 · 0", "row 3 · 0", "row 4 · 0", "row 5 · 0", "row 6 · 0", "row 7 · 0"]);
+  });
+
+  it("redraws only what the glass shows when only the magnification changes", () => {
+    const el = host();
+    const f = loupe(el);
+    frames(2);
+    const paths = [...el.querySelectorAll("svg path")], seen = paths[paths.length - 1];
+    const sets = paths.map((p) => vi.spyOn(p, "setAttribute"));
+    f.update({ intensity: 1 });
+    frames(60);
+    for (const [i, set] of sets.entries()) {
+      if (paths[i] === seen) expect(set).toHaveBeenCalled();
+      else expect(set).not.toHaveBeenCalled();
+    }
+  });
+});
+
+describe("rail", () => {
+  /* the hangers' silhouettes, from the far end: after the far foot's and upright's, before the rail's */
+  const hangers = (el: Element) => [...el.querySelectorAll("svg .sil")].slice(2, 9) as SVGPathElement[];
+  const centre = (p: SVGPathElement): [number, number] => {
+    const n = p.getAttribute("d")!.match(/-?\d+(\.\d+)?/g)!.map(Number), xs = n.filter((_, i) => i % 2 === 0), ys = n.filter((_, i) => i % 2 === 1);
+    return [(Math.min(...xs) + Math.max(...xs)) / 2, (Math.min(...ys) + Math.max(...ys)) / 2];
+  };
+
+  it("reads each hanger as holding nothing, and gives the bright back to the rest one on leave", async () => {
+    const el = host(), onRead = vi.fn();
+    rail(el, { onRead });
+    frames(2);
+    const at = hangers(el).map(centre), lit = () => hangers(el).map((h) => h.classList.contains("hi"));
+    expect(at).toHaveLength(7);
+    expect(lit()).toEqual([false, false, false, true, false, false, false]);
+    for (const [i, p] of at.entries()) {
+      el.dispatchEvent(new MouseEvent("pointermove", { clientX: p[0], clientY: p[1], bubbles: true }));
+      expect(onRead).toHaveBeenLastCalledWith(`hanger ${i + 1} · 0`);
+      expect(lit().indexOf(true)).toBe(i);
+      frames(10);
+    }
+    el.dispatchEvent(Object.assign(new MouseEvent("pointerleave"), { pointerType: "mouse" }));
+    await new Promise((r) => setTimeout(r, 0));
+    frames(240);
+    expect(onRead).toHaveBeenLastCalledWith("rest");
+    expect(lit()).toEqual([false, false, false, true, false, false, false]);
+  });
+});
+
+describe("plot", () => {
+  /* the tabs' silhouettes, far to near: the base's and the plate's come first */
+  const tabs = (el: Element) => [...el.querySelectorAll("svg .sil")].slice(2) as SVGPathElement[];
+  const nums = (p: SVGPathElement) => p.getAttribute("d")!.match(/-?\d+(\.\d+)?/g)!.map(Number);
+  const top = (p: SVGPathElement) => Math.min(...nums(p).filter((_, i) => i % 2 === 1));
+  const centre = (p: SVGPathElement): [number, number] => {
+    const n = nums(p), xs = n.filter((_, i) => i % 2 === 0), ys = n.filter((_, i) => i % 2 === 1);
+    return [(Math.min(...xs) + Math.max(...xs)) / 2, (Math.min(...ys) + Math.max(...ys)) / 2];
+  };
+  const move = (el: Element, [x, y]: [number, number]) => el.dispatchEvent(new MouseEvent("pointermove", { clientX: x, clientY: y, bubbles: true }));
+
+  it("reads each tab as a bar holding zero, and gives the bright back to the proud one on leave", async () => {
+    const el = host(), onRead = vi.fn();
+    plot(el, { onRead });
+    frames(2);
+    const at = tabs(el).map(centre);
+    expect(at).toHaveLength(7);
+    expect(tabs(el).map((t) => t.classList.contains("hi"))).toEqual([false, false, false, false, true, false, false]);
+    for (const [i, p] of at.entries()) {
+      move(el, p);
+      expect(onRead).toHaveBeenLastCalledWith(`bar ${i + 1} · 0`);
+      expect(tabs(el).filter((t) => t.classList.contains("hi"))).toEqual([tabs(el)[i]]);
+      frames(10);
+    }
+    el.dispatchEvent(Object.assign(new MouseEvent("pointerleave"), { pointerType: "mouse" }));
+    await new Promise((r) => setTimeout(r, 0));
+    frames(240);
+    expect(onRead).toHaveBeenLastCalledWith("rest");
+    expect(tabs(el).map((t) => t.classList.contains("hi"))).toEqual([false, false, false, false, true, false, false]);
+  });
+
+  it("lifts the tab it brushes by the slider's 3 · 6 · 12, then drops it back to zero under a still pointer", () => {
+    const peaks: number[] = [];
+    for (const intensity of [0, 0.5, 1]) {
+      const el = host();
+      plot(el, { intensity });
+      frames(2);
+      const tab = tabs(el)[1], flat = tab.getAttribute("d"), y0 = top(tab);
+      move(el, centre(tab));
+      let peak = 0;
+      for (let k = 0; k < 60; k++) { frames(1); peak = Math.max(peak, y0 - top(tab)); }
+      frames(120);
+      expect(tab.getAttribute("d")).toBe(flat);
+      peaks.push(peak);
+    }
+    expect(peaks[0]).toBeGreaterThan(0);
+    expect(peaks[1] / peaks[0]).toBeCloseTo(2, 1);
+    expect(peaks[2] / peaks[0]).toBeCloseTo(4, 1);
+  });
+});
+
+describe("drawer", () => {
+  /* the drawers' fronts, bottom to top: the filled silhouettes after the plinth's and the carcass's, each followed by its pull's */
+  const fronts = (el: Element) => ([...el.querySelectorAll("svg .sil:not(.nf)")] as SVGPathElement[]).slice(2).filter((_, i) => i % 2 === 0);
+  const centre = (p: SVGPathElement): [number, number] => {
+    const n = p.getAttribute("d")!.match(/-?\d+(\.\d+)?/g)!.map(Number), xs = n.filter((_, i) => i % 2 === 0), ys = n.filter((_, i) => i % 2 === 1);
+    return [(Math.min(...xs) + Math.max(...xs)) / 2, (Math.min(...ys) + Math.max(...ys)) / 2];
+  };
+  const move = (el: Element, [x, y]: [number, number]) => el.dispatchEvent(new MouseEvent("pointermove", { clientX: x, clientY: y, bubbles: true }));
+
+  it.each([0, 0.5, 1])("picks the drawer drawn under the pointer at rest, at intensity %s, and finds it empty", (intensity) => {
+    const el = host(), onRead = vi.fn();
+    drawer(el, { intensity, onRead });
+    frames(2);
+    const at = fronts(el).map(centre);
+    expect(at).toHaveLength(3);
+    for (const [k, p] of at.entries()) {
+      move(el, p);
+      expect(onRead).toHaveBeenLastCalledWith(`drawer ${3 - k} · 0`);
+      frames(60);
+      expect(fronts(el).map((f, i) => f.classList.contains("hi") && i)).toEqual([0, 1, 2].map((i) => i === k && i));
+    }
+  });
+
+  /* A closed front on screen: its left edge is upright and its top falls half a unit for each unit across (the 2:1 view). */
+  it.each([0, 1, 2])("picks drawer %s from the bottom near its front's right end, in its lower third", (k) => {
+    const el = host(), onRead = vi.fn();
+    drawer(el, { onRead });
+    frames(2);
+    const n = fronts(el)[k].getAttribute("d")!.match(/-?\d+(\.\d+)?/g)!.map(Number), xs = n.filter((_, i) => i % 2 === 0), ys = n.filter((_, i) => i % 2 === 1);
+    const x0 = Math.min(...xs), w = Math.max(...xs) - x0, top = Math.min(...ys), h = Math.max(...ys) - top - w / 2;
+    move(el, [x0 + 0.85 * w, top + 0.85 * w / 2 + 0.75 * h]);
+    expect(onRead).toHaveBeenLastCalledWith(`drawer ${3 - k} · 0`);
+  });
+
+  it("draws again only the drawers that move, and takes the slider at rest", () => {
+    const el = host(), onRead = vi.fn();
+    const f = drawer(el, { onRead });
+    frames(2);
+    const [bottom, middle, top] = fronts(el), sets = [bottom, middle, top].map((p) => vi.spyOn(p, "setAttribute"));
+    move(el, centre(top));
+    frames(60);
+    expect(sets[0]).not.toHaveBeenCalled();
+    expect(sets[1]).toHaveBeenCalled();
+    expect(sets[2]).toHaveBeenCalled();
+    el.dispatchEvent(Object.assign(new MouseEvent("pointerleave"), { pointerType: "mouse" }));
+    return new Promise<void>((done) => setTimeout(() => {
+      frames(60);
+      const rest = middle.getAttribute("d");
+      f.update({ intensity: 1 });
+      frames(60);
+      expect(middle.getAttribute("d")).not.toBe(rest);
+      expect(onRead).toHaveBeenLastCalledWith("rest");
+      expect(el.querySelector("svg")!.innerHTML).not.toMatch(/NaN|Infinity|undefined/);
+      done();
+    }, 0));
+  });
+});
+
+describe("query", () => {
+  const move = (el: Element, x: number) => el.dispatchEvent(new MouseEvent("pointermove", { clientX: x, clientY: 160, bubbles: true }));
+
+  it.each([[0, 20], [0.5, 40], [1, 55]])("turns the hook as far as intensity %s allows, either way, and reads the turn to a zero", async (intensity, most) => {
+    const el = host(), onRead = vi.fn();
+    query(el, { intensity, onRead });
+    frames(2);
+    const rest = el.querySelector("svg")!.innerHTML;
+    move(el, 400);
+    expect(onRead).toHaveBeenLastCalledWith(`turn ${most}° · 0`);
+    move(el, 200);
+    expect(onRead).toHaveBeenLastCalledWith("turn 0° · 0");
+    move(el, 0);
+    expect(onRead).toHaveBeenLastCalledWith(`turn ${most}° · 0`);
+    frames(30);
+    expect(el.querySelector("svg")!.innerHTML).not.toBe(rest);
+    el.dispatchEvent(Object.assign(new MouseEvent("pointerleave"), { pointerType: "mouse" }));
+    await new Promise((r) => setTimeout(r, 0));
+    frames(300);
+    expect(onRead).toHaveBeenLastCalledWith("rest");
+    expect(el.querySelector("svg")!.innerHTML).toBe(rest);
+  });
+
+  it("rolls the ball after the hook has settled, and leaves the hook alone meanwhile", () => {
+    const el = host();
+    query(el, { intensity: 1 });
+    frames(2);
+    const paths = [...el.querySelectorAll("svg path")], ball = paths[2], bar = paths[paths.length - 1];
+    move(el, 400);
+    frames(80);
+    const b = vi.spyOn(ball, "setAttribute"), h = vi.spyOn(bar, "setAttribute");
+    frames(20);
+    expect(h).not.toHaveBeenCalled();
+    expect(b).toHaveBeenCalled();
+  });
+});
+
+describe("plug", () => {
+  /** The socket on screen: the middle of the path that holds its two holes. */
+  const socket = (el: Element): [number, number] => {
+    const n = el.querySelector('svg path[class="nf"]')!.getAttribute("d")!.match(/-?\d+(\.\d+)?/g)!.map(Number), xs = n.filter((_, i) => i % 2 === 0), ys = n.filter((_, i) => i % 2 === 1);
+    return [(Math.min(...xs) + Math.max(...xs)) / 2, (Math.min(...ys) + Math.max(...ys)) / 2];
+  };
+  const move = (el: Element, [x, y]: [number, number]) => el.dispatchEvent(new MouseEvent("pointermove", { clientX: x, clientY: y, bubbles: true }));
+  const leave = (el: Element) => el.dispatchEvent(Object.assign(new MouseEvent("pointerleave"), { pointerType: "mouse" }));
+
+  it("stops short of the socket at every pull, nearer the further the slider", () => {
+    const gaps = [0, 0.5, 1].map((intensity) => {
+      const el = host(), onRead = vi.fn();
+      plug(el, { intensity, onRead });
+      move(el, socket(el));
+      const m = /^gap (\d+) · 0 V$/.exec(onRead.mock.calls[onRead.mock.calls.length - 1][0]);
+      expect(m).not.toBeNull();
+      return Number(m![1]);
+    });
+    expect(gaps[0]).toBeGreaterThan(gaps[1]);
+    expect(gaps[1]).toBeGreaterThan(gaps[2]);
+    expect(gaps[2]).toBeGreaterThan(0);
+  });
+
+  it("closes the gap as the pointer goes from the plug to the socket, and no further than the pull", () => {
+    const el = host(), onRead = vi.fn();
+    plug(el, { onRead });
+    const [sx, sy] = socket(el), gaps: number[] = [];
+    for (let k = 0; k <= 10; k++) { move(el, [sx + (10 - k) * 9, sy + (10 - k) * 11]); gaps.push(Number(/\d+/.exec(onRead.mock.calls[onRead.mock.calls.length - 1][0])![0])); }
+    for (let k = 1; k < gaps.length; k++) expect(gaps[k]).toBeLessThanOrEqual(gaps[k - 1]);
+    expect(gaps[0]).toBeGreaterThan(gaps[10]);
+    expect(gaps.slice(-3)).toEqual([gaps[10], gaps[10], gaps[10]]);
+  });
+
+  it("takes the slider at rest and engaged, leaves the plate alone, and lies back down on leaving", async () => {
+    const el = host(), onRead = vi.fn();
+    const f = plug(el, { onRead });
+    frames(2);
+    const rest = el.querySelector("svg")!.innerHTML, plate = el.querySelector("svg .sil")!, set = vi.spyOn(plate, "setAttribute");
+    f.update({ intensity: 1 });
+    frames(60);
+    expect(el.querySelector("svg")!.innerHTML).toBe(rest);
+    expect(onRead).toHaveBeenLastCalledWith("rest");
+    move(el, socket(el));
+    const near = onRead.mock.calls[onRead.mock.calls.length - 1][0];
+    f.update({ intensity: 0 });
+    expect(onRead.mock.calls[onRead.mock.calls.length - 1][0]).not.toBe(near);
+    for (const p of [[0, 0], [400, 0], [0, 320], [400, 320]] as const) { move(el, [...p]); frames(4); }
+    leave(el);
+    await new Promise((r) => setTimeout(r, 0));
+    frames(240);
+    expect(onRead).toHaveBeenLastCalledWith("rest");
+    expect(el.querySelector("svg")!.innerHTML).toBe(rest);
+    expect(set).not.toHaveBeenCalled();
+    expect(rest).not.toMatch(/NaN|Infinity|undefined/);
+  });
+});
+
+describe("basket", () => {
+  const move = (el: Element, x: number, y: number) => el.dispatchEvent(new MouseEvent("pointermove", { clientX: x, clientY: y, bubbles: true }));
+  const last = (fn: ReturnType<typeof vi.fn>) => fn.mock.calls[fn.mock.calls.length - 1][0];
+
+  it.each([[0, 8], [0.5, 16], [1, 28]])("tilts toward the pointer by the slider's %s, %s° at most, and lies level again on leaving", async (intensity, most) => {
+    const el = host(), onRead = vi.fn();
+    basket(el, { intensity, onRead });
+    frames(2);
+    const rest = el.querySelector("svg")!.innerHTML;
+    move(el, 200, 320);
+    expect(onRead).toHaveBeenLastCalledWith(`tilt ${most}° · 0`);
+    frames(30);
+    expect(el.querySelector("svg")!.innerHTML).not.toBe(rest);
+    /* tipped away from the camera it goes half as far, so the mouth stays open to it */
+    move(el, 200, 0);
+    expect(Number(/\d+/.exec(last(onRead))![0])).toBeLessThan(most);
+    move(el, 200, 166);
+    expect(last(onRead)).toMatch(/^tilt \d+° · 0$/);
+    el.dispatchEvent(Object.assign(new MouseEvent("pointerleave"), { pointerType: "mouse" }));
+    await new Promise((r) => setTimeout(r, 0));
+    frames(240);
+    expect(onRead).toHaveBeenLastCalledWith("rest");
+    expect(el.querySelector("svg")!.innerHTML).toBe(rest);
+  });
+
+  it("takes the slider at rest without redrawing, and engaged at once", () => {
+    const el = host(), onRead = vi.fn();
+    const f = basket(el, { onRead });
+    frames(2);
+    const sets = [...el.querySelectorAll("svg path")].map((p) => vi.spyOn(p, "setAttribute"));
+    f.update({ intensity: 1 });
+    frames(60);
+    for (const set of sets) expect(set).not.toHaveBeenCalled();
+    move(el, 200, 320);
+    expect(onRead).toHaveBeenLastCalledWith("tilt 28° · 0");
+    f.update({ intensity: 0 });
+    expect(onRead).toHaveBeenLastCalledWith("tilt 8° · 0");
+    frames(120);
+    expect(el.querySelector("svg")!.innerHTML).not.toMatch(/NaN|Infinity|undefined/);
+  });
+});
+

@@ -7,7 +7,7 @@
  * copy and its tests hold the two together.
  */
 
-export type FigureId = "riffle" | "terrain" | "exploded" | "phosphor" | "slow" | "turntable" | "keyboard" | "elevator" | "phone" | "laptop" | "terminal" | "cabinet" | "branches" | "vault" | "lockers" | "padlock" | "patch" | "dish" | "router";
+export type FigureId = "riffle" | "terrain" | "exploded" | "phosphor" | "slow" | "turntable" | "keyboard" | "elevator" | "phone" | "laptop" | "terminal" | "cabinet" | "branches" | "vault" | "lockers" | "padlock" | "patch" | "dish" | "router" | "loupe" | "sieve" | "rail" | "plug" | "query" | "drawer" | "basket" | "plot";
 
 /** Each figure's number at intensity 0, 0.5 and 1. Slow's falls: a slower clock is a stronger answer. */
 export const TABLE: Record<FigureId, readonly [number, number, number]> = {
@@ -30,6 +30,14 @@ export const TABLE: Record<FigureId, readonly [number, number, number]> = {
   patch: [1, 2.5, 5], // radius, ports
   dish: [30, 50, 70], // reach, degrees
   router: [0.5, 1.5, 3], // spread, antennas
+  loupe: [1.3, 1.8, 2.6], // magnification, ×
+  sieve: [6, 14, 24], // gap, viewBox units
+  rail: [1, 2, 3.5], // radius, hangers
+  plug: [0.35, 0.6, 0.9], // pull, fraction of the way to the socket
+  query: [20, 40, 55], // turn, degrees; past 55 the hook folds over itself and stops reading as one
+  drawer: [12, 22, 34], // pull, viewBox units
+  basket: [8, 16, 28], // tilt, degrees
+  plot: [3, 6, 12], // lift, viewBox units
 };
 
 export const DEFAULT = 0.5;

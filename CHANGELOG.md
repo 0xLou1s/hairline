@@ -4,6 +4,35 @@ Every release of `@lucasmarkes/hairline`. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow
 [semver](https://semver.org/).
 
+## 0.3.0 - 2026-10-05
+
+### Added
+
+- `loupe` and `Loupe`: a stand loupe over a blank ruled sheet. The pointer
+  drags it across, and the rules pass enlarged under the glass with nothing
+  between them. A stronger `intensity` magnifies more.
+- `sieve` and `Sieve`: three test sieves stacked over a pan. The pointer's
+  height picks one, it rises clear of the stack, and every mesh is bare. A
+  stronger `intensity` opens the gap further.
+- `rail` and `Rail`: a garment rail with seven bare hangers. The pointer
+  brushes them, and each rocks away from it, the nearest most. A stronger
+  `intensity` reaches more hangers.
+- `plug` and `Plug`: a wall socket and a plug lying on the floor at the end of
+  its cord. The pointer draws the plug up toward the socket; it stops short and
+  falls back. A stronger `intensity` brings it closer.
+- `query` and `Query`: a question mark built as a bent bar over a loose ball.
+  The hook turns toward the pointer and the ball rolls after it. A stronger
+  `intensity` turns it further.
+- `drawer` and `Drawer`: a cabinet of three drawers. The pointer's height
+  picks one, and it slides out to show two dividers with nothing between them.
+  A stronger `intensity` opens it further.
+- `basket` and `Basket`: a wire basket under a bail handle. It tilts toward
+  the pointer and shows its bare floor. A stronger `intensity` tilts it
+  further.
+- `plot` and `Plot`: a bar chart with seven flat tabs where the bars would
+  stand. The pointer brushes them, and each lifts a little and drops back to
+  zero. A stronger `intensity` lifts them higher.
+
 ## 0.2.0 - 2026-10-03
 
 ### Added

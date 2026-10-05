@@ -2,7 +2,7 @@ import { expect, test, type Page } from "@playwright/test";
 
 /** The figures in a real browser: input, focus, reduced motion, shadow roots, a clean console. */
 
-const IDS = ["riffle", "terrain", "exploded", "phosphor", "slow", "turntable", "keyboard", "elevator", "phone", "laptop", "terminal", "cabinet", "branches", "vault", "lockers", "padlock", "patch", "dish", "router"] as const;
+const IDS = ["riffle", "terrain", "exploded", "phosphor", "slow", "turntable", "keyboard", "elevator", "phone", "laptop", "terminal", "cabinet", "branches", "vault", "lockers", "padlock", "patch", "dish", "router", "loupe", "sieve", "rail", "plug", "query", "drawer", "basket", "plot"] as const;
 type Id = (typeof IDS)[number];
 
 const mount = (page: Page, id: Id, options: Record<string, unknown> = {}) =>

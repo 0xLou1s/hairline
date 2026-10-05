@@ -1,18 +1,26 @@
 import { create, type Figure, type HairlineOptions } from "./mount";
+import { mount as basketEngine } from "./figures/basket";
 import { mount as branchesEngine } from "./figures/branches";
 import { mount as cabinetEngine } from "./figures/cabinet";
 import { mount as dishEngine } from "./figures/dish";
+import { mount as drawerEngine } from "./figures/drawer";
 import { mount as elevatorEngine } from "./figures/elevator";
 import { mount as explodedEngine } from "./figures/exploded";
 import { mount as keyboardEngine } from "./figures/keyboard";
 import { mount as laptopEngine } from "./figures/laptop";
 import { mount as lockersEngine } from "./figures/lockers";
+import { mount as loupeEngine } from "./figures/loupe";
 import { mount as padlockEngine } from "./figures/padlock";
 import { mount as patchEngine } from "./figures/patch";
 import { mount as phoneEngine } from "./figures/phone";
 import { mount as phosphorEngine } from "./figures/phosphor";
+import { mount as plotEngine } from "./figures/plot";
+import { mount as plugEngine } from "./figures/plug";
+import { mount as queryEngine } from "./figures/query";
+import { mount as railEngine } from "./figures/rail";
 import { mount as riffleEngine } from "./figures/riffle";
 import { mount as routerEngine } from "./figures/router";
+import { mount as sieveEngine } from "./figures/sieve";
 import { mount as slowEngine } from "./figures/slow";
 import { mount as terminalEngine } from "./figures/terminal";
 import { mount as terrainEngine } from "./figures/terrain";
@@ -20,7 +28,7 @@ import { mount as turntableEngine } from "./figures/turntable";
 import { mount as vaultEngine } from "./figures/vault";
 
 /**
- * @lucasmarkes/hairline — nineteen isometric line figures that answer the pointer.
+ * @lucasmarkes/hairline — twenty-seven isometric line figures that answer the pointer.
  *
  * One function per figure. Each takes an element and the same options, draws
  * into the element, and returns `{ update, destroy }`. Each function names
@@ -180,6 +188,16 @@ export function lockers(el: HTMLElement, options?: HairlineOptions): Figure {
   }, el, options);
 }
 
+/** A stand loupe over a blank ruled sheet: the pointer drags it across, and the rules pass enlarged under the glass with nothing between them. `intensity` magnifies more. */
+export function loupe(el: HTMLElement, options?: HairlineOptions): Figure {
+  return create({
+    id: "loupe",
+    label: "A stand loupe over a blank ruled sheet: the pointer drags it across, and the rules pass enlarged under the glass with nothing between them.",
+    rest: "rest",
+    engine: loupeEngine,
+  }, el, options);
+}
+
 /** A padlock: as the pointer nears, the shackle springs up out of the body and swings open about its long leg. `intensity` swings the shackle further. */
 export function padlock(el: HTMLElement, options?: HairlineOptions): Figure {
   return create({
@@ -217,5 +235,75 @@ export function router(el: HTMLElement, options?: HairlineOptions): Figure {
     label: "A wifi router whose antennas lean toward the pointer, the nearest the most and the others less the further away.",
     rest: "rest",
     engine: routerEngine,
+  }, el, options);
+}
+
+/** Three test sieves stacked over a pan: the pointer's height picks one, it rises clear of the stack, and every mesh is bare. `intensity` opens the gap further. */
+export function sieve(el: HTMLElement, options?: HairlineOptions): Figure {
+  return create({
+    id: "sieve",
+    label: "Three test sieves stacked over a pan: the pointer's height picks one, it rises clear of the stack, and every mesh is bare.",
+    rest: "rest",
+    engine: sieveEngine,
+  }, el, options);
+}
+
+/** A garment rail with seven bare hangers: the pointer brushes them, and each rocks away from it, the nearest most, and settles. `intensity` reaches more hangers. */
+export function rail(el: HTMLElement, options?: HairlineOptions): Figure {
+  return create({
+    id: "rail",
+    label: "A garment rail with seven bare hangers: the pointer brushes them, and each rocks away from it, the nearest most, and settles.",
+    rest: "rest",
+    engine: railEngine,
+  }, el, options);
+}
+
+/** A wall socket and a plug lying on the floor at the end of its cord: the pointer draws the plug up toward the socket, and it stops short. `intensity` brings it nearer. */
+export function plug(el: HTMLElement, options?: HairlineOptions): Figure {
+  return create({
+    id: "plug",
+    label: "A wall socket and a plug lying on the floor at the end of its cord: the pointer draws the plug up toward the socket, and it stops short of it.",
+    rest: "rest",
+    engine: plugEngine,
+  }, el, options);
+}
+
+/** A question mark built as a solid on a plinth, its dot a loose ball: the hook turns about its stem toward the pointer, and the ball rolls after it. `intensity` turns the hook further. */
+export function query(el: HTMLElement, options?: HairlineOptions): Figure {
+  return create({
+    id: "query",
+    label: "A question mark built as a solid on a plinth, its dot a loose ball: the hook turns about its stem toward the pointer, and the ball rolls after it.",
+    rest: "rest",
+    engine: queryEngine,
+  }, el, options);
+}
+
+/** A filing cabinet of three drawers: the pointer's height picks one, it slides out, and inside are two dividers and nothing between them. `intensity` pulls the drawer further out. */
+export function drawer(el: HTMLElement, options?: HairlineOptions): Figure {
+  return create({
+    id: "drawer",
+    label: "A filing cabinet of three drawers: the pointer's height picks one, it slides out, and inside are two dividers and nothing between them.",
+    rest: "rest",
+    engine: drawerEngine,
+  }, el, options);
+}
+
+/** An empty wire shopping basket under a bail handle: the pointer tilts it toward itself on a spring, so the bare floor shows, and the handle swings after it, late. `intensity` tilts it further. */
+export function basket(el: HTMLElement, options?: HairlineOptions): Figure {
+  return create({
+    id: "basket",
+    label: "An empty wire shopping basket under a bail handle: the pointer tilts it toward itself on a spring, so the bare floor shows, and the handle swings after it, late.",
+    rest: "rest",
+    engine: basketEngine,
+  }, el, options);
+}
+
+/** A bar chart with no data: seven flat tabs on its base, before a plate of grid lines. The pointer brushes them, and each lifts a little, the nearest most, and drops back to zero. `intensity` lifts them higher. */
+export function plot(el: HTMLElement, options?: HairlineOptions): Figure {
+  return create({
+    id: "plot",
+    label: "A bar chart with no data: seven flat tabs on its base, before a plate of grid lines. The pointer brushes them, and each lifts a little, the nearest most, and drops back to zero.",
+    rest: "rest",
+    engine: plotEngine,
   }, el, options);
 }

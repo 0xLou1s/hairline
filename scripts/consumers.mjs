@@ -22,7 +22,7 @@ const { chromium } = createRequire(join(PKG, "package.json"))("@playwright/test"
 
 const FIXTURES = {
   next: { dir: "fixtures/next-app", port: 4311, serve: (port) => ["npx", ["next", "start", "-p", String(port)]], figures: ["riffle", "slow", "phosphor"] },
-  vite: { dir: "fixtures/vite-vanilla", port: 4312, serve: (port) => ["npx", ["vite", "preview", "--port", String(port), "--strictPort"]], figures: ["riffle", "terrain", "exploded", "phosphor", "slow", "turntable", "keyboard", "elevator", "phone", "laptop", "terminal", "cabinet", "branches", "vault", "lockers", "padlock", "patch", "dish", "router"] },
+  vite: { dir: "fixtures/vite-vanilla", port: 4312, serve: (port) => ["npx", ["vite", "preview", "--port", String(port), "--strictPort"]], figures: ["riffle", "terrain", "exploded", "phosphor", "slow", "turntable", "keyboard", "elevator", "phone", "laptop", "terminal", "cabinet", "branches", "vault", "lockers", "padlock", "patch", "dish", "router", "loupe", "sieve", "rail", "plug", "query", "drawer", "basket", "plot"] },
 };
 const only = process.argv[2];
 if (only && !FIXTURES[only]) { console.error(`Unknown fixture "${only}". Use: ${Object.keys(FIXTURES).join(" | ")}`); process.exit(2); }
