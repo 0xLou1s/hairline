@@ -1,7 +1,17 @@
 import { expect, test, type FrameLocator, type Page } from "@playwright/test";
 
 const INSTALL = "npx skills add lucasmarkes/hairline";
-const IDEAS = ["a sales funnel", "a rate limiter", "git branches", "weather over a city"];
+const IDEAS = [
+  "a sales funnel",
+  "a rate limiter",
+  "git branches",
+  "weather over a city",
+  "an empty state for \"No deployments yet\", from Vercel's mark: the triangle as an upright slab hovering over a pad with its slot marked dim; the nearer the pointer, the lower it settles, until it seats. Name it vercel.",
+  "an empty state for \"No agents connected\", from Mastra's mark: the spheres of the M joined by necks on a board, the lone sphere standing apart; the pointer draws it toward the others, a neck forms, stretches and lets go. Name it mastra.",
+  "an empty state for \"No pages inside\", from Notion's mark: the cube as a box with a lid, the N a relief on its front face; the pointer's height opens the lid on a spring, and the box is empty. Name it notion.",
+];
+/** A line as a pattern that matches only itself: the marks' prompts hold full stops. */
+const literal = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 function watch(page: Page): string[] {
   const noise: string[] = [];
@@ -36,14 +46,15 @@ const fit = (frame: FrameLocator) => frame.locator("main").evaluate((main) => ({
   band: window.innerHeight - main.getBoundingClientRect().bottom - 24,
 }));
 
-test("/skill opens with the install command, four prompts and four live figures, and a clean console", async ({ page }) => {
+test("/skill opens with the install command, seven prompts and seven live figures, and a clean console", async ({ page }) => {
   const noise = watch(page);
   await page.goto("/skill");
   await expect(page).toHaveTitle("Make your own figure · hairline");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Make your own figure");
   await expect(page.locator('[data-command="install"]')).toHaveText(new RegExp(INSTALL));
-  await expect(page.locator('[data-command="prompt"]')).toHaveText(IDEAS.map((idea) => new RegExp(`/hairline-create ${idea}$`)));
+  await expect(page.locator('[data-command="prompt"]')).toHaveText(IDEAS.map((idea) => new RegExp(`/hairline-create ${literal(idea)}$`)));
   await expect(page.locator("[data-steps] > li")).toHaveCount(5);
+  await expect(page.locator("#examples")).toContainText("Hairline is not affiliated with them.");
   await frames(page);
   expect(noise).toEqual([]);
 });
@@ -73,7 +84,7 @@ test("a figure on /skill answers the pointer and goes back to rest", async ({ pa
 
 test("each frame is named by what its figure means, and shows the page the skill wrote, light", async ({ page, request }) => {
   await page.goto("/skill");
-  await expect(page.locator("[data-example]")).toHaveCount(4);
+  await expect(page.locator("[data-example]")).toHaveCount(IDEAS.length);
   for (const row of await page.locator("[data-example]").all()) {
     const frame = row.locator("iframe");
     expect((await frame.getAttribute("title"))!.length).toBeGreaterThan(20);
@@ -133,7 +144,7 @@ for (const width of [320, 900]) {
     await page.setViewportSize({ width, height: 800 });
     await page.goto("/skill");
     const lines = page.locator('[data-command="prompt"] .pill-line');
-    await expect(lines).toHaveCount(4);
+    await expect(lines).toHaveCount(IDEAS.length);
     for (const over of await lines.evaluateAll((els) => els.map((el) => el.scrollWidth - el.clientWidth))) expect(over).toBeLessThanOrEqual(0);
     const install = page.locator('[data-command="install"] .pill-line');
     expect(await install.evaluate((el) => getComputedStyle(el).whiteSpace)).toBe("nowrap");
@@ -184,8 +195,8 @@ test.describe("without JavaScript", () => {
   test("/skill still gives the install command, the prompts and the frames with the pages", async ({ page }) => {
     await page.goto("/skill");
     await expect(page.locator('[data-command="install"]')).toHaveText(new RegExp(INSTALL));
-    await expect(page.locator('[data-command="prompt"]')).toHaveCount(4);
-    await expect(page.locator('[data-example] iframe[src^="/skill/hairline-"]')).toHaveCount(4);
+    await expect(page.locator('[data-command="prompt"]')).toHaveCount(IDEAS.length);
+    await expect(page.locator('[data-example] iframe[src^="/skill/hairline-"]')).toHaveCount(IDEAS.length);
   });
 });
 
@@ -246,6 +257,9 @@ const FOLLOW_UPS: Record<string, string | undefined> = {
   clearance: undefined,
   sidings: "The rails almost disappear and the trains read as loose blocks. Make it read as a railway at a glance.",
   storm: "The cloud looks like a stack of cylinders. Make it read as a cloud at a glance.",
+  vercel: undefined,
+  mastra: undefined,
+  notion: undefined,
 };
 
 test("a follow-up sits under its prompt as a second line that wraps instead of scrolling, and copies on its own", async ({ page, context }) => {

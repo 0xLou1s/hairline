@@ -57,6 +57,23 @@ ${THEME.map((t) => `  ${t.property}: ${t.light};`).join("\n")}
 }
 `;
 
+/** The empty state's words, shared by its code and the live one the docs draw above it. */
+export const NO_RESULTS = { label: "An empty sieve", heading: "No results match these filters", action: "Clear filters" };
+
+/** A figure as an empty state: small, over a heading and one action. */
+export const EMPTY = `import { Sieve } from "@lucasmarkes/hairline/react";
+
+export function NoResults({ onClear }: { onClear: () => void }) {
+  return (
+    <div style={{ display: "grid", justifyItems: "center", gap: 12, padding: 48 }}>
+      <Sieve style={{ width: 200 }} label="${NO_RESULTS.label}" />
+      <h2>${NO_RESULTS.heading}</h2>
+      <button onClick={onClear}>${NO_RESULTS.action}</button>
+    </div>
+  );
+}
+`;
+
 /** The quick start's tabs: the same figure three ways, each under the file it goes in. */
 export const QUICKSTART = paste("Terrain", "terrain");
 

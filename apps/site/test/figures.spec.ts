@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-const SHELVES = ["Interfaces", "Data", "Machines", "Devices", "Coding", "Security", "Connectivity"];
+const SHELVES = ["Interfaces", "Data", "Machines", "Devices", "Coding", "Security", "Connectivity", "Empty", "Marks"];
 
 function watch(page: Page): string[] {
   const noise: string[] = [];
@@ -16,16 +16,16 @@ function watch(page: Page): string[] {
 const tiles = (page: Page) => page.locator(".fig-tile");
 const shelf = (page: Page, name: string) => page.locator(".shelves .shelf", { hasText: name });
 
-test("/figures prerenders nineteen empty boxes among nineteen tiles, then draws them with a clean console", async ({ page, request }) => {
+test("/figures prerenders twenty-seven empty boxes among thirty tiles, then draws them with a clean console", async ({ page, request }) => {
   const html = await (await request.get("/figures")).text();
-  expect(html.match(/<div style="aspect-ratio:5 \/ 4"><\/div>/g)).toHaveLength(19);
-  expect(html.match(/class="fig-tile"/g)).toHaveLength(19);
+  expect(html.match(/<div style="aspect-ratio:5 \/ 4"><\/div>/g)).toHaveLength(27);
+  expect(html.match(/class="fig-tile"/g)).toHaveLength(30);
   expect(html).not.toContain("data-planned");
 
   const noise = watch(page);
   await page.goto("/figures");
-  await expect(tiles(page)).toHaveCount(19);
-  await expect(page.locator(".fig-tile [data-hairline] > svg")).toHaveCount(19);
+  await expect(tiles(page)).toHaveCount(30);
+  await expect(page.locator(".fig-tile [data-hairline] > svg")).toHaveCount(27);
   await expect(page.locator(".fig-tile .fig-ghost, .fig-tile[data-planned]")).toHaveCount(0);
   await expect(page.locator("h1")).toHaveText("Every figure, by what it draws.");
   await expect(page.locator(".doc-section h2")).toHaveText(SHELVES);
@@ -36,7 +36,7 @@ test("/figures prerenders nineteen empty boxes among nineteen tiles, then draws 
 test("the shelves filter: All is pressed at first, a shelf shows only itself and names itself in the address", async ({ page }) => {
   await page.goto("/figures");
   await expect(shelf(page, "All")).toHaveAttribute("aria-pressed", "true");
-  await expect(page.locator(".shelves .shelf-n")).toHaveText(["19", "1", "3", "3", "3", "3", "3", "3"]);
+  await expect(page.locator(".shelves .shelf-n")).toHaveText(["30", "1", "3", "3", "3", "3", "3", "3", "8", "3"]);
 
   await shelf(page, "Machines").click();
   await expect(shelf(page, "Machines")).toHaveAttribute("aria-pressed", "true");
@@ -53,7 +53,7 @@ test("the shelves filter: All is pressed at first, a shelf shows only itself and
   })).toBeLessThan(1);
 
   await shelf(page, "All").click();
-  await expect(tiles(page)).toHaveCount(19);
+  await expect(tiles(page)).toHaveCount(30);
   expect(new URL(page.url()).hash).toBe("");
 });
 
@@ -186,7 +186,7 @@ test("on a phone the shelves are a strip under the top bar, and nothing scrolls 
     await page.setViewportSize({ width, height: 800 });
     await page.goto("/figures");
     await expect(page.locator(".shelves")).toBeHidden();
-    await expect(page.locator(".figs-pill")).toHaveCount(8);
+    await expect(page.locator(".figs-pill")).toHaveCount(10);
     expect(await page.evaluate(() => document.documentElement.scrollWidth), `${width}`).toBeLessThanOrEqual(width);
     // the top bar's links stay inside it
     const right = await page.evaluate(() => document.querySelector(".topbar nav")!.getBoundingClientRect().right);
@@ -206,4 +206,47 @@ test("on a phone the shelves are a strip under the top bar, and nothing scrolls 
     expect(box!.x).toBe(0);
     expect(box!.width).toBe(width);
   }
+});
+
+test("the Marks shelf shows three figures the skill made, each with its prompt and no install code", async ({ page }) => {
+  await page.goto("/figures#marks");
+  const shelf = page.locator("#shelf-marks");
+  await expect(shelf.locator(".fig-tile")).toHaveCount(3);
+  await expect(shelf).toContainText("not affiliated");
+  const tile = shelf.locator(".fig-tile").first();
+  const frame = tile.frameLocator("iframe");
+  await expect(frame.locator("#stage svg > *").first()).toBeAttached();
+  await expect(frame.locator(".controls")).toBeHidden();
+  // the page's ground is clear, so the tile's ring, under the frame, shows
+  await expect(frame.locator("body")).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
+  await tile.getByRole("button", { name: "Vercel" }).click();
+  const drawer = page.locator("#figure-drawer");
+  await expect(drawer).toContainText("/hairline-create an empty state for");
+  await expect(drawer).toContainText("not affiliated");
+  await expect(drawer.getByRole("tab")).toHaveCount(0);
+  await expect(drawer.locator("input[type=range]")).toHaveCount(0);
+  await expect(drawer.getByRole("link", { name: "hairline-create" })).toHaveAttribute("href", "/skill");
+});
+
+test("Escape pressed inside a made page's frame closes the drawer, as it does outside", async ({ page }) => {
+  await page.goto("/figures#marks");
+  const name = page.locator("#shelf-marks").getByRole("button", { name: "Vercel" });
+  await name.click();
+  const drawer = page.locator("#figure-drawer");
+  await expect(drawer).toHaveAttribute("data-open", "");
+  // the page's own slider, in the drawer's frame, takes the keys
+  const slider = drawer.frameLocator("iframe").locator("#intensity");
+  await slider.focus();
+  await expect(slider).toBeFocused();
+  await page.keyboard.press("Escape");
+  await expect(drawer).not.toHaveAttribute("data-open");
+  await expect(name).toBeFocused();
+});
+
+// Review Focus 4: a page that does not load leaves the tile its box
+test("a made tile keeps its box when its page is missing", async ({ page }) => {
+  await page.route("**/skill/hairline-mastra.html*", (route) => route.fulfill({ status: 404, body: "" }));
+  await page.goto("/figures#marks");
+  const box = (await page.locator("#shelf-marks .fig-tile").nth(1).locator("iframe.made-frame").boundingBox())!;
+  expect(box.width / box.height).toBeCloseTo(5 / 4, 1);
 });

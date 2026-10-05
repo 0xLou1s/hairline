@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import type { CSSProperties } from "react";
 import { Catalogue } from "@/components/catalogue";
 import { Footer, Topbar } from "@/components/chrome";
-import { tally } from "@/lib/catalogue";
+import { SHELVES, spell, tally } from "@/lib/catalogue";
 import { FIGURES, LINKS, type FigureId } from "@/lib/figures";
 import { highlight } from "@/lib/highlight";
 import { share } from "@/lib/share";
@@ -11,7 +11,14 @@ import { paste } from "@/lib/snippets";
 /** A block's place in the header's entrance. */
 const at = (i: number) => ({ "--i": i }) as CSSProperties;
 
-const LEDE = `${tally()}, grouped by what they draw. Each answers the pointer and takes the same four options. Pick one to see it large and copy its code.`;
+/** How many the skill drew from a mark: the Marks shelf's, counted apart from the package's as tally() does. */
+const MARKS = spell(SHELVES.find((s) => s.id === "marks")!.figures.length);
+
+/** The lede in three parts, so the page can link the skill's name and the metadata can keep it as text. */
+const LEAD = `${tally()}, grouped by what they draw. They ship in the package, but they are here to show what a figure can be: the`;
+const SKILL = "/hairline-create";
+const TAIL = `skill draws your own. Pick one to see it large and copy its code. A last shelf holds ${MARKS} the skill drew from a company's mark.`;
+const LEDE = `${LEAD} ${SKILL} ${TAIL}`;
 
 export const metadata: Metadata = share("/figures", "Figures", LEDE);
 
@@ -34,7 +41,7 @@ export default async function Figures() {
         header={
           <header className="hero-rise">
             <h1 className="col-h1" style={at(0)}>Every figure, by what it <em>draws</em>.</h1>
-            <p className="col-lede" style={at(1)}>{LEDE}</p>
+            <p className="col-lede" style={at(1)}>{LEAD} <a className="doc-more" href="/skill">{SKILL}</a> {TAIL}</p>
           </header>
         }
         end={
