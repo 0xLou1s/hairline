@@ -416,7 +416,10 @@ footer a::after { content: ""; position: absolute; inset: -12px -8px; }
 .example-frame { display: block; width: 100%; height: calc(min(100cqw - 32px, 640px) * 0.8 + 148px + 48px + max(0px, 392px - 100cqw) * 0.75); border: 0; }
 /* a figure the skill made, on its tile: only the page's stage, in the figures' own box, so a page that does not load
    leaves the tile its shape */
-.made-frame { display: block; width: 100%; aspect-ratio: 5 / 4; border: 0; background: transparent; }
+.made-frame { display: block; width: 100%; aspect-ratio: 5 / 4; border: 0; background: transparent; transition: opacity 180ms ease-out; }
+/* until the page in it shows only its stage, the frame shows nothing: its controls never flash in the tile */
+.made-frame:not([data-quiet]) { opacity: 0; }
+@media (prefers-reduced-motion: reduce) { .made-frame { transition: none; } }
 
 /* /figures. The shelves are a filter: from 1100px a list by the column's left edge, sticky inside the page's grid so it
    stops where the column ends and never runs over the footer; below that the docs' strip under the top bar. The list's

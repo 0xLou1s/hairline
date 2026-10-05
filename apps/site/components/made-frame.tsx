@@ -12,6 +12,10 @@ const ONLY_STAGE = "#name, #read, #rules, #means, .controls { display: none !imp
  * nothing else. The frame has the figures' own 5:4 box from CSS, so a page
  * that is slow, missing or broken leaves the tile its shape. The page's ground
  * goes clear, so the tile's ring, drawn under the frame, still shows.
+ *
+ * The style can only go in once the page has loaded, and the page paints
+ * before that, controls and all: so the frame stays clear until its page has
+ * the style (`data-quiet`), and only the stage is ever seen.
  */
 export function MadeFrame({ src, title }: { src: string; title: string }) {
   const frame = useRef<HTMLIFrameElement>(null);
@@ -28,6 +32,8 @@ export function MadeFrame({ src, title }: { src: string; title: string }) {
       style.id = QUIET;
       style.textContent = ONLY_STAGE;
       doc.head.append(style);
+      // the blank document a frame starts with is not the page
+      if (doc.URL !== "about:blank") el.dataset.quiet = "";
       unkey?.();
       unkey = forwardEscape(el, doc);
     };

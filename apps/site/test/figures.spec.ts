@@ -250,3 +250,20 @@ test("a made tile keeps its box when its page is missing", async ({ page }) => {
   const box = (await page.locator("#shelf-marks .fig-tile").nth(1).locator("iframe.made-frame").boundingBox())!;
   expect(box.width / box.height).toBeCloseTo(5 / 4, 1);
 });
+
+// a made page paints its controls before the tile can hide them: the frame shows nothing until it shows only the stage
+test("a made tile never shows its page's controls while the page loads", async ({ page }) => {
+  let release!: () => void;
+  const held = new Promise<void>((done) => (release = done));
+  await page.route("**/skill/hairline-vercel.html*", async (route) => {
+    await held;
+    await route.continue();
+  });
+  await page.goto("/figures#marks");
+  const frame = page.locator("#shelf-marks .fig-tile").first().locator("iframe.made-frame");
+  await expect(frame).toHaveCSS("opacity", "0");
+  release();
+  await expect(frame).toHaveAttribute("data-quiet", "");
+  await expect(frame).toHaveCSS("opacity", "1");
+  await expect(frame.contentFrame().locator(".controls")).toBeHidden();
+});
